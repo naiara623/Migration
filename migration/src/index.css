@@ -1,7 +1,28 @@
-:root{
---cor-fundo1: #F7F7F7;
---cor-fundo2:#E0D2C8;
---cor-azulEscuro:#324973;
---cor-azulClaro:#94B2CE;
---cor-branco:#ffffff;
+
+:root {
+    /* modo escuro */
+  --dark-blue: #1E2A3A;
+  --medium-blue: #2A3A4D;
+  --highlight-blue: #5A8CBA;
+  --light-blue: #94B2CE;
+  --dark-beige: #A89987;
+  --light-beige: #D4C4B4;
+  --soft-white: #E0E0E0;
+
+/* 
+Exemplo de Aplicação:
+Fundo: #1E2A3A
+Textos Principais: #E0E0E0
+Destaques (botões/links): #5A8CBA
+Elementos Secundários (bordas, ícones): #A89987
+Superfícies (cards, menus): #2A3A4D (um tom intermediário entre o azul e o preto)
+*/
+
+  /* modo claro */
+--azulClaro-fundo: #94B2CE;
+--azul-escuro: #324973;
+--bege-claro: #E6D8CD;
+--bege-escuro: #C5B2A4;
+--branco: #F7F7F7;
+--cinza: #666;
 }
