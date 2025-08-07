@@ -1,0 +1,75 @@
+/* Estilos globais */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  overflow-x: hidden; /* Impede rolagem horizontal */
+  margin: 0;
+  padding: 0;
+}
+
+html, #root {
+  height: 100%;
+}
+
+.App {
+  background-color: #F7F7F7;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+img{max-width: 100%;
+height: auto;}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #324973;
+  color: #F7F7F7;
+}
+
+.btn-primary:hover {
+  background-color: #94B2CE;
+  color: #324973;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #324973;
+  font-size: 2rem;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  background-color: #C5B2A4;
+  margin: 10px auto 0;
+}
+
+section {
+  padding: 80px 0;
+  width: 100%;
+}

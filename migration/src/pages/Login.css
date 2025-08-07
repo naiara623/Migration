@@ -1,0 +1,124 @@
+/*DIVS*/
+.Login-1{
+    /* border: 4px solid red; */
+    height: 100vh;
+    display: flex;
+
+}
+
+.LadoEsquerdo-Login{
+    /* border: 2px solid blue; */
+    width: 50%;
+    height: 100%;
+    background-color: var(--azulClaro-fundo);
+}
+
+.ladoDireito-Login{
+    /* border: 2px solid green; */
+    width: 50%;
+    height: 100%;
+
+}
+
+.Titulo-Login{
+    /* border: 3px solid purple; */
+    width: 100%;
+    height: 15%;
+}
+
+.Inputs-Login{
+    /* border: 3px solid orange; */
+    width: 100%;
+    height: 60%;
+}
+
+.Buttons-Login{
+    /* border: 3px solid rgb(143, 35, 53); */
+    width: 100%;
+    height: 25%;
+    display: flex;
+}
+
+.Termos-Login{
+    /* border: 3px solid pink; */
+    width: 100%;
+    height: 10%;
+}
+
+.inputsenha-Login, .inputNome-Login{
+    /* border: 2px solid black; */
+    width: 100%;
+    height: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+
+.butonLogar-Login, 
+.butoncadastrar-Login{
+    /* border: 2px solid black; */
+    width: 50%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/*TEXTOS*/
+
+.BemVindo-Login{
+    /* border: 2px solid yellow; */
+    width: 77%;
+    font-size: 40px;
+    color: var(--azul-escuro);
+    position: relative;
+    top: 40%;
+    left: 5%;
+}
+
+
+.Labelemail-Login{
+    font-size: 20px;
+    color: var(--azul-escuro);
+    position: relative;
+    right: 34%;
+     top: 2%;
+}
+
+.Labelsenha-Login{
+    font-size: 20px;
+    color: var(--azul-escuro);
+    position: relative;
+    right: 34%;
+     top: 2%;
+}
+
+/*INPUTS*/
+
+.Email-Login, .Senha-Login{
+    width: 75%;
+    height: 30%;
+    border-radius: 5px;
+background-color: var(--bege-claro);
+border: 1px solid var(--bege-escuro);
+
+}
+
+input::placeholder {
+    color: var(--cinza);
+    font-size: 17px;
+}
+
+/*BUTTONS*/
+
+.ButtonLogar-Login, .ButtonCadastrar-Login{
+    width: 50%;
+    height: 30%;
+    border-radius: 5px;
+    background-color: var(--azulClaro-fundo);
+    color: var(--azul-escuro);
+    font-size: 26px;
+    border: none;
+}
