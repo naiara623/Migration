@@ -1,8 +1,8 @@
 .header {
-  background-color: #324973;
-  color: #F7F7F7;
+  background-color: var(--accent-primary);
+  color: var(--text-tertiary);
   padding: 20px 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-color);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -15,20 +15,20 @@
   align-items: center;
   width: 100%;
 }
-.logo{
+
+.logo {
   display: flex;
 }
 
-.migrati  {
+.migrati {
   font-size: 1.8rem;
-  color: #F7F7F7;
+  color: var(--text-tertiary);
 }
 
-.on{
-   font-size: 1.8rem;
-  color: #94B2CE;
+.on {
+  font-size: 1.8rem;
+  color: var(--accent-secondary);
 }
-
 
 .nav ul {
   display: flex;
@@ -40,27 +40,102 @@
 }
 
 .nav ul li a {
-  color: #F7F7F7;
+  color: var(--text-tertiary);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
 }
 
 .nav ul li a:hover {
-  color: #94B2CE;
+  color: var(--accent-secondary);
 }
 
 .header-actions {
   display: flex;
   align-items: center;
+  gap: 20px;
 }
 
-.search-btn, .cart-btn {
+.search-container {
+  position: relative;
+}
+
+.search-checkbox {
+  position: absolute;
+  width: 40px;
+  height: 30px;
+  right: 17px;
+  top: 0px;
+  z-index: 9;
+  cursor: pointer;
+  appearance: none;
+  opacity: 0;
+}
+
+.search-box {
+  box-sizing: border-box;
+  position: relative;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  border-radius: 160px;
+  background-color: var(--accent-secondary);
+  transition: all 0.3s ease;
+}
+
+.search-box:not(.collapsed) {
+  width: 280px;
+  background-color: var(--bg-tertiary);
+}
+
+.search-input {
+  box-sizing: border-box;
+  height: 100%;
+  width: 0;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  font-size: 1em;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.search-box:not(.collapsed) .search-input {
+  width: 220px;
+  padding-bottom: 4px;
+  padding-left: 15px;
+  font-size: 1.1em;
+}
+
+.search-input::placeholder {
+  color: var(--text-primary);
+  opacity: 0.7;
+}
+
+.search-icon-container {
+  height: 100%;
+  width: auto;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-icon {
+  fill: var(--text-tertiary) !important;
+  width: 1.5em;
+  height: 1.5em;
+}
+
+.cart-btn {
   background: none;
   border: none;
-  color: #F7F7F7;
+  color: var(--text-tertiary);
   font-size: 1.2rem;
-  margin-left: 20px;
   cursor: pointer;
   position: relative;
 }
@@ -69,8 +144,8 @@
   position: absolute;
   top: -8px;
   right: -8px;
-  background-color: #C5B2A4;
-  color: #324973;
+  background-color: var(--accent-tertiary);
+  color: var(--accent-primary);
   border-radius: 50%;
   width: 18px;
   height: 18px;
@@ -79,4 +154,118 @@
   justify-content: center;
   font-size: 0.7rem;
   font-weight: bold;
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  margin-right: 10px;
+}
+
+
+.switch {
+  font-size: 17px;
+  position: relative;
+  display: inline-block;
+  width: 64px;
+  height: 34px;
+  margin-right: 15px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #73C0FC;
+  transition: .4s;
+  border-radius: 30px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 30px;
+  width: 30px;
+  border-radius: 20px;
+  left: 2px;
+  bottom: 2px;
+  z-index: 2;
+  background-color: #e8e8e8;
+  transition: .4s;
+}
+
+.sun svg {
+  position: absolute;
+  top: 6px;
+  left: 36px;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+}
+
+.moon svg {
+  fill: #73C0FC;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+}
+
+.sun svg {
+  animation: rotate 15s linear infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.moon svg {
+  animation: tilt 5s linear infinite;
+}
+
+@keyframes tilt {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.input:checked + .slider {
+  background-color: #183153;
+}
+
+.input:focus + .slider {
+  box-shadow: 0 0 1px #183153;
+}
+
+.input:checked + .slider:before {
+  transform: translateX(30px);
 }
