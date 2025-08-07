@@ -7,7 +7,7 @@
   --text-secondary: #666;
   --text-tertiary: #F7F7F7;
   --accent-primary: #324973;
-  --accent-secondary: #94B2CE;
+  --accent-secondary: #78BEFF;
   --accent-tertiary: #C5B2A4;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --hero-overlay: rgba(50, 73, 115, 0.7);
@@ -27,7 +27,7 @@
   
   /* Destaques - azuis com toques de bege */
   --accent-primary: #6A8FBF; /* Azul médio principal */
-  --accent-secondary: #8FB3D9; /* Azul claro para hover */
+  --accent-secondary: #1b5891; /* Azul claro para hover */
   --accent-tertiary: #C5B2A4; /* Bege exatamente igual ao modo claro */
   
   /* Elementos de superfície */

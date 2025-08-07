@@ -1,7 +1,11 @@
+/* HelpSection.css */
 .help-section {
   padding: 40px 0;
   width: 100%;
   background-color: var(--bg-primary);
+  margin-top: -50px; /* Puxa a seção para cima */
+  position: relative;
+  z-index: 1; /* Garante que fique acima do pseudo-elemento do hero */
 }
 
 .help-list {
