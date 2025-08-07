@@ -1,7 +1,7 @@
 .newsletter {
   padding: 60px 0;
-  background-color: #324973;
-  color: #F7F7F7;
+  background-color: var(--accent-primary);
+  color: var(--text-tertiary);
   width: 100%;
 }
 
@@ -24,16 +24,30 @@
 .newsletter-form {
   display: flex;
   gap: 10px;
+  justify-content: center;
 }
 
 .newsletter-form input {
   flex: 1;
+  max-width: 400px;
   padding: 12px 15px;
   border: none;
   border-radius: 4px;
   font-size: 1rem;
+  color: var(--text-primary);
 }
 
 .newsletter-form input:focus {
-  outline: 2px solid #94B2CE;
+  outline: 2px solid var(--accent-secondary);
+}
+
+@media (max-width: 600px) {
+  .newsletter-form {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .newsletter-form input {
+    width: 100%;
+  }
 }

@@ -1,26 +1,41 @@
+// App.js
 import React from 'react';
 import './App.css';
 import Header from './components/Header';
 import Hero from './components/Hero';
-import HelpSection from './components/HelpSection'; // Novo componente
+import HelpSection from './components/HelpSection';
 import ProductCategories from './components/ProductCategories';
 import FeaturedProducts from './components/FeaturedProducts';
-import Newsletter from './components/Newsletter';
 import Footer from './components/Footer';
+import { ThemeProvider } from './ThemeContext';
+import { ThemeEffect } from './ThemeEffect';
 
-function App() {
+
+
+
+function AppContent() {
+  ThemeEffect();
+  
   return (
     <div className="App">
       <Header />
       <main>
         <Hero />
-        <HelpSection /> {/* Adicione esta linha */}
+        <HelpSection />
         <ProductCategories />
         <FeaturedProducts />
-        <Newsletter />
+   
       </main>
       <Footer />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 
