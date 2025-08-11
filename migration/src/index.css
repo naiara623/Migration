@@ -1,4 +1,4 @@
-
+/* 
 *{
   margin: 0;
   padding: 0;
@@ -12,13 +12,13 @@
 
 :root {
     /* modo escuro */
-  --dark-blue: #1E2A3A;
+  /* --dark-blue: #1E2A3A;
   --medium-blue: #2A3A4D;
   --highlight-blue: #5A8CBA;
   --light-blue: #94B2CE;
   --dark-beige: #A89987;
   --light-beige: #D4C4B4;
-  --soft-white: #E0E0E0;
+  --soft-white: #E0E0E0; */
 
 /* 
 Exemplo de Aplicação:
@@ -30,7 +30,7 @@ Superfícies (cards, menus): #2A3A4D (um tom intermediário entre o azul e o pre
 */
 
   /* modo claro */
---azulClaro-fundo: #94B2CE;
+/* --azulClaro-fundo: #94B2CE;
 --azul-escuro: #324973;
 --bege-claro: #E6D8CD;
 --bege-escuro: #C5B2A4;
@@ -45,4 +45,51 @@ Superfícies (cards, menus): #2A3A4D (um tom intermediário entre o azul e o pre
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
+ */
 
+
+ :root {
+  /* modo claro (default) */
+  --bg-primary: #F7F7F7;
+  --bg-secondary: #E6D8CD;
+  --bg-tertiary: white;
+  --text-primary: #324973;
+  --text-secondary: #666;
+  --text-tertiary: #F7F7F7;
+  --accent-primary: #324973;
+  --accent-secondary: #89a9c7;
+  --accent-tertiary: #C5B2A4;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --hero-overlay: rgba(50, 73, 115, 0.7);
+  --card-bg: #FFFFFF;
+}
+
+[data-theme="dark"] {
+  /* modo escuro alternativo */
+  --bg-primary: #1A2639;     /* Azul muito escuro */
+  --bg-secondary: #24344D;   /* Azul escuro médio */
+  --bg-tertiary: #2D3E5D;    /* Azul escuro claro */
+  
+  /* Textos - combinando bege e azuis */
+  --text-primary: #F0E6D8;   /* Bege claro (mais quente que o branco azulado) */
+  --text-secondary: #C7B8A5; /* Bege médio */
+  --text-tertiary: #E6D8CD;  /* Bege da paleta clara adaptado */
+  
+  /* Destaques - azuis com toques de bege */
+  --accent-primary: #6A8FBF; /* Azul médio principal */
+  --accent-secondary: #1b5891; /* Azul claro para hover */
+  --accent-tertiary: #C5B2A4; /* Bege exatamente igual ao modo claro */
+  
+  /* Elementos de superfície */
+  --card-bg: #24344D;       /* Azul escuro médio */
+  --shadow-color: rgba(0, 0, 0, 0.25);
+  --hero-overlay: rgba(26, 38, 57, 0.85);
+}
+/* Estilos globais */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

@@ -1,17 +1,23 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ThemeProvider } from './ThemeContext';
+import { ThemeProvider } from './ThemeContext'; // Certifique-se de que o caminho está correto
 import App from './App';
-import BoasVindas from './pages/BoasVinda';
 import './index.css';
+import { RouterProvider } from 'react-router-dom'
+import router from './router/Router.jsx'
 
+// Obtenha o elemento root
 const container = document.getElementById('root');
+
+// Crie uma root
 const root = createRoot(container);
 
-root.render(
+// Renderize o aplicativo
+createRoot(document.getElementById('root')).render(
+
   <StrictMode>
     <ThemeProvider>
-      <BoasVindas />
+      <RouterProvider router={router}/>
       <App />
     </ThemeProvider>
   </StrictMode>
