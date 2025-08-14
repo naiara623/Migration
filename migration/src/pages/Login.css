@@ -10,7 +10,7 @@
     /* border: 2px solid blue; */
     width: 50%;
     height: 100%;
-    background-color: var(--azulClaro-fundo);
+    background-color: var(--accent-secondary);
 }
 
 .ladoDireito-Login{
@@ -72,7 +72,7 @@
     /* border: 2px solid yellow; */
     width: 77%;
     font-size: 40px;
-    color: var(--azul-escuro);
+    color: var(--text-primary);
     position: relative;
     top: 40%;
     left: 5%;
@@ -81,7 +81,7 @@
 
 .Labelemail-Login{
     font-size: 20px;
-    color: var(--azul-escuro);
+    color: var(--text-primary);
     position: relative;
     right: 34%;
      top: 2%;
@@ -89,7 +89,7 @@
 
 .Labelsenha-Login{
     font-size: 20px;
-    color: var(--azul-escuro);
+    color: var(--text-primary);
     position: relative;
     right: 34%;
      top: 2%;
@@ -101,8 +101,8 @@
     width: 75%;
     height: 30%;
     border-radius: 5px;
-background-color: var(--bege-claro);
-border: 1px solid var(--bege-escuro);
+background-color: var(--bg-secondary);
+border: 1px solid var(--accent-tertiary);
 
 }
 
@@ -111,14 +111,91 @@ input::placeholder {
     font-size: 17px;
 }
 
+input:focus {
+    outline: none;
+    border-color: var(--accent-tertiary);
+}
+
 /*BUTTONS*/
 
 .ButtonLogar-Login, .ButtonCadastrar-Login{
     width: 50%;
     height: 30%;
     border-radius: 5px;
-    background-color: var(--azulClaro-fundo);
-    color: var(--azul-escuro);
+    background-color: var(--text-primary);
+    color: var(--accent-secondary);
     font-size: 26px;
     border: none;
+}
+
+.ButtonLogar-Login:hover {
+    background-color: var(--accent-secondary); /* Cor do fundo ao passar o mouse */
+    color: var(--text-primary); /* Cor do texto ao passar o mouse */
+}
+
+
+.ButtonCadastrar-Login:hover {
+    background-color: var(--accent-secondary); /* Cor do fundo ao passar o mouse */
+    color: var(--text-primary);/* Cor do texto ao passar o mouse */
+}
+
+
+
+/*Modal*/
+
+
+  /*MODAL*/
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #324973a2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+.modal-content {
+    background-color: var(--bg-secondary);
+    height: 30%;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 25%;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+  }
+
+.olaMundo-Cadastro {
+  /* border: 2px solid red; */
+  width: 90%;
+    font-size: 30px;
+    color: var(--text-primary);
+    position: relative;
+    top: -6%;
+    left: 5%;
+}
+
+.button-cadastro{
+  width: 70%;
+  height: 30%;
+  position: relative;
+    top: 9%;
+    padding: 10px 20px;
+    background-color: var(--accent-secondary);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 19px;
+}
+
+.Oimundo-cadastro{
+  /* border: 2px solid red; */
+  width: 20%;
+  /* height: 20%; */
+  position: relative;
+  top: -2%;
 }

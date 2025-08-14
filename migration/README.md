@@ -23,3 +23,26 @@ Cada item é escolhido a dedo pra garantir utilidade, durabilidade e aquele toqu
 Acesse o protótipo completo no Figma:
 
 👉[Migration no Figma](https://www.figma.com/design/qS3R6cvckxMy5R5YuBvDdG/Migration?node-id=0-1&p=f&t=AOy12IusvHT5vZLh-0) 
+#
+
+# 🤖 IA no Migration
+
+Como adicionariamos a IA (Inteligencia artificial) em nosso projeto? 
+
+- Atendimento ao cliente: 
+ Chatbot para tirar dúvidas, ajudar na navegação e recomendar produtos.
+
+- Análise de feedback:
+ Sugerir itens com base no perfil e histórico do usuário.
+
+- Guia Interativo:
+Explicar como usar a loja, mostrar novidades ou promoções.
+
+- Recomendações de produtos:
+Facilitar o acesso de pessoas de outros países.
+
+- Detecção de fraudes:
+Proteger transações e dados dos usuários.
+
+- Entregas:
+Avisar quando o produto estiver em rota para o endereço

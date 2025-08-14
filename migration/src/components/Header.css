@@ -7,6 +7,7 @@
   top: 0;
   z-index: 100;
   width: 100%;
+  height: 100%;
 }
 
 .header-content {
@@ -88,7 +89,7 @@
 
 .search-box:not(.collapsed) {
   width: 280px;
-  background-color: var(--bg-tertiary);
+  background-color: var(--bg-secondary);
 }
 
 .search-input {
@@ -268,4 +269,17 @@
 
 .input:checked + .slider:before {
   transform: translateX(30px);
+}
+
+.Perfil-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.perfilUser{
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
 }

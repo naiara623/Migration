@@ -121,16 +121,32 @@ input::placeholder {
     font-size: 17px;
 }
 
+input:focus {
+    outline: none;
+    border-color: var(--accent-tertiary);
+}
+
 /*BUTTONS*/
 
 .ButtonLogar-Cadastro, .ButtonCadastrar-Cadastro{
     width: 50%;
-    height: 50%;
+    height: 40%;
     border-radius: 5px;
-    background-color: var(--accent-secondary);
-    color: var(--text-primary);
+    background-color: var(--text-primary);
+    color: var(--accent-secondary);
     font-size: 26px;
     border: none;
+}
+
+.ButtonLogar-Cadastro:hover {
+    background-color: var(--accent-secondary); /* Cor do fundo ao passar o mouse */
+    color: var(--text-primary); /* Cor do texto ao passar o mouse */
+}
+
+
+.ButtonCadastrar-Cadastro:hover {
+    background-color: var(--accent-secondary); /* Cor do fundo ao passar o mouse */
+    color: var(--text-primary);/* Cor do texto ao passar o mouse */
 }
 
 
