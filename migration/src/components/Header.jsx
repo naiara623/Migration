@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import './Header.css';
 import { useTheme } from '../ThemeContext';
 
+
 const Header = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [searchValue, setSearchValue] = useState('');
@@ -84,6 +85,10 @@ const Header = () => {
             <button className="cart-btn">
               <i className="fas fa-shopping-cart"></i>
               <span className="cart-count">0</span>
+            </button>
+
+            <button className='Perfil-btn'>
+              <img className='perfilUser' src="user.png" alt="Perfil de usuario" />
             </button>
           </div>
         </div>

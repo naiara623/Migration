@@ -1,25 +1,18 @@
-import React from 'react'
-// import Login from './pages/Login'
-// import Cadastro from './pages/Cadastro.jsx';
-import { ThemeProvider } from './ThemeContext';
-import BoasVindas from './pages/BoasVinda';
-
-
+// App.js
+import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import BoasVindas from './page/BoasVindas';
 
 
 
 function App() {
-
-  
   return (
-    <div>
-   <ThemeProvider>
-<BoasVindas/>
-      {/* <Cadastro /> */}
-      {/* <Login /> */}
-    </ThemeProvider>
-    </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<BoasVindas />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;

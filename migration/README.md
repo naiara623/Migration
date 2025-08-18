@@ -5,22 +5,9 @@ Nossa lojinha foi criada pra quem ama colocar o pé na estrada e explorar o mund
 Cada item é escolhido a dedo pra garantir utilidade, durabilidade e aquele toque especial que faz diferença na hora de viajar. Seja pra quem tá indo fazer um mochilão, acampar no mato ou só quer um acessório legal pra lembrar uma viagem marcante — essa lojinha é pra você.
 #
 
-# ✨ Produtos Disponíveis
-- 🎒 Mochilas
-- 🧳 Malas para viagem
-- 🗂 organizador para bagagens
-#
+# ✨ Produtos Disponíveis e oque poderam mudar
 
-# 🔄 O que poderá mudar
-
-- Tamanho
-- cor por dentro e por fora
-- material
-- estampa
-- Se a mochila vem com garrafa ou não
-- se o organizador ira com outros organizadores ou não
-
-#
+![Produtos](image.png)
 
 
 # 👥Integrantes
@@ -36,3 +23,26 @@ Cada item é escolhido a dedo pra garantir utilidade, durabilidade e aquele toqu
 Acesse o protótipo completo no Figma:
 
 👉[Migration no Figma](https://www.figma.com/design/qS3R6cvckxMy5R5YuBvDdG/Migration?node-id=0-1&p=f&t=AOy12IusvHT5vZLh-0) 
+#
+
+# 🤖 IA no Migration
+
+Como adicionariamos a IA (Inteligencia artificial) em nosso projeto? 
+
+- Atendimento ao cliente: 
+ Chatbot para tirar dúvidas, ajudar na navegação e recomendar produtos.
+
+- Análise de feedback:
+ Sugerir itens com base no perfil e histórico do usuário.
+
+- Guia Interativo:
+Explicar como usar a loja, mostrar novidades ou promoções.
+
+- Recomendações de produtos:
+Facilitar o acesso de pessoas de outros países.
+
+- Detecção de fraudes:
+Proteger transações e dados dos usuários.
+
+- Entregas:
+Avisar quando o produto estiver em rota para o endereço

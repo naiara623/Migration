@@ -1,13 +1,18 @@
 import React, { useState } from 'react'; // Importa React e o useState para controlar os campos
 import './Cadastro.css';
+import { useNavigate } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
+import { ThemeEffect } from '../ThemeEffect';
 
-function Cadastro() {
+function CadastroContext() {
+  ThemeEffect(); // Aplica os efeitos do tema
   // Aqui criamos os estados para armazenar os dados dos inputs
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [showModal, setShowModal] = useState(false); // Para controlar a exibição do modal
   const [termosAceitos, setTermosAceitos] = useState(false); // para saber se os termos foram aceitos
+    const navigate = useNavigate();
 
   // Função que será chamada ao clicar no botão "Cadastrar"
   const handleCadastro = () => {
@@ -41,13 +46,18 @@ function Cadastro() {
     setShowModal(true); // Exibe o modal de sucesso
 
   };
-    const closeModal = () => {
-      setShowModal(false); // Fecha o modal
-      setNome(''); // Limpa o campo nome
-      setEmail(''); // Limpa o campo email
-      setSenha(''); // Limpa o campo senha
-      setTermosAceitos(false); // Reseta os termos aceitos
-    };
+    // const closeModal = () => {
+    //   setShowModal(false); // Fecha o modal
+    //   setNome(''); // Limpa o campo nome
+    //   setEmail(''); // Limpa o campo email
+    //   setSenha(''); // Limpa o campo senha
+    //   setTermosAceitos(false); // Reseta os termos aceitos
+    // };
+
+     function closeModal() {
+    setShowModal(false);
+    navigate('/');
+  }
 
 
 
@@ -68,7 +78,7 @@ function Cadastro() {
             <input
               type="text"
               className='Nome-Cadastro'
-              placeholder='Ex: Nayllany Rodrigues da Silva'
+              placeholder=' Ex: Nayllany Rodrigues da Silva'
               value={nome}
               onChange={(e) => setNome(e.target.value)} // Atualiza o estado quando digita
             />
@@ -80,7 +90,7 @@ function Cadastro() {
             <input
               type="email"
               className='Email-Cadastro'
-              placeholder='Ex: NayllanyRS@gmail.com'
+              placeholder=' Ex: NayllanyRS@gmail.com'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -92,7 +102,7 @@ function Cadastro() {
             <input
               type="password"
               className='Senha-Cadastro'
-              placeholder='Ex: 123456'
+              placeholder=' Ex: 123456'
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
             />
@@ -102,7 +112,7 @@ function Cadastro() {
         {/* Botões */}
         <div className='Buttons-Cadastro'>
           <div className='butonLogar-Cadastro'>
-            <button className='ButtonLogar-Cadastro'>Logar</button>
+            <button className='ButtonLogar-Cadastro' onClick={() => navigate('/login')}>Logar</button>
           </div>
 
           <div className='butoncadastrar-Cadastro'>
@@ -145,6 +155,15 @@ function Cadastro() {
 
       </div>
     </div>
+  );
+}
+
+function Cadastro() {
+  return (
+    <ThemeProvider>
+          <CadastroContext />
+    </ThemeProvider>
+
   );
 }
 
