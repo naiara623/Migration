@@ -4,6 +4,7 @@ import Cadastro from "../pages/Cadastro";
 import Login from "../pages/Login.jsx";
 import Ofertas from "../pages/Ofertas.jsx";
 import Carrinho from "../pages/Carrinho.jsx";
+import PerfilUsuario from "../pages/PerfilUsuario.jsx";
 
 
 
@@ -12,8 +13,8 @@ const router = createBrowserRouter([
     {path: "/cadastro", element: <Cadastro />},
     {path: "/login", element: <Login />},
     {path: "/ofertas", element: <Ofertas />},
-{path: "/carrinho", element: <Carrinho/>},
-   
+    {path: "/carrinho", element: <Carrinho/>},
+    {path: "/Perfil-usuario", element: <PerfilUsuario/>}
 
    
 ])
