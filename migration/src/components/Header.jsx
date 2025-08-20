@@ -2,12 +2,16 @@
 import React, { useState } from 'react';
 import './Header.css';
 import { useTheme } from '../ThemeContext';
+import { Link } from 'react-router-dom';
+import Categorias from "./Categorias";
+
 
 
 const Header = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const { darkMode, toggleTheme } = useTheme();
+   const [openCategorias, setOpenCategorias] = useState(false);
 
   const toggleSearch = () => {
     setIsCollapsed(!isCollapsed);
@@ -31,12 +35,18 @@ const Header = () => {
           </div>
           <nav className="nav">
             <ul>
-              <li><a href="#">Home</a></li>
-              <li><a href="#">Produtos</a></li>
-              <li><a href="#">Coleções</a></li>
-              <li><a href="#">Ofertas</a></li>
-              <li><a href="#">Contato</a></li>
+              <li><Link to="/">Home</Link></li>
+              <li><Link>Produtos</Link></li>
+              <li><Link  onClick={() => setOpenCategorias(true)}>Coleções</Link></li>
+              <li><Link to="/ofertas">Ofertas</Link></li>
+              <li><Link>Contato</Link></li>
             </ul>
+
+             {/* Modal de Categorias */}
+      <Categorias 
+        isOpen={openCategorias} 
+        onClose={() => setOpenCategorias(false)} 
+      />
           </nav>
           <div className="header-actions">
             <label className="switch">
@@ -90,6 +100,8 @@ const Header = () => {
             <button className='Perfil-btn'>
               <img className='perfilUser' src="user.png" alt="Perfil de usuario" />
             </button>
+
+
           </div>
         </div>
       </div>

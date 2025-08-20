@@ -1,52 +1,3 @@
-/* 
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-#root, body, html{
-  min-height: 100vh;
-}
-
-
-:root {
-    /* modo escuro */
-  /* --dark-blue: #1E2A3A;
-  --medium-blue: #2A3A4D;
-  --highlight-blue: #5A8CBA;
-  --light-blue: #94B2CE;
-  --dark-beige: #A89987;
-  --light-beige: #D4C4B4;
-  --soft-white: #E0E0E0; */
-
-/* 
-Exemplo de Aplicação:
-Fundo: #1E2A3A
-Textos Principais: #E0E0E0
-Destaques (botões/links): #5A8CBA
-Elementos Secundários (bordas, ícones): #A89987
-Superfícies (cards, menus): #2A3A4D (um tom intermediário entre o azul e o preto)
-*/
-
-  /* modo claro */
-/* --azulClaro-fundo: #94B2CE;
---azul-escuro: #324973;
---bege-claro: #E6D8CD;
---bege-escuro: #C5B2A4;
---branco: #F7F7F7;
---cinza: #666;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
- */
-
 
  :root {
   /* modo claro (default) */
@@ -62,6 +13,19 @@ Superfícies (cards, menus): #2A3A4D (um tom intermediário entre o azul e o pre
   --shadow-color: rgba(0, 0, 0, 0.1);
   --hero-overlay: rgba(50, 73, 115, 0.7);
   --card-bg: #FFFFFF;
+
+  --cadastro-bg: #F7F7F7;
+  --cadastro-text: #324973;
+  --cadastro-inputs: #E6D8CD;
+  --cadastro-borda: #C5B2A4;
+  --cadastro-botao: #89A9C7;
+  --cadastro-titulo: #324973;
+
+  --modal-primary: #e6d8cd;
+  --modal-text: #324973;
+  --modal-borda: #C5B2A4;
+
+
 }
 
 [data-theme="dark"] {
@@ -84,6 +48,19 @@ Superfícies (cards, menus): #2A3A4D (um tom intermediário entre o azul e o pre
   --card-bg: #24344D;       /* Azul escuro médio */
   --shadow-color: rgba(0, 0, 0, 0.25);
   --hero-overlay: rgba(26, 38, 57, 0.85);
+
+  /* Cadastro específico */
+  --cadastro-bg: #94B2CE;
+  --cadastro-text: #324973;
+  --cadastro-inputs: #E6D8CD;
+  --cadastro-borda: #C5B2A4;
+  --cadastro-botao: #324973;
+  --cadastro-titulo: #E6D8CD;
+
+  /* Modal específico */
+  --modal-primary: #1e2a3a;
+  --modal-text: #89a9c7;
+  --modal-borda: #e6d8cd;
 }
 /* Estilos globais */
 * {
