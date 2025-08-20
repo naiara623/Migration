@@ -1,6 +1,6 @@
 import React from 'react';
 import './BoasVindas.css';
-import Header from '../components/Header';
+import Header from '../components/Header'
 import Hero from '../components/Hero';
 import HelpSection from '../components/HelpSection';
 import ProductCategories from '../components/ProductCategories';
@@ -17,7 +17,7 @@ function BoasVindasContent() {
 
 
     <div className="App">
-      <Header />
+      <Header/>
       <main>
         <Hero />
         <HelpSection />

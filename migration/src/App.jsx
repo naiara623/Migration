@@ -1,19 +1,18 @@
-import React from 'react'
-import { ThemeProvider } from './ThemeContext';
-
-
+// App.js
+import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import BoasVindas from './page/BoasVindas';
 
 
 
 function App() {
-
-  
   return (
-    <div>
-   <ThemeProvider>
-    </ThemeProvider>
-    </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<BoasVindas />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
