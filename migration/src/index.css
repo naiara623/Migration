@@ -12,6 +12,9 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --hero-overlay: rgba(50, 73, 115, 0.7);
   --card-bg: #FFFFFF;
+
+  --text-1: #000000;
+  --blue-a: #94B2CE;
 }
 
 [data-theme="dark"] {
@@ -34,6 +37,8 @@
   --card-bg: #24344D;       /* Azul escuro médio */
   --shadow-color: rgba(0, 0, 0, 0.25);
   --hero-overlay: rgba(26, 38, 57, 0.85);
+  --text-1: #FFFFFF;
+   --blue-a:#C7B8A5;
 }
 /* Estilos globais */
 * {
