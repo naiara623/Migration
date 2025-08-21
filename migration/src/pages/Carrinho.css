@@ -70,6 +70,21 @@
   border: 1px solid var(--accent-tertiary);
   border-radius: 6px;
   background-color: var(--blue-a);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-header {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+}
+
+.item-info {
+  margin-top: 10px;
+  padding-right: 50px; /* Espaço para o checkbox */
 }
 
 .item-info h3 {
@@ -90,6 +105,8 @@
 }
 
 /* Seção de pagamento */
+
+
 .carrinho-pagar-o-itens {
   width: 30%;
   height: 100%;
@@ -161,30 +178,13 @@
 }
 
 .payment-method {
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 }
 
 .payment-method h3 {
   margin-bottom: 1rem;
 }
 
-.payment-option {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.payment-option:hover {
-  background-color: var(--bg-secondary);
-}
-
-.payment-checkbox {
-  margin-right: 0.5rem;
-}
 
 .buy-button {
   width: 100%;
@@ -203,6 +203,185 @@
   background-color: var(--accent-secondary);
 }
 
+/* Novos estilos para checkbox "Selecionar todos" */
+.clear {
+  clear: both;
+}
+
+.checkbox-container-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.checkBox-new {
+  display: block;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0px 0px 0px 2px var(--accent-secondary);
+  transition: 200ms all;
+}
+
+.checkBox-new div {
+  width: 60px;
+  height: 60px;
+  background-color: var(--accent-secondary);
+  top: -52px;
+  left: -52px;
+  position: absolute;
+  transform: rotateZ(45deg);
+  z-index: 100;
+}
+
+.checkbox-container-new input[type=checkbox]:checked + .checkBox-new div {
+  left: -10px;
+  top: -10px;
+}
+
+.checkbox-container-new input[type=checkbox] {
+  position: absolute;
+  left: 50px;
+  visibility: hidden;
+}
+
+.transition-new {
+  transition: 300ms ease;
+}
+
+.checkbox-label-new {
+  color: var(--text-primary);
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Estilos para checkbox dos produtos (mesmo estilo do "Selecionar todos") */
+.checkbox-product-container {
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+}
+
+.checkBox-product {
+  display: block;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0px 0px 0px 2px var(  --accent-primary);
+  transition: 200ms all;
+  background-color: var(  --accent-secondary);
+}
+
+.checkBox-product div {
+  width: 60px;
+  height: 60px;
+  background-color: var(  --accent-primary);
+  top: -52px;
+  left: -52px;
+  position: absolute;
+  transform: rotateZ(45deg);
+  z-index: 100;
+}
+
+.checkbox-product-container input[type=checkbox]:checked + .checkBox-product div {
+  left: -10px;
+  top: -10px;
+}
+
+.checkbox-product-container input[type=checkbox] {
+  position: absolute;
+  left: 50px;
+  visibility: hidden;
+}
+
+.transition-product {
+  transition: 300ms ease;
+}
+
+/* NOVOS estilos para checkbox Pix (design atualizado) */
+.content-pix {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 16px;
+  border-radius: 16px;
+  transition: background-color 0.2s;
+}
+
+.content-pix:hover {
+  background-color: rgba(236, 232, 231, 0.1);
+}
+
+.text-desc-pix {
+  display: flex;
+  flex-direction: column;
+}
+
+.desc-pix {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.text-pix {
+  color: var(--text-primary);
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.checkBox-pix-new {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0);
+  border-radius: 30px;
+  position: relative;
+  box-shadow: 0px 0px 0px 2px var(--bg-secondary);
+  transition: 200ms all;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: var( --bg-primary);
+}
+
+.checkBox-pix-new .transition-pix-new {
+  width: 60px;
+  height: 60px;
+  background-color: var(--bg-secondary);
+  top: -52px;
+  left: -52px;
+  position: absolute;
+  transform: rotateZ(45deg);
+  z-index: 100;
+}
+
+.checkBox-pix-new input[type="checkbox"]:checked + .transition-pix-new {
+  left: -10px;
+  top: -10px;
+}
+
+.checkBox-pix-new input[type="checkbox"] {
+  position: absolute;
+  left: 50px;
+  visibility: hidden;
+}
+
+.transition-pix-new {
+  transition: 300ms ease;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .contener-contener-Carrinho {
@@ -217,5 +396,38 @@
   
   .carrinho-pagar-o-itens {
     margin-top: 20px;
+  }
+  
+  .item-info {
+    padding-right: 40px;
+  }
+  
+  .item-info h3 {
+    font-size: 1rem;
+  }
+  
+  .checkBox-new,
+  .checkBox-product,
+  .checkBox-pix-new {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .checkbox-label-new,
+  .text-pix {
+    font-size: 14px;
+  }
+  
+  .desc-pix {
+    font-size: 10px;
+  }
+  
+  .content-pix {
+    padding: 12px;
+  }
+  
+  .item-header {
+    top: 12px;
+    right: 12px;
   }
 }

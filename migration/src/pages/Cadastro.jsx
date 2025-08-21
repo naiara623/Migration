@@ -1,7 +1,7 @@
 import React, { useState } from 'react'; // Importa React e o useState para controlar os campos
 import './Cadastro.css';
 import { useNavigate } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
+import { ThemeProvider } from '../ThemeContext'; // Importa o ThemeProvider para aplicar o tema
 import { ThemeEffect } from '../ThemeEffect';
 
 function CadastroContext() {

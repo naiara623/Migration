@@ -5,6 +5,9 @@ import Login from "../pages/Login.jsx";
 import Ofertas from "../pages/Ofertas.jsx";
 import Carrinho from "../pages/Carrinho.jsx";
 import ProductForm from "../components/ProductForm.jsx";
+import PerfilUsuario from "../pages/PerfilUsuario.jsx";
+import Categorias from "../components/Categorias.jsx";
+
 
 
 
@@ -15,7 +18,9 @@ const router = createBrowserRouter([
     {path: "/ofertas", element: <Ofertas />},
 {path: "/produto-novo", element: <ProductForm/>},
     {path: "/car", element: <Carrinho/>},
-   
+    {path: "/categorias", element: <Categorias/>}, // Assuming Categorias is similar to Ofertas for now
+    {path: "/Perfil-usuario", element: <PerfilUsuario/>}
+
 
    
 ])
