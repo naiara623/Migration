@@ -6,6 +6,8 @@ import Ofertas from "../pages/Ofertas.jsx";
 import Categorias from "../components/Categorias.jsx";
 import Carrinho from "../pages/Carrinho.jsx";
 import PerfilUsuario from "../pages/PerfilUsuario.jsx";
+import MinhasCompras from "../pages/MinhasCompras.jsx";
+import MeusFavoritos from "../pages/MeusFavoritos.jsx";
 
 
 
@@ -16,9 +18,9 @@ const router = createBrowserRouter([
     {path: "/ofertas", element: <Ofertas />},
     {path: "/categorias", element: <Categorias />}, // Assuming Categorias is similar to Ofertas for now
     {path: "/carrinho", element: <Carrinho/>},
-    {path: "/Perfil-usuario", element: <PerfilUsuario/>}
-
-   
+    {path: "/Perfil-usuario", element: <PerfilUsuario/>},
+    {path: "MinhasCompras", element: <MinhasCompras/>},
+   {path: "MeusFavoritos", element: <MeusFavoritos/>}
 ])
 
 
