@@ -3,11 +3,13 @@ import BoasVindas from "../pages/BoasVinda";
 import Cadastro from "../pages/Cadastro";
 import Login from "../pages/Login.jsx";
 import Ofertas from "../pages/Ofertas.jsx";
-import Categorias from "../components/Categorias.jsx";
 import Carrinho from "../pages/Carrinho.jsx";
+import ProductForm from "../components/ProductForm.jsx";
 import PerfilUsuario from "../pages/PerfilUsuario.jsx";
 import MinhasCompras from "../pages/MinhasCompras.jsx";
 import MeusFavoritos from "../pages/MeusFavoritos.jsx";
+import Categorias from "../components/Categorias.jsx";
+
 
 
 
@@ -20,7 +22,14 @@ const router = createBrowserRouter([
     {path: "/carrinho", element: <Carrinho/>},
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
     {path: "MinhasCompras", element: <MinhasCompras/>},
-   {path: "MeusFavoritos", element: <MeusFavoritos/>}
+   {path: "MeusFavoritos", element: <MeusFavoritos/>},
+    {path: "/produto-novo", element: <ProductForm/>},
+    {path: "/car", element: <Carrinho/>},
+    {path: "/categorias", element: <Categorias/>}, // Assuming Categorias is similar to Ofertas for now
+    {path: "/Perfil-usuario", element: <PerfilUsuario/>}
+
+
+   
 ])
 
 
