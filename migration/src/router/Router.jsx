@@ -7,6 +7,7 @@ import Carrinho from "../pages/Carrinho.jsx";
 import ProductForm from "../components/ProductForm.jsx";
 import PerfilUsuario from "../pages/PerfilUsuario.jsx";
 import Categorias from "../components/Categorias.jsx";
+import Loja from "../pages/Loja.jsx";
 
 
 
@@ -16,11 +17,11 @@ const router = createBrowserRouter([
     {path: "/cadastro", element: <Cadastro />},
     {path: "/login", element: <Login />},
     {path: "/ofertas", element: <Ofertas />},
-{path: "/produto-novo", element: <ProductForm/>},
+    {path: "/produto-novo", element: <ProductForm/>},
     {path: "/car", element: <Carrinho/>},
     {path: "/categorias", element: <Categorias/>}, // Assuming Categorias is similar to Ofertas for now
-    {path: "/Perfil-usuario", element: <PerfilUsuario/>}
-
+    {path: "/Perfil-usuario", element: <PerfilUsuario/>},
+    {path: "/loja", element: <Loja/>}
 
    
 ])
