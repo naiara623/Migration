@@ -21,8 +21,8 @@ const router = createBrowserRouter([
     {path: "/categorias", element: <Categorias />}, // Assuming Categorias is similar to Ofertas for now
     {path: "/carrinho", element: <Carrinho/>},
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
-    {path: "MinhasCompras", element: <MinhasCompras/>},
-   {path: "MeusFavoritos", element: <MeusFavoritos/>},
+    {path: "/MinhasCompras", element: <MinhasCompras/>},
+   {path: "/MeusFavoritos", element: <MeusFavoritos/>},
     {path: "/produto-novo", element: <ProductForm/>},
     {path: "/car", element: <Carrinho/>},
     {path: "/categorias", element: <Categorias/>}, // Assuming Categorias is similar to Ofertas for now

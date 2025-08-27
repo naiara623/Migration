@@ -3,6 +3,7 @@ import { ThemeProvider } from '../ThemeContext'
 import { ThemeEffect } from '../ThemeEffect'
 import './PerfilUsuario.css'; 
 import Header from '../components/Header';
+import { Link } from 'react-router-dom';
 
 function PerfilUsuariocontext(){
     ThemeEffect()
@@ -28,7 +29,7 @@ function PerfilUsuariocontext(){
                         <div  className='conteine-M-F-E-PRF'>
 
                           <h3>Minhas compras</h3>
-                          <h3>Favorito</h3>
+                           <Link to='/MeusFavoritos'>Favoritos</Link>
                           <h3>Endereço</h3>
                         </div>
 

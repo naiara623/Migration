@@ -11,23 +11,6 @@ function MinhasComprasContex() {
     <div>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     </div>
     )
 }

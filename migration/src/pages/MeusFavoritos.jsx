@@ -1,6 +1,7 @@
 import React from 'react'
 import { ThemeEffect } from '../ThemeEffect'
 import { ThemeProvider } from '../ThemeContext'
+import Header from '../components/Header'
 import './MeusFavoritos.css'
 
 function MeusFavoritosContext() {
@@ -16,16 +17,6 @@ function MeusFavoritosContext() {
 
 
 
-
-
-
-
-
-
-
-
-
-    
         </div>
         )
     
@@ -36,7 +27,7 @@ function MeusFavoritos() {
     <div>
 
 <ThemeProvider>
-<MeusFavoritos/>
+<MeusFavoritosContext/>
 </ThemeProvider>
 
 
