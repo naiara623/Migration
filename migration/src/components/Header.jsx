@@ -40,6 +40,7 @@ const Header = () => {
               <li><Link  onClick={() => setOpenCategorias(true)}>Coleções</Link></li>
               <li><Link to="/ofertas">Ofertas</Link></li>
               <li><Link>Contato</Link></li>
+                <li><Link to="/loja">MinhaLoja</Link></li>
             </ul>
 
              {/* Modal de Categorias */}

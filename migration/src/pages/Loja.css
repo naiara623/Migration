@@ -1,0 +1,174 @@
+.container-loja {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navebar-ok {
+  height: 60px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--accent-primary);
+  color: var(--text-tertiary);
+}
+
+.lojaa-ok {
+  height: calc(100% - 60px);
+  width: 100%;
+  display: flex;
+}
+
+.opções-ok {
+  height: 100%;
+  width: 500px;
+  background-color: var(--bg-primary);
+  padding: 20px;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-lateral {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-lateral h2 {
+  color: var(--text-primary);
+  margin-bottom: 40px;
+  font-size: 1.8rem;
+  text-align: center;
+  font-weight: bold;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--accent-tertiary);
+  width: 100%;
+}
+
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.menu-option {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: var( --accent-secondary);
+  color: var( --text-tertiary);
+  box-shadow: 0 2px 6px var(--shadow-color);
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  justify-content: center;
+  min-height: 60px;
+}
+
+
+.option-text {
+  font-size: 16px;
+  text-align: center;
+}
+
+.produtos-ok {
+  height: 100%;
+  width: calc(100% - 300px);
+  padding: 40px;
+  background-color: var(--bg-secondary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+
+  text-align: center;
+}
+
+.placeholder-image {
+  width: 100%;
+  height:  100%;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.imagg{
+    height: 80%;
+    width: 80%;
+}
+
+.content-placeholder p {
+  font-size: 18px;
+  margin-top: 20px;
+  color: var(--text-secondary);
+}
+
+/* Mantenha todo o CSS existente e adicione/modifique apenas estas regras */
+.menu-option {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: var(--accent-secondary);
+  color: var(--text-tertiary);
+  box-shadow: 0 2px 6px var(--shadow-color);
+  font-size: 16px;
+  font-weight: 500;
+  justify-content: flex-start;
+  min-height: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* hover só movimenta */
+.menu-option:hover {
+  transform: translateX(10px);
+}
+
+/* ❌ remover cor diferente no ativo */
+.menu-option.active {
+  background-color: var(--accent-secondary);
+  font-weight: bold;
+}
+
+/* 🔵 barrinha lateral */
+.selection-indicator {
+  position: absolute;
+  left: 0;             /* agora na esquerda */
+  top: 0;
+  width: 10px;         /* largura da barrinha */
+  height: 100%;
+  background-color: var(--accent-primary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* aparece só no ativo */
+.selection-indicator.visible {
+  opacity: 1;
+}

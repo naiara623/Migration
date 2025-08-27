@@ -1,5 +1,4 @@
-
- :root {
+:root {
   /* modo claro (default) */
   --bg-primary: #F7F7F7;
   --bg-secondary: #E6D8CD;
@@ -8,11 +7,13 @@
   --text-secondary: #666;
   --text-tertiary: #F7F7F7;
   --accent-primary: #324973;
-  --accent-secondary: #78BEFF;
+  --accent-secondary: #94B2CE;
   --accent-tertiary: #C5B2A4;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --hero-overlay: rgba(50, 73, 115, 0.7);
   --card-bg: #FFFFFF;
+  --text-1: #000000;
+  --blue-a: #94B2CE;
 
   --cadastro-bg: #F7F7F7;
   --cadastro-text: #324973;
@@ -45,7 +46,7 @@
   
   /* Destaques - azuis com toques de bege */
   --accent-primary: #6A8FBF; /* Azul médio principal */
-  --accent-secondary: #1b5891; /* Azul claro para hover */
+  --accent-secondary: #8FB3D9; /* Azul claro para hover */
   --accent-tertiary: #C5B2A4; /* Bege exatamente igual ao modo claro */
   
   /* Elementos de superfície */
@@ -53,13 +54,8 @@
   --shadow-color: rgba(0, 0, 0, 0.25);
   --hero-overlay: rgba(26, 38, 57, 0.85);
 
-  /* Cadastro específico */
-  --cadastro-bg: #94B2CE;
-  --cadastro-text: #324973;
-  --cadastro-inputs: #E6D8CD;
-  --cadastro-borda: #C5B2A4;
-  --cadastro-botao: #324973;
-  --cadastro-titulo: #E6D8CD;
+  --text-1: #FFFFFF;
+   --blue-a:#C7B8A5;
 
   /* Modal específico */
   --modal-primary: #1e2a3a;
@@ -144,9 +140,4 @@ img {
   height: 3px;
   background-color: var(--accent-tertiary);
   margin: 10px auto 0;
-}
-
-section {
-  padding: 80px 0;
-  width: 100%;
 }

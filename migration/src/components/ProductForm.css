@@ -1,13 +1,10 @@
 /* Main Container */
 .Product {
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   background-color: var(--bg-primary);
-  overflow: auto;
   padding: 20px;
   box-sizing: border-box;
 }
@@ -21,6 +18,10 @@
   box-shadow: 0 4px 20px var(--shadow-color);
   padding: 2rem;
   margin: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* Title */
@@ -200,11 +201,11 @@
 @media (max-width: 768px) {
   .Product {
     padding: 15px;
-    justify-content: flex-start;
   }
   
   .product-form-wrapper {
     padding: 1.5rem;
+    margin: 0 auto;
   }
   
   .form-row {
@@ -223,6 +224,10 @@
 }
 
 @media (max-width: 480px) {
+  .Product {
+    padding: 10px;
+  }
+  
   .product-form-wrapper {
     padding: 1.2rem;
   }
@@ -261,4 +266,33 @@
   .product-form {
     gap: 1rem;
   }
+  
+  .product-title {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Additional classes for your component structure */
+.product-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.product-form-inner {
+  width: 100%;
 }

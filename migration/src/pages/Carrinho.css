@@ -1,54 +1,433 @@
-.contener-Carrinho{
-    height: 100vh;
+/* Estrutura principal */
+.contener-Carrinho {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+.contener-carrinho {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.contener-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 12.8%;
+  min-height: 60px;
+  background-color: var(--accent-primary);
+  color: var(--text-tertiary);
+}
+
+.contener-contener-Carrinho {
+  display: flex;
+  width: 100%;
+  height: 85%;
+  background-color: var(--bg-primary);
+}
+
+/* Seção de itens */
+.carrinho-mostrar-itens {
+  width: 70%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: var(--bg-primary);
+  overflow: auto;
+  padding: 20px;
+}
+
+.carrinho-pedidos {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-tertiary);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.select-all {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--accent-tertiary);
+}
+
+.item-card {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--accent-tertiary);
+  border-radius: 6px;
+  background-color: var(--blue-a);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-header {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+}
+
+.item-info {
+  margin-top: 10px;
+  padding-right: 50px; /* Espaço para o checkbox */
+}
+
+.item-info h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text-1);
+}
+
+.item-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-price {
+  font-weight: bold;
+  color: var(--accent-primary);
+}
+
+/* Seção de pagamento */
+
+
+.carrinho-pagar-o-itens {
+  width: 30%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: var(--bg-primary);
+  overflow: auto;
+  padding: 20px;
+}
+
+.carrinho-pagamento {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-tertiary);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+/* Estilos do componente de pagamento */
+.payment-container {
+  width: 100%;
+  color: var(--text-primary);
+}
+
+.payment-title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.payment-divider {
+  border: none;
+  border-top: 1px solid var(--accent-tertiary);
+  margin: 1.5rem 0;
+}
+
+.price-section {
+  margin-bottom: 1.5rem;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.price-label {
+  font-size: 1rem;
+}
+
+.price-label.small {
+  font-size: 0.9rem;
+}
+
+.price-value {
+  font-size: 1rem;
+}
+
+.price-value.bold {
+  font-weight: bold;
+}
+
+.price-value.small {
+  font-size: 0.9rem;
+}
+
+.payment-method {
+  margin-bottom: 3rem;
+}
+
+.payment-method h3 {
+  margin-bottom: 1rem;
+}
+
+
+.buy-button {
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--accent-primary);
+  color: var(--text-tertiary);
+  border: none;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buy-button:hover {
+  background-color: var(--accent-secondary);
+}
+
+/* Novos estilos para checkbox "Selecionar todos" */
+.clear {
+  clear: both;
+}
+
+.checkbox-container-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.checkBox-new {
+  display: block;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0px 0px 0px 2px var(--accent-secondary);
+  transition: 200ms all;
+}
+
+.checkBox-new div {
+  width: 60px;
+  height: 60px;
+  background-color: var(--accent-secondary);
+  top: -52px;
+  left: -52px;
+  position: absolute;
+  transform: rotateZ(45deg);
+  z-index: 100;
+}
+
+.checkbox-container-new input[type=checkbox]:checked + .checkBox-new div {
+  left: -10px;
+  top: -10px;
+}
+
+.checkbox-container-new input[type=checkbox] {
+  position: absolute;
+  left: 50px;
+  visibility: hidden;
+}
+
+.transition-new {
+  transition: 300ms ease;
+}
+
+.checkbox-label-new {
+  color: var(--text-primary);
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Estilos para checkbox dos produtos (mesmo estilo do "Selecionar todos") */
+.checkbox-product-container {
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+}
+
+.checkBox-product {
+  display: block;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0px 0px 0px 2px var(  --accent-primary);
+  transition: 200ms all;
+  background-color: var(  --accent-secondary);
+}
+
+.checkBox-product div {
+  width: 60px;
+  height: 60px;
+  background-color: var(  --accent-primary);
+  top: -52px;
+  left: -52px;
+  position: absolute;
+  transform: rotateZ(45deg);
+  z-index: 100;
+}
+
+.checkbox-product-container input[type=checkbox]:checked + .checkBox-product div {
+  left: -10px;
+  top: -10px;
+}
+
+.checkbox-product-container input[type=checkbox] {
+  position: absolute;
+  left: 50px;
+  visibility: hidden;
+}
+
+.transition-product {
+  transition: 300ms ease;
+}
+
+/* NOVOS estilos para checkbox Pix (design atualizado) */
+.content-pix {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 16px;
+  border-radius: 16px;
+  transition: background-color 0.2s;
+}
+
+.content-pix:hover {
+  background-color: rgba(236, 232, 231, 0.1);
+}
+
+.text-desc-pix {
+  display: flex;
+  flex-direction: column;
+}
+
+.desc-pix {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.text-pix {
+  color: var(--text-primary);
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.checkBox-pix-new {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0);
+  border-radius: 30px;
+  position: relative;
+  box-shadow: 0px 0px 0px 2px var(--bg-secondary);
+  transition: 200ms all;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: var( --bg-primary);
+}
+
+.checkBox-pix-new .transition-pix-new {
+  width: 60px;
+  height: 60px;
+  background-color: var(--bg-secondary);
+  top: -52px;
+  left: -52px;
+  position: absolute;
+  transform: rotateZ(45deg);
+  z-index: 100;
+}
+
+.checkBox-pix-new input[type="checkbox"]:checked + .transition-pix-new {
+  left: -10px;
+  top: -10px;
+}
+
+.checkBox-pix-new input[type="checkbox"] {
+  position: absolute;
+  left: 50px;
+  visibility: hidden;
+}
+
+.transition-pix-new {
+  transition: 300ms ease;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .contener-contener-Carrinho {
+    flex-direction: column;
+  }
+  
+  .carrinho-mostrar-itens,
+  .carrinho-pagar-o-itens {
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 5px solid rgb(7, 7, 65);
-    background-color: var(--bg-secondary);
-}
-
-.contener-carrinho{
-     height: 100%;
-    width: 100%;
-    display: flex;
-    align-items: center;
-flex-direction: column;
-    border: 5px solid rgb(25, 56, 7);
-}
-
-.contener-navbar{
-       display: flex;
-    align-items: center;
-    justify-content: center;
-      border: 5px solid rgb(87, 10, 10);
-       width: 100%;
-       height: 15%;
-        background-color: var(--accent-primary);
-}
-
-.contener-contener-Carrinho{
-      border: 5px solid rgb(255, 0, 255);
-       width: 100%;
-       height: 85%;
-          display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.carrinho-mostrar-itens{
-width: 70%;
-height: 100%;
-   border: 5px solid rgb(54, 0, 54);
-      display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.carrinho-pagar-o-itens{
-width: 30%;
-height: 100%;
-   border: 5px solid rgb(104, 17, 104);
-      display: flex;
-    align-items: center;
-    justify-content: center;
+    height: auto;
+  }
+  
+  .carrinho-pagar-o-itens {
+    margin-top: 20px;
+  }
+  
+  .item-info {
+    padding-right: 40px;
+  }
+  
+  .item-info h3 {
+    font-size: 1rem;
+  }
+  
+  .checkBox-new,
+  .checkBox-product,
+  .checkBox-pix-new {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .checkbox-label-new,
+  .text-pix {
+    font-size: 14px;
+  }
+  
+  .desc-pix {
+    font-size: 10px;
+  }
+  
+  .content-pix {
+    padding: 12px;
+  }
+  
+  .item-header {
+    top: 12px;
+    right: 12px;
+  }
 }
