@@ -25,6 +25,10 @@
   --modal-text: #324973;
   --modal-borda: #C5B2A4;
 
+  --buton-mudar: #324973;
+  --text-mudar: #f7f7f7;
+
+
 
 }
 
@@ -61,6 +65,10 @@
   --modal-primary: #1e2a3a;
   --modal-text: #89a9c7;
   --modal-borda: #e6d8cd;
+
+  --buton-mudar: #648fbf;
+  --text-mudar: #324973;
+
 }
 /* Estilos globais */
 * {
