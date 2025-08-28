@@ -10,8 +10,7 @@ import MinhasCompras from "../pages/MinhasCompras.jsx";
 import MeusFavoritos from "../pages/MeusFavoritos.jsx";
 import Categorias from "../components/Categorias.jsx";
 import Loja from "../pages/Loja.jsx";
-
-
+import Endereco from "../pages/Endereco.jsx";
 
 
 const router = createBrowserRouter([
@@ -19,7 +18,6 @@ const router = createBrowserRouter([
     {path: "/cadastro", element: <Cadastro />},
     {path: "/login", element: <Login />},
     {path: "/ofertas", element: <Ofertas />},
-
     {path: "/categorias", element: <Categorias />}, // Assuming Categorias is similar to Ofertas for now
     {path: "/carrinho", element: <Carrinho/>},
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
@@ -29,7 +27,8 @@ const router = createBrowserRouter([
     {path: "/car", element: <Carrinho/>},
     {path: "/categorias", element: <Categorias/>}, // Assuming Categorias is similar to Ofertas for now
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
-    {path: "/loja", element: <Loja/>}
+    {path: "/loja", element: <Loja/>},
+    {path: "/endereco", element: <Endereco/>}
 
    
 ])

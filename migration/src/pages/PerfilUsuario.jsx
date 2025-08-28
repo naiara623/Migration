@@ -18,19 +18,27 @@ function PerfilUsuariocontext(){
                 
                   <div className='conteine-fino-PRF'>
 
-                        <div className='conteine-do-nomeUsu-PRF'>
+                        <div className='conteine-icon-nomeUsu-PRF'>
 
-                          <img src="" alt="" />
-                          <h3>Nome_Usuario</h3>
-                        </div>
+                           <div className='icone-user-PRF' >
+                            <img src="User (2).png" alt="" />
+                           </div>
+
+                           <div  className='conteine-nomeUsu-PRF'>
+                            <h3>Nome_Usuario</h3></div>
+                          </div>
 
                         <div  className='conteine-LINHA1-PRF'></div>
 
                         <div  className='conteine-M-F-E-PRF'>
 
-                          <h3>Minhas compras</h3>
-                           <Link to='/MeusFavoritos'>Favoritos</Link>
-                          <h3>Endereço</h3>
+                         
+                            <Link to='/MinhasCompras'> <h3>Minhas compras</h3></Link>
+
+                           <Link to='/MeusFavoritos'><h3>Meus Favoritos</h3></Link>
+
+                            <Link to='/Endereco'><h3>Endereço</h3></Link> 
+
                         </div>
 
                   </div>
