@@ -1,19 +1,20 @@
 .div-inclobaTudo-MF{
-border: 4px solid purple;
- border: 4px solid red;
+    background: linear-gradient(to bottom, #324973, #324973, #F7F7F7);
+    border: 4px solid purple;
+    border: 4px solid red;
     width: 100%;
     height: 100vh;
 }
 
 .nav-bar-MF{
-border: 4px solid rgb(200, 255, 0);
+    border: 4px solid rgb(200, 255, 0);
     width: 100%;
     height:11%;
     
 }
 
 .conteine-black-MF{
-      border: 4px solid rgb(0, 0, 0);
+    border: 4px solid rgb(0, 0, 0);
     width: 100%;
     height:89%;
     display: flex;

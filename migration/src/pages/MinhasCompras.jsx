@@ -27,7 +27,10 @@ function MinhasComprasContex() {
                            </div>
 
                            <div  className='conteine-nomeUsu-PRF'>
-                            <h3>Nome_Usuario</h3></div>
+                               <Link className='nomeUsuario-PRF' to='/Perfil-usuario'> <h3>Nome_Usuario</h3></Link>
+                            
+                            
+                            </div>
                           </div>
 
                         <div  className='conteine-LINHA1-PRF'></div>
