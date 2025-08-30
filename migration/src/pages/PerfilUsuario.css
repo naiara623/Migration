@@ -47,17 +47,26 @@
 }
 
 .icone-user-PRF{
-        border: 4px solid rgb(22, 197, 95);
+    border: 4px solid rgb(22, 197, 95);
      width: 30%;
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .conteine-nomeUsu-PRF{
     border: 4px solid rgb(22, 197, 95);
      width: 70%;
     height: 100%;
-    padding-top: 6%;
+    padding-top: 7%;
 }
+
+.img-USER-PRF{
+    width: 60%;
+    height: 60%;
+}
+
 .conteine-LINHA1-PRF{
     border: 2px solid rgb(80, 80, 84);
     width: 90%;
@@ -69,8 +78,26 @@
     width: 100%;
     height: 85%;
     padding: 10%;
-    
+    display: flex;
+    flex-direction: column;
+    gap: 3%;
 }
+
+.nome-minhascompras-PRF{
+    text-decoration-line: none;
+    color: #324973;
+}
+
+.nome-meusFavorito-PRF{
+    text-decoration-line: none;
+    color: #324973;
+}
+
+.nome-endereço-PRF{
+    text-decoration-line: none;
+    color: #324973;
+}
+
 
 .informação-pessoais-PRF{
      border: 4px solid rgb(197, 165, 22);
