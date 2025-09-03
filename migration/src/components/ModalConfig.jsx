@@ -1,32 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import "./ModalConfig.css";
 
 export default function ModalConfig({ isOpen, onClose, onAddCarrinho }) {
   if (!isOpen) return null;
 
-  const [config, setConfig] = useState({
-    corFora: "",
-    corDentro: "",
-    tamanho: "",
-    estampa: "",
-    material: ""
-  });
 
-  const handleChange = (e) => {
-    setConfig({ ...config, [e.target.name]: e.target.value });
-  };
-
-  const handleAdd = () => {
-    console.log("Configuração escolhida:", config);
-    onAddCarrinho(config); // manda os dados pra cima
-    onClose(); // fecha modal
-  };
 
   return (
     <div className="modal-mudar" onClick={onClose}>
       <div className="modal-containe0r" onClick={(e) => e.stopPropagation()}>
         <div className="esquerda">
             <div className="fotoProduto">
+
+              <img className="ProdutoFot" src="image 99.png" alt="" />
 
 <div className="preco">
     <h1 className="preço1">R$ 299.90</h1>
@@ -66,22 +52,29 @@ export default function ModalConfig({ isOpen, onClose, onAddCarrinho }) {
                     <div className="inp2uts">
                       <label className="buti">Tamanho:</label>
                    <div className="radio-input">
-        <input type="radio" id="value-1" name="value-radio" defaultValue="value-1" />
-        <div className="circle">
-        </div> 
-        <input defaultChecked type="radio" id="value-2" name="value-radio" defaultValue="value-2" />
-        <div className="circle">
-        </div> 
-        <input type="radio" id="value-3" name="value-radio" defaultValue="value-3" />
-        <div className="circle">
+        <input type="radio" id="value-1" name="Tamanho" defaultValue="value-1" />
+         <div className="circle">
         </div>
+        <label className="labelinput">20L</label>
+        
+        <input defaultChecked type="radio" id="value-2" name="Tamanho" defaultValue="value-2" />
+<div className="circle">
+        </div> 
+        <label className="labelinput">30L</label>
+         <div className="circle">
+        </div>
+        <input type="radio" id="value-3" name="Tamanho" defaultValue="value-3" />
+        <div className="circle">
+        </div> 
+        <label className="labelinput">50L</label>
+       
       </div>
                     </div>
 
                       <div className="inp2ut3s">
                       <div className="label">
 
-                        <label className="buti">Cor de fora:</label>
+                        <label className="buti">Cor de Dentro:</label>
 </div>
 
 <div className="oibu">
@@ -121,20 +114,38 @@ export default function ModalConfig({ isOpen, onClose, onAddCarrinho }) {
 
                     <div className="inp2uts">
                       <label className="buti">Material:</label>
-                       <div className="oibu">
-                      <input className="color1" type="radio" name="material"/>
-                      <label>Poliester</label>
-                      <input className="color2" type="radio" name="material"/>
-                      <label>Nylon</label>
-
-
-</div>
+                    <div className="radio-input">
+        <input type="radio" id="value-1" name="Material" defaultValue="value-1" />
+         <div className="circle">
+        </div> 
+        <label  className="labelinput">Poliester</label>
+       
+        <input defaultChecked type="radio" id="Material" name="Material" defaultValue="value-2" />
+        <div className="circle">
+        </div>
+        <label className="labelinput">Nylon</label>
+        
+      </div>
                     </div>
 
                     
 <div className="inp2uts">
                       <label className="buti">Estampas:</label>
-                      <input type="text"  className="TamanhoMala"/>
+                      <div className="oibu">
+                      <input className="color10" type="radio" name="estampa"/>
+                      <label></label>
+                     <div class="radio-input">
+  <input type="radio" id="estampa-listras" name="estampa" value="listras" hidden />
+  <div class="estampa estampa-listras"></div>
+</div>
+<div class="radio-input">
+  <input type="radio" id="estampa-bolinhas" name="estampa" value="bolinhas" hidden/>
+  <div class="estampa estampa-bolinhas"></div>
+</div>
+                      <input className="color13" type="radio" name="estampa"/>
+                  
+
+</div>
                     </div>
 
                   
@@ -172,3 +183,5 @@ export default function ModalConfig({ isOpen, onClose, onAddCarrinho }) {
     </div>
   );
 }
+
+

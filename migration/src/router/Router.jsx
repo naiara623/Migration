@@ -10,6 +10,7 @@ import MinhasCompras from "../pages/MinhasCompras.jsx";
 import MeusFavoritos from "../pages/MeusFavoritos.jsx";
 import Categorias from "../components/Categorias.jsx";
 import Loja from "../pages/Loja.jsx";
+import Produtos from "../pages/Produtos.jsx";
 
 
 
@@ -29,7 +30,8 @@ const router = createBrowserRouter([
     {path: "/car", element: <Carrinho/>},
     {path: "/categorias", element: <Categorias/>}, // Assuming Categorias is similar to Ofertas for now
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
-    {path: "/loja", element: <Loja/>}
+    {path: "/loja", element: <Loja/>},
+    {path: "/produtos", element: <Produtos/>}
 
    
 ])

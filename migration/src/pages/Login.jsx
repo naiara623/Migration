@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
 
-function Login() {
+function LoginContext() {
  const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [showModal, setShowModal] = useState(false); // Para controlar a exibição do modal
@@ -84,6 +85,14 @@ const handleLogin = () => {
 
     </div>
     </div>
+  )
+}
+
+function Login() {
+  return (
+    <ThemeProvider>
+         <LoginContext />
+    </ThemeProvider>
   )
 }
 

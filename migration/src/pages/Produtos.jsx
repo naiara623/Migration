@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
-import './Ofertas.css';
-import Header from '../components/Header';
+import './Produtos.css'
+import Header from '../components/Header'
 import ModalConfig from '../components/ModalConfig';
 import { ThemeProvider } from '../ThemeContext';
-// import EditarProduct from '../components/EditarProduct';
-// import Header from '../components/Header';
 
 const products = [
   { id: 1, name: 'Mochila Viagem Pro', price: 299.90, image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', rating: 5 },
@@ -13,14 +11,10 @@ const products = [
   { id: 4, name: 'Tênis Caminhada', price: 249.90, image: 'https://images.unsplash.com/photo-1600269452121-4f2416e55c28?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', rating: 4 },
 ];
 
-
-function OfertasContext() {
-
-  // const [open, setOpen] = useState(false);
-  const  [openModal, setOpenModal] = useState(false);
-
+function ProdutosContext() {
+    const  [openModal, setOpenModal] = useState(false);
   return (
-      <div className='amarela-Ofertas'>
+    <div className='amarela-Ofertas'>
 
         <div className='Navbar-global'>
             <Header />
@@ -33,7 +27,7 @@ function OfertasContext() {
         <div className="container2">
 
             {/* <h2 className="section-title">Produtos em Ofertas</h2> */}
-            <h2 className='oiTest'>Promoções do Dia</h2>
+            <h2 className='oiTest'>Produtos em alta</h2>
             
             <div className="products-grid">
                 
@@ -71,13 +65,13 @@ function OfertasContext() {
   )
 }
 
-function Ofertas() {
+function Produtos() {
   return (
     <ThemeProvider>
-        <OfertasContext />
+        <ProdutosContext />
     </ThemeProvider>
   
   )
 }
 
-export default Ofertas
+export default Produtos

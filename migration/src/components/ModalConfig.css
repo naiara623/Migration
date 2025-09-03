@@ -2,7 +2,7 @@
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: #324973b1;
   display: flex; align-items: center; justify-content: center;
   z-index: 1000;
 }
@@ -58,6 +58,7 @@
 }
 
 .fotoProduto{ 
+  background-color: #f7f7f7;
     border: 3px solid ;
     width: 90%;
     height: 90%;
@@ -81,6 +82,8 @@
   /* font-weight: bold; */
   width: 30%;
   height: 10%;
+  position: sticky
+  
 
 }
 
@@ -96,6 +99,7 @@
   text-align: center;
   width: 15%;
     height: 10%;
+    position: sticky
 }
 
 .preço1{
@@ -109,6 +113,8 @@
     position: relative;
     left: -5%;
     top: 5%;
+    /* position: sticky */
+    
 }
 
 .NomeProduto{
@@ -240,9 +246,14 @@
     width: 95%;
     height: 80%;
     font-size: 20px;
-    color: var(--accent-secondary);
+    color: var(--text-mudar);
     border: none;
     border-radius: 5px;
+}
+
+.buton-carrinho2:hover {
+    background-color: var(--accent-secondary); /* Cor do fundo ao passar o mouse */
+    color: var(--text-primary); /* Cor do texto ao passar o mouse */
 }
 
 
@@ -305,10 +316,16 @@ gap: 15px;
     font-size: 15px;
     position: relative;
     left: 2%;
+    color: #324973;
 }
 
 .DescricaoOfi{
+  /* border: 2px solid red; */
+  width: 90%;
     font-size: 20px;
+    color: var(--modal-text);
+    position: relative;
+    left: 2%;
 }
 
 .inp2uts{
@@ -336,6 +353,8 @@ gap: 15px;
     align-items: center;
     justify-content: center;
     gap: 5px;
+    position: relative;
+    top: -5%;
 }
 
 .label{
@@ -362,7 +381,7 @@ gap: 15px;
     width: 95%;
     height: 80%;
     font-size: 19px;
-    color: var(--text-muda);
+    color: #324973;
     border: none;
     border-radius: 5px;
     position: relative;
@@ -390,10 +409,6 @@ gap: 15px;
   margin: 5px;
   cursor: pointer;
   transition: transform 0.2s;
-}
-
-.color1{
-    background-color: ;
 }
 
 /* cores diferentes */
@@ -434,8 +449,8 @@ gap: 15px;
     appearance: none;
     width: 2em;
     height: 2em;
-    background-color:  var( --accent-tertiary);
-    box-shadow: inset 2px 5px 10px var( --accent-tertiary);
+    background-color:  var(  --text-primary);
+    box-shadow: inset 2px 5px 10px var(  --text-primary);
     border-radius: 50%;
     transition: .4s ease-in-out;
   }
@@ -452,7 +467,7 @@ gap: 15px;
     left: -1.1em;
     width: 0.6em;
     height: 0.6em;
-    background-color: rgb(0, 0, 0);
+    background-color: var( --accent-secondary);
     scale: 0;
     border-radius: 10px;
     transition: .4s ease-in-out;
@@ -460,10 +475,56 @@ gap: 15px;
 
   .radio-input input:checked {
     box-shadow: none;
-    border: 1px solid yellow;
+    border: 2px solid var( --accent-secondary);
   }
 
   .radio-input input:checked + .circle {
     transform: rotate(360deg);
     scale: 1;
   }
+
+  .labelinput{
+position: relative;
+right: 3%;
+color: #324973;
+  }
+  
+ 
+
+.estampa {
+  display: inline-block;
+   width: 25px;
+  height: 25px;
+  margin: 5px;
+  border: 2px solid #444;
+  border-radius: 50px;
+  cursor: pointer;
+  /* transition: transform 0.2s; */
+}
+
+/* Estampa 1 - Listras */
+.estampa-listras {
+  background: repeating-linear-gradient(
+    45deg,
+    #000,
+    #000 11px,
+    #fff 10px,
+    #fff 20px
+  );
+}
+
+/* Estampa 2 - Bolinhas */
+.estampa-bolinhas {
+  background: radial-gradient(circle, #000 15%, transparent 16%) repeat;
+  background-size: 15px 15px;
+}
+
+
+
+.ProdutoFot{
+  /* border: 2px solid red; */
+  width: 100%;
+  height: 70%;
+  position: relative;
+  top: 10%;
+}
