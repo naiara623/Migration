@@ -13,6 +13,7 @@ import Loja from "../pages/Loja.jsx";
 import Produtos from "../pages/Produtos.jsx";
 
 
+import Endereco from "../pages/Endereco.jsx";
 
 
 const router = createBrowserRouter([
@@ -20,7 +21,6 @@ const router = createBrowserRouter([
     {path: "/cadastro", element: <Cadastro />},
     {path: "/login", element: <Login />},
     {path: "/ofertas", element: <Ofertas />},
-
     {path: "/categorias", element: <Categorias />}, // Assuming Categorias is similar to Ofertas for now
     {path: "/carrinho", element: <Carrinho/>},
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
@@ -31,7 +31,8 @@ const router = createBrowserRouter([
     {path: "/categorias", element: <Categorias/>}, // Assuming Categorias is similar to Ofertas for now
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
     {path: "/loja", element: <Loja/>},
-    {path: "/produtos", element: <Produtos/>}
+    {path: "/produtos", element: <Produtos/>},
+    {path: "/endereco", element: <Endereco/>}
 
    
 ])
