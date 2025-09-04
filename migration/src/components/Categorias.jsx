@@ -8,9 +8,11 @@ function Categorias({ isOpen, onClose}) {
     { nome: "Viagens" },
     { nome: "Trilhas" },
     { nome: "Lembranças" },
-    { nome: "Mapas" },
     { nome: "Acessórios" },
-    { nome: "Ofertas" },
+    { nome: "Camping" },
+    { nome: "Tecnologia de Viagem" },
+    { nome: "Mapas e Guias" },
+    { nome: "Moda de Viagem" },
   ];
   return (
     <div className="modal-overlay" onClick={onClose}>
