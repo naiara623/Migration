@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import './Ofertas.css';
 import Header from '../components/Header';
+import ModalConfig from '../components/ModalConfig';
+// import EditarProduct from '../components/EditarProduct';
 // import Header from '../components/Header';
 
 const products = [
@@ -13,7 +15,8 @@ const products = [
 
 function Ofertas() {
 
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false);
+  const  [openModal, setOpenModal] = useState(false);
 
   return (
       <div className='amarela-Ofertas'>
@@ -45,10 +48,17 @@ function Ofertas() {
                       ))}
                     </div>
                     <div className="product-price">R$ {product.price.toFixed(2)}</div>
-                    <button className="btn btn-primary">Adicionar ao Carrinho</button>
+                    <button onClick={() => setOpenModal(true)} className="btn btn-primary">Adicionar ao Carrinho</button>
+               
                   </div>
                 </div>
               ))}
+
+                 <ModalConfig 
+  isOpen={openModal}
+  onClose={() => setOpenModal(false)} 
+  onAddCarrinho={(config) => console.log("Config recebida:", config)}
+/>
             </div>
         </div>
     </section>

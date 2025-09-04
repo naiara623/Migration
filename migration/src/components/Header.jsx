@@ -99,7 +99,8 @@ const Header = () => {
             </button>
 
             <button className='Perfil-btn'>
-              <img className='perfilUser' src="user.png" alt="Perfil de usuario" />
+              <Link to="/Perfil-usuario" ><img className='perfilUser' src="user.png" alt="Perfil de usuario" /></Link>
+              
             </button>
 
 

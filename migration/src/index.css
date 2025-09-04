@@ -15,11 +15,22 @@
   --text-1: #000000;
   --blue-a: #94B2CE;
 
-    /* Cores para mensagens - Modo Claro */
-  --error-color: #D32F2F;
-  --error-bg: #FFEBEE;
-  --success-color: #2E7D32;
-  --success-bg: #E8F5E9;
+  --cadastro-bg: #F7F7F7;
+  --cadastro-text: #324973;
+  --cadastro-inputs: #E6D8CD;
+  --cadastro-borda: #C5B2A4;
+  --cadastro-botao: #89A9C7;
+  --cadastro-titulo: #324973;
+
+  --modal-primary: #e6d8cd;
+  --modal-text: #324973;
+  --modal-borda: #C5B2A4;
+
+  --buton-mudar: #324973;
+  --text-mudar: #f7f7f7;
+
+
+
 }
 
 [data-theme="dark"] {
@@ -46,11 +57,14 @@
   --text-1: #FFFFFF;
    --blue-a:#C7B8A5;
 
-     /* Cores para mensagens - Modo Escuro */
-  --error-color: #F44336;    /* Vermelho mais vibrante para contraste no escuro */
-  --error-bg: #4A1F1D;       /* Vermelho escuro para fundo */
-  --success-color: #4CAF50;  /* Verde mais vibrante para contraste no escuro */
-  --success-bg: #1F2F1F;     /* Verde escuro para fundo */
+  /* Modal específico */
+  --modal-primary: #1e2a3a;
+  --modal-text: #89a9c7;
+  --modal-borda: #e6d8cd;
+
+  --buton-mudar: #648fbf;
+  --text-mudar: #324973;
+
 }
 /* Estilos globais */
 * {
