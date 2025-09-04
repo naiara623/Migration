@@ -1,29 +1,49 @@
-// ThemeContext.js
-import React, { createContext, useState, useEffect } from 'react';
+// ThemeContext.jsx - COMPATÍVEL
+import React, { createContext, useState, useEffect, useContext } from 'react';
 
-export const ThemeContext = createContext();
+// Crie o contexto
+const ThemeContext = createContext();
 
-export const ThemeProvider = ({ children }) => {
-  // Verifica se há um tema salvo no localStorage, caso contrário, usa o padrão (light)
+// Componente Provider que também funciona como ThemeContext
+export function ThemeProvider({ children }) {
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = typeof window !== 'undefined' ? localStorage.getItem('darkMode') : null;
     return savedTheme ? JSON.parse(savedTheme) : false;
   });
 
-  // Atualiza o localStorage sempre que o tema mudar
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
   const toggleTheme = () => {
     setDarkMode(prevMode => !prevMode);
   };
 
+  const value = {
+    darkMode,
+    toggleTheme,
+    setDarkMode
+  };
+
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
-};
+}
 
-export const useTheme = () => React.useContext(ThemeContext);
+// Hook personalizado
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}
+
+// ✅ Exporte como ThemeContext também (para compatibilidade)
+export const ThemeContextComponent = ThemeProvider;
+
+// ✅ Ou se preferir, exporte diretamente:
+export { ThemeProvider as ThemeContext };
