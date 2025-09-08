@@ -1,0 +1,281 @@
+.vermelha-PRF{
+    background: linear-gradient(to bottom, #324973, #324973, #F7F7F7);
+    border: 4px solid red;
+    width: 100%;
+    height: 100vh;
+}
+
+.navbar-PRF{
+    border: 4px solid rgb(200, 255, 0);
+    width: 100%;
+    height:11%;
+}
+
+.conteine-preto-PRF{
+    border: 4px solid rgb(0, 0, 0);
+    width: 100%;
+    height:89%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2%;
+}
+
+.conteine-fino-PRF{
+    border: 4px solid rgb(9, 190, 28);
+    width: 17%;
+    height:80%;
+    background-color: #D9D9D9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.conteine-grosso-PRF{
+    border: 4px solid rgb(11, 166, 233);
+    width: 35%;
+    height:80%;
+    background-color: #D9D9D9;
+}
+
+.conteine-icon-nomeUsu-PRF{
+    border: 4px solid rgb(197, 165, 22);
+    width: 100%;
+    height: 15%;
+    display: flex;
+}
+
+.icone-user-PRF{
+    border: 4px solid rgb(22, 197, 95);
+     width: 30%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.conteine-nomeUsu-PRF{
+    border: 4px solid rgb(22, 197, 95);
+     width: 70%;
+    height: 100%;
+    padding-top: 7%;
+}
+
+.img-USER-PRF{
+    width: 80%;
+    height: 80%;
+}
+
+.conteine-LINHA1-PRF{
+    border: 2px solid rgb(80, 80, 84);
+    width: 90%;
+    height: 0%;
+}
+
+.conteine-M-F-E-PRF{
+    border: 4px solid rgb(197, 22, 150);
+    width: 100%;
+    height: 85%;
+    padding: 10%;
+    display: flex;
+    flex-direction: column;
+    gap: 3%;
+}
+
+.nome-minhascompras-PRF{
+    text-decoration-line: none;
+    color: #324973;
+}
+
+.nome-meusFavorito-PRF{
+    text-decoration-line: none;
+    color: #324973;
+}
+
+.nome-endereço-PRF{
+    text-decoration-line: none;
+    color: #324973;
+}
+
+
+.informação-pessoais-PRF{
+     border: 4px solid rgb(197, 165, 22);
+    width: 100%;
+    height: 15%;
+    text-align: center;
+    color: #324973;
+    font-size: 1.3rem;
+}
+
+.conteine-LINHA2-PRF{
+ border: 2px solid rgb(80, 80, 84);
+    width: 90%;
+    height: 0%;
+
+}
+
+.campo-formulario-nome-PRF{
+    border: 4px solid rgb(197, 165, 22);
+    width: 100%;
+    height: 15%;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    color: #554;
+    padding-left: 9%;
+    
+}
+
+.input-nome-PRF{
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.campo-formulario-Email-PRF{
+    border: 4px solid rgb(48, 22, 197);
+    width: 100%;
+    height: 15%;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    color: #554;
+    padding-left: 9%;
+}
+
+.input-Email-PRF{
+      width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.campo-formulario-senha-PRF{
+      border: 4px solid rgb(197, 22, 142);
+    width: 100%;
+    height: 15%;
+    display: flex;
+    flex-direction: column;
+     font-weight: bold;
+     color: #554;
+     padding-left: 9%;
+}
+
+.input-senha-PRF{
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+
+}
+
+.campo-de-opção-sexo-PRF{
+    border: 4px solid rgb(239, 237, 236);
+    width: 100%;
+    height: 9%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.label-sexo-PRF{
+    border: 4px solid blue;
+      font-weight: bold;
+     color: #554;
+     height: 100%;
+     width: 20%;
+     padding-left: 9%;
+}
+
+
+.opcoes-sexo{
+    display: flex;
+    width: 60%;
+    height: 100%;
+     border: 4px solid rgb(8, 37, 27);
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     gap: 5%;
+    
+}
+
+.div-vazia-1-PRF{
+border: 4px solid rgb(22, 197, 31);
+ width: 20%;
+height: 100%;
+}
+
+.div-vazia-2-PRF{
+border: 4px solid rgb(22, 197, 31);
+height: 6%;
+}
+.conteine-dos-buttons-PRF{
+ border: 4px solid rgb(22, 197, 31);
+    width: 100%;
+    height: 25%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30%;
+}
+
+
+.botoes-acao {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.botao-editar, .botao-deletar {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.botao-editar {
+    background-color: #324973;
+    color: white;
+}
+
+.botao-deletar {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.botao-editar:hover {
+    background-color: #25365a;
+}
+
+.botao-deletar:hover {
+    background-color: #ff3333;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .conteine-preto-PRF {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .conteine-fino-PRF, .conteine-grosso-PRF {
+        width: 90%;
+        height: auto;
+    }
+    
+    .botoes-acao {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .botao-editar, .botao-deletar {
+        width: 100%;
+    }
+}
