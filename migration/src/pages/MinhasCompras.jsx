@@ -1,75 +1,112 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ThemeProvider } from '../ThemeContext'
 import { ThemeEffect } from '../ThemeEffect'
 import './MinhasCompras.css'
 import Header from '../components/Header'
 import { Link } from 'react-router-dom';
 
-
-
 function MinhasComprasContex() {
-   ThemeEffect()
+    ThemeEffect()
 
-   return(
-   <div className='div-inclobaTudo-MF'>
-    
-            <div className='nav-bar-MF'>
-                  <Header />
+    // Essa é a nossa "memória". O 0 é o valor inicial, a primeira etapa.
+    const [etapaAtual, setEtapaAtual] = useState(0);
+
+    // Função para avançar a etapa
+    const avancarEtapa = () => {
+        // Se a etapa atual for menor que 3 (a última etapa), avança.
+        if (etapaAtual < 3) {
+            setEtapaAtual(etapaAtual + 1);
+        }
+    }
+
+    // A linha de progresso e o cálculo dela foram removidos daqui
+
+    return (
+        <div className='div-inclobaTudo-MC'>
+            <div className='nav-bar-MC'>
+                <Header />
             </div>
 
-            <div className='conteine-black-MF'>
+            <div className='conteine-black-MC'>
+                <div className='conteine-fino-MC' >
+                    <div className='conteine-icon-nomeUsu-MC'>
+                        <div className='icone-user-MC' >
+                            <img src="USER.png" alt="" className='img-USER-MC' />
+                        </div>
+                        <div className='conteine-nomeUsu-MC'>
+                            <Link className='nomeUsuario-MC' to='/Perfil-usuario'> <h3>Nome_Usuario</h3></Link>
+                        </div>
+                    </div>
+                    <div className='div-LINHA1-MC' >
+                        <div className='conteine-LINHA1-MC'></div>
+                    </div>
+                    <div className='conteine-M-F-E-MC'>
+                        <Link className='nome-minhascompras-MC' to='/MinhasCompras'> <h3>Minhas compras</h3></Link>
+                        <Link className='nome-meusFavorito-MC' to='/MeusFavoritos'><h3>Meus Favoritos</h3></Link>
+                        <Link className='nome-endereço-MC' to='/Endereco'><h3>Endereço</h3></Link>
+                    </div>
+                </div>
 
-              <div className='conteine-fino-MF' >
-                   <div className='conteine-icon-nomeUsu-MF'>
+                <div className='conteine-grosso-MC' >
+                    <div className='informação-pessoais-MC' >
+                        <h2>Minhas Compras</h2>
+                    </div>
+                    <div className='div-LINHA2-MC' >
+                        <div className='conteine-LINHA2-MC' ></div>
+                    </div>
 
-                           <div className='icone-user-PRF' >
-                            <img src="USER.png" alt="" className='img-USER-PRF' />
-                           </div>
+                    <div className='conteine-4-icones-MC'>
+                        <div className='div-vazia1-MC' > </div>
 
-                           <div  className='conteine-nomeUsu-PRF'>
-                               <Link className='nomeUsuario-PRF' to='/Perfil-usuario'> <h3>Nome_Usuario</h3></Link>
-                            
-                            
-                            </div>
-                          </div>
+                        {/* Ícone da Carteira */}
+                        <div className={`div-icone-carteira-MC ${etapaAtual === 0 ? 'passo-ativo' : etapaAtual > 0 ? 'passo-concluido' : ''}`} >
+                            <img className='img-icone-carteira-MC' src="icone-carteira.png" alt="" />
+                            <h3 className='text-icone-carteira-MC' >A pagar</h3>
+                        </div>
 
-                        <div  className='conteine-LINHA1-PRF'></div>
 
-                        <div  className='conteine-M-F-E-PRF'>
-                         
-                            <Link className='nome-minhascompras-PRF' to='/MinhasCompras'> <h3>Minhas compras</h3></Link>
+                        {/* Ícone da Caixa */}
+                        <div className={`div-icone-caixa-MC ${etapaAtual === 1 ? 'passo-ativo' : etapaAtual > 1 ? 'passo-concluido' : ''}`} >
+                            <img className='img-icone-caixa-MC' src="icone-caixa.png" alt="" />
+                            <h3 className='text-icone-caixa-MC' >Preparando</h3>
+                        </div>
 
-                           <Link className='nome-meusFavorito-PRF' to='/MeusFavoritos'><h3>Meus Favoritos</h3></Link>
+                        {/* Ícone do Caminhão */}
+                        <div className={`div-icone-caminhão-MC ${etapaAtual === 2 ? 'passo-ativo' : etapaAtual > 2 ? 'passo-concluido' : ''}`} >
+                            <img className='img-icone-caminhão-MC' src="icone-caminhao.png" alt="" />
+                            <h3 className='text-icone-caminhão-MC' >A caminho</h3>
+                        </div>
 
-                            <Link className='nome-endereço-PRF' to='/Endereco'><h3>Endereço</h3></Link> 
+                        {/* Ícone da Avaliação */}
+                        <div className={`div-icone-avaliação-MC ${etapaAtual >= 3 ? 'passo-concluido' : ''}`} >
+                            <img className='img-icone-avaliaçao-MC' src="icone-estrela.png" alt="" />
+                            <h3 className='text-icone-avaliaçao-MC' >Avaliar</h3>
+                        </div>
 
-                        </div> 
-                  
-                
-              </div>
+                        <div className='div-vazia2-MC' > </div>
+                    </div>
 
-              <div className='conteine-grosso-MF' >
+                    <div className='div-da-LINHA3-MC'>
+                        <div className='conteine-LINHA3-MC' ></div>
+                    </div>
 
-                       <div className='informação-pessoais-PRF' >
-                          <h2>Minhas Compras</h2>
-                      </div>
-
-              </div>
+                    {/* Botão para avançar na simulação */}
+                    <button onClick={avancarEtapa} style={{ marginTop: '20px', padding: '10px' }}>
+                        Avançar Etapa
+                    </button>
+                    
+                </div>
             </div>
-
         </div>
     )
 }
 
-
-
-
 function MinhasCompras() {
-  return (
-  <ThemeProvider>
-        <MinhasComprasContex/>
-  </ThemeProvider>
-  )
+    return (
+        <ThemeProvider>
+            <MinhasComprasContex />
+        </ThemeProvider>
+    )
 }
 
 export default MinhasCompras

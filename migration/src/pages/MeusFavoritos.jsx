@@ -22,34 +22,35 @@ function MeusFavoritosContext() {
               <div className='conteine-fino-MF' >
                    <div className='conteine-icon-nomeUsu-MF'>
 
-                           <div className='icone-user-PRF' >
-                            <img src="USER.png" alt="" className='img-USER-PRF' />
+                           <div className='icone-user-MF' >
+                            <img src="USER.png" alt="" className='img-USER-MF' />
                            </div>
 
-                           <div  className='conteine-nomeUsu-PRF'>
+                           <div  className='conteine-nomeUsu-MF'>
 
-                               <Link className='nomeUsuario-PRF' to='/Perfil-usuario'> <h3>Nome_Usuario</h3></Link>
+                               <Link className='nomeUsuario-MF' to='/Perfil-usuario'> <h3>Nome_Usuario</h3></Link>
                             </div>
                           </div>
 
-                        <div  className='conteine-LINHA1-PRF'></div>
-
-                        <div  className='conteine-M-F-E-PRF'>
+                        <div className='div-LINHA1-MF' >
+                        <div className='conteine-LINHA1-MF'></div>
+                        </div>
+                        <div  className='conteine-M-F-E-MF'>
                          
-                            <Link className='nome-minhascompras-PRF' to='/MinhasCompras'> <h3>Minhas compras</h3></Link>
+                            <Link className='nome-minhascompras-MF' to='/MinhasCompras'> <h3>Minhas compras</h3></Link>
 
-                           <Link className='nome-meusFavorito-PRF' to='/MeusFavoritos'><h3>Meus Favoritos</h3></Link>
+                           <Link className='nome-meusFavorito-MF' to='/MeusFavoritos'><h3>Meus Favoritos</h3></Link>
 
-                            <Link className='nome-endereço-PRF' to='/Endereco'><h3>Endereço</h3></Link> 
+                            <Link className='nome-endereço-MF' to='/Endereco'><h3>Endereço</h3></Link> 
 
                         </div> 
                   
                 
               </div>
-
+ 
               <div className='conteine-grosso-MF' >
 
-                       <div className='informação-pessoais-PRF' >
+                       <div className='informação-pessoais-MF' >
                           <h2> Meus Favoritos</h2>
                       </div>
 

@@ -68,13 +68,25 @@
      width: 70%;
     height: 100%;
     padding-top: 7%;
+     text-decoration-line: none;
+    color: #324973;
 }
 
 .conteine-LINHA1-MF{
- border: 2px solid rgb(80, 80, 84);
+ border: 1px solid rgb(80, 80, 84);
     width: 90%;
     height: 0%;
 }
+
+.div-LINHA1-MF{
+   border: 1px solid rgb(84, 81, 80);
+    width: 100%;
+    height: 0%;
+    display: flex;
+    justify-content: center;
+    
+}
+
 
 .conteine-M-F-E-MF{
  border: 4px solid rgb(197, 22, 150);
