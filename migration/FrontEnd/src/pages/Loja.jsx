@@ -119,8 +119,16 @@ function Lojacontext() {
 // No componente PerformanceDashboard, substitua o return por este:
 return (
   <div className="performance-dashboard">
+    <div className="topo">
     <h2>📊 Dashboard de Desempenho</h2>
-    
+     </div>
+
+     <div className="fim">
+
+<div className="utensilios">
+  
+   <div className='quatro4'>
+
     <div className="metrics-grid">
       <div className="metric-card">
         <div className="metric-icon earning">
@@ -163,29 +171,10 @@ return (
       </div>
     </div>
 
-    <div className="chart-main-section">
-      <h3>📈 Resultados de Vendas</h3>
-      <div className="sales-chart">
-        {performanceData.salesData.slice(0, 6).map((value, index) => {
-          const heightPercentage = (value / maxSales) * 70;
-          return (
-            <div key={index} className="chart-bar-container">
-              <div 
-                className="chart-bar"
-                style={{ 
-                  height: `${heightPercentage}%`,
-                  background: `linear-gradient(to top, var(--accent-primary), var(--accent-secondary))`
-                }}
-                title={`${value} vendas em ${performanceData.salesLabels[index]}`}
-              >
-                <span className="bar-value">{value}</span>
-              </div>
-              <span className="bar-label">{performanceData.salesLabels[index]}</span>
-            </div>
-          );
-        })}
-      </div>
+ 
+
     </div>
+
 
     <div className="performance-summary">
       <div className="summary-card">
@@ -216,7 +205,38 @@ return (
         📋 Ver Relatório Completo
       </button>
     </div>
+</div>
+   
+
+
+
+<div className="grafico">
+  <div className="chart-main-section">
+    <h3>📊 Resultados de Vendas</h3>
+    <div className="horizontal-chart">
+      {performanceData.salesData.map((value, index) => {
+        const widthPercentage = (value / maxSales) * 100;
+        return (
+          <div key={index} className="chart-row">
+            <div className="chart-label">{performanceData.salesLabels[index]}</div>
+            <div className="chart-bar-container">
+              <div
+                className="chart-bar-horizontal"
+                style={{ width: `${widthPercentage}%` }}
+              ></div>
+              <span className="chart-value">{value}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   </div>
+</div>
+
+
+
+  </div>  
+</div>
 );
   };
 

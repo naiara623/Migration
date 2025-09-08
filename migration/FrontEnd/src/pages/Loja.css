@@ -339,7 +339,6 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   padding: 8px;
   background: var(--card-bg);
   border-radius: 10px;
@@ -433,21 +432,62 @@ body {
 
 
 
+
+
+
+
+
+
+
 /* Dashboard de Desempenho - Versão Compacta */
 .performance-dashboard {
   padding: 20px;
-  background: var(--card-bg);
+  background: var(--bg-tertiary);
   border-radius: 16px;
   box-shadow: 0 4px 20px var(--shadow-color);
   margin-bottom: 20px;
   color: var(--text-primary);
-  max-height: none;
-  overflow: visible;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Topo */
+.topo {
+  height: 60px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Layout principal (cards + gráfico) */
+.fim {
+  width: 100%;
+  display: flex;
+  gap: 20px;
+  align-items: stretch; /* 🔹 garante mesma altura */
+}
+
+.utensilios {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.grafico {
+justify-content: center; 
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Títulos */
 .performance-dashboard h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin: 0;
   font-size: 1.6rem;
   font-weight: bold;
   color: var(--text-primary);
@@ -455,7 +495,7 @@ body {
 
 .performance-dashboard h3 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   font-size: 1.2rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -464,19 +504,19 @@ body {
 /* Métricas compactas */
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
 }
 
 .metric-card {
   display: flex;
   align-items: center;
-  padding: 15px;
+  padding: 24px;
   background: var(--bg-secondary);
   border-radius: 12px;
   color: var(--text-primary);
   box-shadow: 0 2px 8px var(--shadow-color);
+  min-height: 85px;
 }
 
 .metric-icon {
@@ -486,6 +526,11 @@ body {
   border-radius: 50%;
   background: var(--accent-primary);
   color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.metric-info {
+  flex: 1;
 }
 
 .metric-info h3 {
@@ -501,80 +546,79 @@ body {
   color: var(--text-primary);
 }
 
-/* Gráfico compacto */
-.chart-main-section {
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 20px;
-  margin: 20px 0;
+/* Gráfico horizontal */
+.horizontal-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 5px 0;
 }
 
-.sales-chart {
+.chart-row {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  height: 180px;
-  padding: 15px 0;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+}
+
+.chart-label {
+  width: 80px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: right;
 }
 
 .chart-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-bar-horizontal {
+  height: 25px;
+  background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+  border-radius: 6px;
+  box-shadow: 0 2px 6px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.chart-bar-horizontal:hover {
+  opacity: 0.9;
+  transform: scaleY(1.05);
+}
+
+.chart-value {
+  font-weight: bold;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+/* Seção principal do gráfico (faz ocupar toda a altura disponível) */
+.chart-main-section {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  height: 100%;
-  flex: 1;
-  min-width: 45px;
-}
-
-.chart-bar {
-  width: 40px;
-  min-height: 5px;
-  border-radius: 6px 6px 0 0;
-  position: relative;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  display: flex;
   justify-content: center;
-  box-shadow: 0 2px 8px var(--shadow-color);
-}
-
-.chart-bar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow-color);
-}
-
-.bar-value {
-  position: absolute;
-  top: -25px;
-  font-size: 0.8rem;
-  font-weight: bold;
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  padding: 4px 8px;
+  
+  background-color: var(--bg-secondary);
   border-radius: 12px;
-  box-shadow: 0 2px 6px var(--shadow-color);
-  min-width: 25px;
-  text-align: center;
+  padding: 5px;
 }
 
-.bar-label {
-  margin-top: 10px;
-  font-size: 0.75rem;
-  font-weight: 500;
+.chart-main-section h3 {
+  margin-bottom: 5px;
   text-align: center;
-  color: var(--text-secondary);
 }
 
 /* Resumo */
 .performance-summary {
-  margin: 20px 0;
+  margin: 0;
 }
 
 .summary-card {
   background: var(--bg-secondary);
   border-radius: 12px;
-  padding: 15px;
+  padding: 20px;
 }
 
 .summary-card h4 {
@@ -588,12 +632,12 @@ body {
 .summary-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .stat-item {
   text-align: center;
-  padding: 10px;
+  padding: 12px;
   background: var(--bg-tertiary);
   border-radius: 8px;
 }
@@ -602,7 +646,7 @@ body {
   display: block;
   font-size: 0.75rem;
   color: var(--text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .stat-number {
@@ -615,7 +659,6 @@ body {
 /* Botão */
 .dashboard-actions {
   text-align: center;
-  margin-top: 20px;
 }
 
 .check-now-btn {
@@ -629,6 +672,7 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px var(--shadow-color);
+  width: 100%;
 }
 
 .check-now-btn:hover {
@@ -639,77 +683,62 @@ body {
 
 /* Responsividade */
 @media (max-width: 1024px) {
-  .metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .fim {
+    flex-direction: column;
   }
-  
-  .sales-chart {
-    height: 160px;
-  }
-  
-  .chart-bar {
-    width: 35px;
-  }
-  
-  .bar-value {
-    font-size: 0.75rem;
-    top: -22px;
+
+  .grafico {
+    width: 100%;
   }
 }
 
 @media (max-width: 768px) {
-  .performance-dashboard {
-    padding: 15px;
-  }
-  
   .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-stats {
     grid-template-columns: 1fr;
     gap: 10px;
   }
-  
-  .sales-chart {
-    height: 140px;
-    gap: 6px;
+
+  .chart-label {
+    font-size: 0.75rem;
   }
-  
-  .chart-bar {
-    width: 30px;
-  }
-  
-  .bar-value {
-    font-size: 0.7rem;
-    padding: 3px 6px;
-    top: -20px;
-  }
-  
-  .summary-stats {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  
-  .stat-item {
-    padding: 8px;
+
+  .chart-value {
+    font-size: 0.8rem;
   }
 }
 
 @media (max-width: 480px) {
-  .sales-chart {
-    height: 120px;
+  .performance-dashboard {
+    padding: 15px;
   }
-  
-  .chart-bar {
-    width: 25px;
+
+  .metric-card {
+    padding: 12px;
+    min-height: 70px;
   }
-  
-  .bar-label {
-    font-size: 0.7rem;
+
+  .metric-icon {
+    font-size: 1.2rem;
+    padding: 8px;
   }
-  
+
   .performance-dashboard h2 {
     font-size: 1.4rem;
   }
-  
+
   .performance-dashboard h3 {
     font-size: 1.1rem;
+  }
+
+  .chart-label {
+    font-size: 0.7rem;
+  }
+
+  .chart-value {
+    font-size: 0.75rem;
   }
 }
