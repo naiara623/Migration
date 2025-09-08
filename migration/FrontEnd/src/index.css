@@ -1,0 +1,159 @@
+:root {
+  /* modo claro (default) */
+  --bg-primary: #F7F7F7;
+  --bg-secondary: #E6D8CD;
+  --bg-tertiary: white;
+  --text-primary: #324973;
+  --text-secondary: #666;
+  --text-tertiary: #F7F7F7;
+  --accent-primary: #324973;
+  --accent-secondary: #94B2CE;
+  --accent-tertiary: #C5B2A4;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --hero-overlay: rgba(50, 73, 115, 0.7);
+  --card-bg: #FFFFFF;
+  --text-1: #000000;
+  --blue-a: #94B2CE;
+
+  --cadastro-bg: #F7F7F7;
+  --cadastro-text: #324973;
+  --cadastro-inputs: #E6D8CD;
+  --cadastro-borda: #C5B2A4;
+  --cadastro-botao: #89A9C7;
+  --cadastro-titulo: #324973;
+  --cadastro-color: #324973;
+
+  --modal-primary: #e6d8cd;
+  --modal-text: #324973;
+  --modal-borda: #C5B2A4;
+
+  --buton-mudar: #324973;
+  --text-mudar: #f7f7f7;
+
+  --oi: ##8FB3D9;
+
+}
+
+[data-theme="dark"] {
+  /* modo escuro alternativo */
+  --bg-primary: #1A2639;     /* Azul muito escuro */
+  --bg-secondary: #24344D;   /* Azul escuro médio */
+  --bg-tertiary: #2D3E5D;    /* Azul escuro claro */
+  
+  /* Textos - combinando bege e azuis */
+  --text-primary: #F0E6D8;   /* Bege claro (mais quente que o branco azulado) */
+  --text-secondary: #C7B8A5; /* Bege médio */
+  --text-tertiary: #E6D8CD;  /* Bege da paleta clara adaptado */
+  
+  /* Destaques - azuis com toques de bege */
+  --accent-primary: #6A8FBF; /* Azul médio principal */
+  --accent-secondary: #8FB3D9; /* Azul claro para hover */
+  --accent-tertiary: #C5B2A4; /* Bege exatamente igual ao modo claro */
+  
+  /* Elementos de superfície */
+  --card-bg: #24344D;       /* Azul escuro médio */
+  --shadow-color: rgba(0, 0, 0, 0.25);
+  --hero-overlay: rgba(26, 38, 57, 0.85);
+--oi:#24344D
+  --text-1: #FFFFFF;
+   --blue-a:#C7B8A5;
+
+ --cadastro-bg: #F7F7F7;
+  --cadastro-text: #89A9C7;
+  --cadastro-inputs: #89A9C7;
+  --cadastro-borda: #E6D8CD;
+  --cadastro-botao: #324973;
+  --cadastro-titulo: #89A9C7;
+  --cadastro-color: #89A9C7;
+
+   /* --cadastro-bg: #F7F7F7;
+  --cadastro-text: #324973;
+  --cadastro-inputs: #E6D8CD;
+  --cadastro-borda: #C5B2A4;
+  --cadastro-botao: #89A9C7;
+  --cadastro-titulo: #324973; */
+
+  /* Modal específico */
+  --modal-primary: #1e2a3a;
+  --modal-text: #89a9c7;
+  --modal-borda: #e6d8cd;
+
+  --buton-mudar: #648fbf;
+  --text-mudar: #324973;
+
+}
+/* Estilos globais */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+html, #root {
+  height: 100%;
+}
+
+.App {
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: var(--text-tertiary);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-secondary);
+  color: var(--text-primary);
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 40px;
+  color: var(--text-primary);
+  font-size: 2rem;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  background-color: var(--accent-tertiary);
+  margin: 10px auto 0;
+}

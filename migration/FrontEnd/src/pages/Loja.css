@@ -1,0 +1,744 @@
+.container-loja {
+   height: 100vh;
+  overflow-y: auto; /* 🔹 só mostra quando precisar */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden; /* não deixar scroll geral na página */
+}
+
+/* Remove scrollbar até precisar */
+body {
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+}
+
+
+.navebar-ok {
+  height: 90px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--accent-primary);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.lojaa-ok {
+  flex: 1;
+  display: flex;
+  overflow: hidden; /* 🔹 não cria barra geral */
+}
+
+.opções-ok {
+  width: 400px;                /* largura fixa */
+  background-color: #fff;
+  padding: 30px 20px;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;         /* centraliza conteúdo */
+  justify-content: flex-start; /* começa no topo */
+  flex-shrink: 0;              /* não deixa encolher */
+  overflow: hidden;            /* 🔹 remove scrollbar desnecessária */
+}
+
+.opções-ok form {
+  width: 100%;
+  max-width: 320px;            /* 🔹 limita a largura do form */
+}
+
+.produtos-ok {
+  flex: 1; /* ocupa o resto da tela */
+  background-color: var(--bg-secondary);
+  padding: 20px;
+  overflow-y: auto; /* 🔹 scroll só aqui quando houver muitos produtos */
+}
+
+
+.menu-lateral {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-lateral h2 {
+  color: var(--text-primary);
+  margin-bottom: 40px;
+  font-size: 1.8rem;
+  text-align: center;
+  font-weight: bold;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--accent-tertiary);
+  width: 100%;
+}
+
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.menu-option {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: var( --accent-secondary);
+  color: var( --text-tertiary);
+  box-shadow: 0 2px 6px var(--shadow-color);
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  justify-content: center;
+  min-height: 60px;
+}
+
+
+.option-text {
+  font-size: 16px;
+  text-align: center;
+}
+
+.produtos-ok {
+  height: 100%;
+  width: calc(100% - 300px);
+  padding: 40px;
+  background-color: var(--bg-secondary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+
+  text-align: center;
+}
+
+.placeholder-image {
+  width: 100%;
+  height:  100%;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.imagg{
+    height: 80%;
+    width: 80%;
+}
+
+.content-placeholder p {
+  font-size: 18px;
+  margin-top: 20px;
+  color: var(--text-secondary);
+}
+
+/* Mantenha todo o CSS existente e adicione/modifique apenas estas regras */
+.menu-option {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: var(--accent-secondary);
+  color: var(--text-tertiary);
+  box-shadow: 0 2px 6px var(--shadow-color);
+  font-size: 16px;
+  font-weight: 500;
+  justify-content: flex-start;
+  min-height: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* hover só movimenta */
+.menu-option:hover {
+  transform: translateX(10px);
+}
+
+/* ❌ remover cor diferente no ativo */
+.menu-option.active {
+  background-color: var(--accent-secondary);
+  font-weight: bold;
+}
+
+/* 🔵 barrinha lateral */
+.selection-indicator {
+  position: absolute;
+  left: 0;             /* agora na esquerda */
+  top: 0;
+  width: 10px;         /* largura da barrinha */
+  height: 100%;
+  background-color: var(--accent-primary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* aparece só no ativo */
+.selection-indicator.visible {
+  opacity: 1;
+}
+
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* 🔹 tamanho fixo mínimo */
+  gap: 20px; /* 🔹 espaçamento entre os cards */
+  padding: 20px;
+  justify-items: center; /* centraliza cada card */
+}
+
+.product-card {
+  width: 220px;       /* 🔹 largura fixa */
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  text-align: center;
+  padding: 10px;
+}
+
+
+/* Modo de seleção */
+.selection-mode {
+  width: 100%;
+}
+
+.selection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: var(--card-bg);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.selection-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.select-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-btn, .delete-btn, .cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.edit-btn {
+  background: #ffc107;
+  color: #000;
+}
+
+.delete-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+/* Grid no modo de seleção */
+.selection-grid .product-card {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.selection-grid .product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.selection-grid .product-card.selected {
+  border: 2px solid var(--primary-color);
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.selection-checkbox {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  z-index: 10;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .selection-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .selection-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .action-buttons {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Estilos para edição */
+.form-container {
+  width: 100%;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: var(--card-bg);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.cancel-edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.cancel-edit-btn:hover {
+  background: #5a6268;
+}
+
+/* Melhorias visuais para seleção */
+.selection-checkbox {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  background: white;
+  border-radius: 4px;
+  padding: 2px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+.product-card.selected {
+  border: 2px solid var(--primary-color);
+  background: rgba(var(--primary-rgb), 0.05);
+  transform: scale(1.02);
+  transition: all 0.3s ease;
+}
+
+/* Confirmação de exclusão */
+.confirm-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+  z-index: 1000;
+  text-align: center;
+}
+
+.confirm-dialog h3 {
+  margin-bottom: 15px;
+  color: #dc3545;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.confirm-yes {
+  background: #dc3545;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.confirm-no {
+  background: #6c757d;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Dashboard de Desempenho - Versão Compacta */
+.performance-dashboard {
+  padding: 20px;
+  background: var(--bg-tertiary);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px var(--shadow-color);
+  margin-bottom: 20px;
+  color: var(--text-primary);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Topo */
+.topo {
+  height: 60px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Layout principal (cards + gráfico) */
+.fim {
+  width: 100%;
+  display: flex;
+  gap: 20px;
+  align-items: stretch; /* 🔹 garante mesma altura */
+}
+
+.utensilios {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.grafico {
+justify-content: center; 
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Títulos */
+.performance-dashboard h2 {
+  text-align: center;
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.performance-dashboard h3 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Métricas compactas */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px var(--shadow-color);
+  min-height: 85px;
+}
+
+.metric-icon {
+  font-size: 1.4rem;
+  margin-right: 12px;
+  padding: 10px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.metric-info {
+  flex: 1;
+}
+
+.metric-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.metric-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+/* Gráfico horizontal */
+.horizontal-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 5px 0;
+}
+
+.chart-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chart-label {
+  width: 80px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.chart-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-bar-horizontal {
+  height: 25px;
+  background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+  border-radius: 6px;
+  box-shadow: 0 2px 6px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.chart-bar-horizontal:hover {
+  opacity: 0.9;
+  transform: scaleY(1.05);
+}
+
+.chart-value {
+  font-weight: bold;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+/* Seção principal do gráfico (faz ocupar toda a altura disponível) */
+.chart-main-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 5px;
+}
+
+.chart-main-section h3 {
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+/* Resumo */
+.performance-summary {
+  margin: 0;
+}
+
+.summary-card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.summary-card h4 {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--accent-primary);
+}
+
+/* Botão */
+.dashboard-actions {
+  text-align: center;
+}
+
+.check-now-btn {
+  padding: 12px 24px;
+  background: var(--accent-primary);
+  color: var(--text-tertiary);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  width: 100%;
+}
+
+.check-now-btn:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .fim {
+    flex-direction: column;
+  }
+
+  .grafico {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .chart-label {
+    font-size: 0.75rem;
+  }
+
+  .chart-value {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .performance-dashboard {
+    padding: 15px;
+  }
+
+  .metric-card {
+    padding: 12px;
+    min-height: 70px;
+  }
+
+  .metric-icon {
+    font-size: 1.2rem;
+    padding: 8px;
+  }
+
+  .performance-dashboard h2 {
+    font-size: 1.4rem;
+  }
+
+  .performance-dashboard h3 {
+    font-size: 1.1rem;
+  }
+
+  .chart-label {
+    font-size: 0.7rem;
+  }
+
+  .chart-value {
+    font-size: 0.75rem;
+  }
+}
