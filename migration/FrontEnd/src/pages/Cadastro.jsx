@@ -45,8 +45,6 @@ const handleCadastro = async () => {
 }),
 
     });
-
-
     let data;
     try {
       data = await response.json();
@@ -83,7 +81,7 @@ const handleCadastro = async () => {
 
      function closeModal() {
     setShowModal(false);
-    navigate('/');
+    navigate('/login');
   }
 
   const renderErro = (campo, estiloPersonalizado = {}) => mensagemErro[campo] && (

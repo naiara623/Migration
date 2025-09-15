@@ -15,16 +15,22 @@ const pool = new Pool({
 async function insertUser(user) {
   const client = await pool.connect();
 
-  const sql = `
-    INSERT INTO usuarios 
-    (nome_usuario, email_user, senhauser) 
-    VALUES ($1, $2, $3)
-    RETURNING *
-  `;
- const values = [
+const sql = `
+  INSERT INTO usuarios 
+  (nome_usuario, email_user, senhauser, cep, estado_cidade, nome_rua, complemento, numero, referencia) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+  RETURNING *
+`;
+const values = [
   user.nome_usuario,
   user.email_user,
-  user.senhauser
+  user.senhauser,
+  user.cep, 
+  user.estado_cidade,
+  user.nome_rua,
+  user.complemento,
+  user.numero,
+  user.referencia
 ];
 
 
@@ -41,33 +47,35 @@ async function insertUser(user) {
   }
 }
 
-// Busca usuário por e-mail e senha (sem bcrypt)
-async function selectUser(email, senha) {
-  const sql = "SELECT * FROM usuarios WHERE email = $1 AND senha = $2";
+
+// Busca usuário por e-mail e compara a senha (login) sem bcrypt
+async function selectUser(email_user, senhauser) {
+  const sql = "SELECT * FROM usuarios WHERE email_user = $1 AND senhauser = $2";
   const client = await pool.connect();
 
   try {
-    const result = await client.query(sql, [email, senha]);
+    const result = await client.query(sql, [email_user, senhauser]);
     if (result.rows.length > 0) {
-      // Remove a senha do retorno por segurança
       const { senha, ...userWithoutPassword } = result.rows[0];
       console.log("Usuário encontrado=====>>>>>>> ", userWithoutPassword);
+      
       return userWithoutPassword;
     }
-    return null; // não achou usuário
+    return null;
   } finally {
     client.release();
   }
 }
 
 
+
 // Retorna dados do usuário (sem senha)
-async function getUserByEmail(email) {
+async function getUserByEmail(email_user) {
   const client = await pool.connect();
   try {
     const result = await client.query(
-      'SELECT idusuarios, nome_usuario, email_user FROM usuarios WHERE email = $1',
-      [email]
+      'SELECT idusuarios, nome_usuario, email_user FROM usuarios WHERE email_user = $1',
+      [email_user]
     );
     if (result.rows.length > 0) {
       return result.rows[0];

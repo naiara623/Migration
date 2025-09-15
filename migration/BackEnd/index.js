@@ -33,10 +33,10 @@ app.use(
 
 //Cadastrar usuário
 app.post('/api/cadastro', async (req, res) => {
-  console.log('req.body:', req.body); // <--- aqui
-  const { nome_usuario, email_user, senhauser } = req.body;
+  console.log('req.body:', req.body);
+  const { nome_usuario, email_user, senhauser, cep, estado_cidade, nome_rua, complemento, numero, referencia } = req.body; // incluir cep
   try {
-    await insertUser({ nome_usuario, email_user, senhauser });
+    await insertUser({ nome_usuario, email_user, senhauser, cep, estado_cidade, nome_rua, complemento, numero, referencia });
     res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso!' });
   } catch (error) {
     console.error('Erro ao cadastrar usuário:', error);
@@ -51,11 +51,11 @@ app.post('/api/cadastro', async (req, res) => {
 
 //login de usuario
 app.post('/api/login', async (req, res) => {
-  const { email, senha } = req.body;
+  const { email_user, senhauser } = req.body;  // aqui pega os nomes do banco
   try {
-    const usuario = await selectUser(email, senha); //busca o usuário no banco
+    const usuario = await selectUser(email_user, senhauser); // busca o usuário no banco
     if (usuario) {
-      req.session.user = {email: usuario.email }; //Salva o email na sessão
+      req.session.user = { email_user: usuario.email_user }; // salva o email na sessão (com o nome correto)
       console.log("req.session.user =======>>>>>>", req.session.user);
       res.json({ sucesso: true, usuario });
     } else {
@@ -67,6 +67,50 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
-  console.log('Servidor rodando na porta 3001');
+// Retorna dados do usuário logado
+app.get('/api/usuario-atual', async (req, res) => {
+  if (!req.session.user || !req.session.user.email) { // Verifica se tem sessão
+    return res.status(401).json({ erro: 'Não autenticado' });
+  }
+  const email = req.session.user.email;
+  try {
+    const usuario = await getUserByEmail(email); // Busca usuário no banco
+    if (usuario) {
+      res.json({
+        id: usuario.idusuarios,
+        nome: usuario.nome_usuario,
+        email: usuario.email_user,
+        senha: usuario.senhauser,
+        estado: usuario.estado_cidade,
+        rua: usuario.nome_rua,
+        complemento: usuario.complemento,
+        numero: usuario.numero,
+        referencia: usuario.referencia,
+        followers: 245,   // Valores fixos (mockados)
+        following: 178
+      });
+    } else {
+      res.status(404).json({ erro: 'Usuário não encontrado' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar usuário:', error);
+    res.status(500).json({ erro: 'Erro ao buscar usuário' });
+  }
+});
+
+// Atualizar dados de usuário
+app.put('/api/usuarios/:email', async (req, res) => {
+  const { email } = req.params; // Email vem pela URL
+  const { nome_usuario, email_user, estado_cidade, nome_rua, complemento, numero, referencia } = req.body;
+  try {
+    const updatedUser = await updateUser(email_user, { nome_usuario, email_user, estado_cidade, nome_rua, complemento, numero, referencia });
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Erro ao atualizar usuário:', error);
+    res.status(500).json({ erro: 'Erro ao atualizar usuário' });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
 });
