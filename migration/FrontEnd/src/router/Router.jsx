@@ -24,6 +24,10 @@ const router = createBrowserRouter([
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
     {path: "/minhasCompras", element: <MinhasCompras/>},
     {path: "/meusFavoritos", element: <MeusFavoritos/>},
+<<<<<<< HEAD:migration/src/router/Router.jsx
+    {path: "/produto-novo", element: <ProductForm/>},
+=======
+>>>>>>> c617052ebec75bfdbb64e0eecbd7f32d1dacb0c9:migration/FrontEnd/src/router/Router.jsx
     {path: "/car", element: <Carrinho/>},
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
     {path: "/loja", element: <Loja/>},
