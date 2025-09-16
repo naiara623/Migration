@@ -41,7 +41,7 @@ body {
 /* Título - Mais compacto */
 .product-title {
   font-size: 1.5rem;
-  color: var(--text-primary);
+  color: var(--blue-b);
   text-align: center;
   font-weight: 600;
   margin-bottom: 0.5rem;
@@ -93,7 +93,7 @@ body {
 
 .form-group label {
   font-size: 0.9rem;
-  color: var(--text-primary);
+  color: var(--blue-b);
   font-weight: 600;
   transition: color 0.3s ease;
 }
@@ -106,7 +106,7 @@ body {
   border-radius: 6px;
   background: var(--bg-tertiary);
   font-size: 0.95rem;
-  color: var(--text-primary);
+  color: var(--blue-b);
   width: 100%;
   transition: all 0.3s ease;
 }
@@ -229,7 +229,7 @@ body {
 .submit-btn {
   padding: 0.8rem 1.5rem;
   background: var(--accent-primary);
-  color: var(--text-tertiary);
+  color: var(--text-2);
   border: none;
   border-radius: 6px;
   font-weight: 600;

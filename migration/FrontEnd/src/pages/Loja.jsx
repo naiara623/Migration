@@ -310,7 +310,7 @@ return (
           ) : isSelectionMode ? (
             <div className="selection-mode">
               <div className="selection-header">
-                <h2>({selectedProducts.size}) Selecionada/s</h2>
+                <h2 className='h2'>({selectedProducts.size}) Selecionada/s</h2>
                 <div className="selection-actions">
                   <button 
                     className="select-all-btn"
