@@ -18,6 +18,20 @@ const products = [
 function OfertasContext() {
    ThemeEffect();
 
+const addToCart = (product) => {
+  const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+  const exists = savedCart.some(p => p.id === product.id);
+
+  if (!exists) {
+    const updatedCart = [...savedCart, { ...product, checked: false }];
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    alert("Produto adicionado ao carrinho!");
+  } else {
+    alert("Esse produto já está no carrinho!");
+  }
+};
+
+
   // const [open, setOpen] = useState(false);
   const  [openModal, setOpenModal] = useState(false);
 

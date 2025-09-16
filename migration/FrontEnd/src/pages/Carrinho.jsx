@@ -74,20 +74,19 @@ function CarrinhoContent() {
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
 
-  // Buscar produtos (simulação)
+  // Buscar produtos do localStorage
   useEffect(() => {
-    const fakeProducts = [
-      { id: "product1", name: "Maleta de Viagem", size: "80L", price: 119.99, checked: false },
-      { id: "product2", name: "Outro Produto", size: "Único", price: 247.51, checked: false }
-    ];
-    setProducts(fakeProducts);
+    const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setProducts(savedCart);
   }, []);
 
   // Selecionar todos
   const handleSelectAll = () => {
     const newSelectAll = !selectAll;
     setSelectAll(newSelectAll);
-    setProducts(products.map(p => ({ ...p, checked: newSelectAll })));
+    const updated = products.map(p => ({ ...p, checked: newSelectAll }));
+    setProducts(updated);
+    localStorage.setItem("cart", JSON.stringify(updated));
   };
 
   // Selecionar individual
@@ -97,6 +96,14 @@ function CarrinhoContent() {
     );
     setProducts(updated);
     setSelectAll(updated.every(p => p.checked));
+    localStorage.setItem("cart", JSON.stringify(updated));
+  };
+
+  // Remover produto
+  const handleRemoveProduct = (id) => {
+    const updated = products.filter(p => p.id !== id);
+    setProducts(updated);
+    localStorage.setItem("cart", JSON.stringify(updated));
   };
 
   // Calcular valores
@@ -166,6 +173,12 @@ function CarrinhoContent() {
                       <span className="item-price">R$ {p.price.toFixed(2)}</span>
                     </div>
                   </div>
+                  <button 
+                    className="remove-button" 
+                    onClick={() => handleRemoveProduct(p.id)}
+                  >
+                    Remover
+                  </button>
                 </div>
               ))}
             </div>
