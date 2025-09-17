@@ -3,7 +3,8 @@ import { ThemeProvider } from '../ThemeContext'
 import { ThemeEffect } from '../ThemeEffect'
 import './MinhasCompras.css'
 import Header from '../components/Header'
-import { Link } from 'react-router-dom';
+
+import ConteineFino from '../components/ConteineFino'
 
 function MinhasComprasContex() {
     ThemeEffect()
@@ -29,22 +30,7 @@ function MinhasComprasContex() {
 
             <div className='conteine-black-MC'>
                 <div className='conteine-fino-MC' >
-                    <div className='conteine-icon-nomeUsu-MC'>
-                        <div className='icone-user-MC' >
-                            <img src="USER.png" alt="" className='img-USER-MC' />
-                        </div>
-                        <div className='conteine-nomeUsu-MC'>
-                            <Link className='nomeUsuario-MC' to='/Perfil-usuario'> <h3>Nome_Usuario</h3></Link>
-                        </div>
-                    </div>
-                    <div className='div-LINHA1-MC' >
-                        <div className='conteine-LINHA1-MC'></div>
-                    </div>
-                    <div className='conteine-M-F-E-MC'>
-                        <Link className='nome-minhascompras-MC' to='/MinhasCompras'> <h3>Minhas compras</h3></Link>
-                        <Link className='nome-meusFavorito-MC' to='/MeusFavoritos'><h3>Meus Favoritos</h3></Link>
-                        <Link className='nome-endereço-MC' to='/Endereco'><h3>Endereço</h3></Link>
-                    </div>
+                   <ConteineFino />
                 </div>
 
                 <div className='conteine-grosso-MC' >

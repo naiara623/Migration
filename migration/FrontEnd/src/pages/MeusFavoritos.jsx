@@ -4,6 +4,7 @@ import { ThemeProvider } from '../ThemeContext'
 import Header from '../components/Header'
 import './MeusFavoritos.css'
 import { Link } from 'react-router-dom';
+import ConteineFino from '../components/ConteineFino'
 
 
 function MeusFavoritosContext() {
@@ -20,32 +21,10 @@ function MeusFavoritosContext() {
             <div className='conteine-black-MF'>
 
               <div className='conteine-fino-MF' >
-                   <div className='conteine-icon-nomeUsu-MF'>
-
-                           <div className='icone-user-MF' >
-                            <img src="USER.png" alt="" className='img-USER-MF' />
-                           </div>
-
-                           <div  className='conteine-nomeUsu-MF'>
-
-                               <Link className='nomeUsuario-MF' to='/Perfil-usuario'> <h3>Nome_Usuario</h3></Link>
-                            </div>
-                          </div>
-
-                        <div className='div-LINHA1-MF' >
-                        <div className='conteine-LINHA1-MF'></div>
-                        </div>
-                        <div  className='conteine-M-F-E-MF'>
-                         
-                            <Link className='nome-minhascompras-MF' to='/MinhasCompras'> <h3>Minhas compras</h3></Link>
-
-                           <Link className='nome-meusFavorito-MF' to='/MeusFavoritos'><h3>Meus Favoritos</h3></Link>
-
-                            <Link className='nome-endereço-MF' to='/Endereco'><h3>Endereço</h3></Link> 
-
-                        </div> 
                   
-                
+ 
+                  <ConteineFino />
+              
               </div>
  
               <div className='conteine-grosso-MF' >
@@ -54,6 +33,11 @@ function MeusFavoritosContext() {
                           <h2> Meus Favoritos</h2>
                       </div>
 
+                        <div className='conteine-LINHA2-MF' >
+
+                          <div  className='div-LINHA2-MF' ></div>
+                        </div>
+ 
               </div>
             </div>
 
