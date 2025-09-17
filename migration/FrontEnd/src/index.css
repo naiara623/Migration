@@ -11,9 +11,12 @@
   --accent-tertiary: #C5B2A4;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --hero-overlay: rgba(50, 73, 115, 0.7);
+  --hero-overlay1: #c5b2a436;
   --card-bg: #FFFFFF;
-  --text-1: #000000;
+  --text-1: #ffffff;
+  --text-2: #ffff;
   --blue-a: #94B2CE;
+  --blue-b: #324973;
 
   --cadastro-bg: #F7F7F7;
   --cadastro-text: #324973;
@@ -31,6 +34,12 @@
   --text-mudar: #f7f7f7;
 
   --oi: ##8FB3D9;
+
+     /* Cores para mensagens - Modo Claro */
+  --error-color: #D32F2F;
+  --error-bg: #FFEBEE;
+  --success-color: #2E7D32;
+  --success-bg: #E8F5E9;
 
 }
 
@@ -54,9 +63,12 @@
   --card-bg: #24344D;       /* Azul escuro médio */
   --shadow-color: rgba(0, 0, 0, 0.25);
   --hero-overlay: rgba(26, 38, 57, 0.85);
---oi:#24344D
-  --text-1: #FFFFFF;
-   --blue-a:#C7B8A5;
+   --hero-overlay1: rgba(26, 38, 57, 0.85);
+  --oi: #24344D;
+  --text-1: #000000;
+  --text-2: #ffff;
+  --blue-a: #fef1e1;
+  --blue-b: #466997;
 
  --cadastro-bg: #F7F7F7;
   --cadastro-text: #89A9C7;
@@ -80,6 +92,12 @@
 
   --buton-mudar: #648fbf;
   --text-mudar: #324973;
+
+     /* Cores para mensagens - Modo Escuro */
+  --error-color: #F44336;    /* Vermelho mais vibrante para contraste no escuro */
+  --error-bg: #4A1F1D;       /* Vermelho escuro para fundo */
+  --success-color: #4CAF50;  /* Verde mais vibrante para contraste no escuro */
+  --success-bg: #1F2F1F;     /* Verde escuro para fundo */
 
 }
 /* Estilos globais */

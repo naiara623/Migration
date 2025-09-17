@@ -1,109 +1,134 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
 import Header from '../components/Header';
 import './Carrinho.css';
 
-// Componente de Checkbox Customizado para Selecionar Todos
-const CustomCheckbox = ({ id, label, checked, onChange }) => {
-  return (
-    <div className="checkbox-container-new">
-      <input 
-        type="checkbox" 
-        id={id} 
-        checked={checked}
-        onChange={onChange}
-      />
-      <label htmlFor={id} className="checkBox-new">
-        <div className="transition-new"></div>
-      </label>
-      <label htmlFor={id} className="checkbox-label-new">
-        {label}
-      </label>
-      <div className="clear"></div>
-    </div>
-  );
-};
+// Checkbox Customizado
+const CustomCheckbox = ({ id, label, checked, onChange }) => (
+  <div className="checkbox-container-new">
+    <input 
+      type="checkbox" 
+      id={id} 
+      checked={checked}
+      onChange={onChange}
+    />
+    <label htmlFor={id} className="checkBox-new">
+      <div className="transition-new"></div>
+    </label>
+    <label htmlFor={id} className="checkbox-label-new">
+      {label}
+    </label>
+    <div className="clear"></div>
+  </div>
+);
 
-// Componente de Checkbox para Pagamento Pix (área toda clicável)
-const PaymentCheckbox = ({ id, label, checked, onChange }) => {
-  return (
-    <div className="content-pix" onClick={() => onChange(!checked)}>
-      <label className="checkBox-pix-new">
-        <input 
-          type="checkbox" 
-          id={id}
-          checked={checked}
-          onChange={(e) => {
-            e.stopPropagation();
-            onChange(e.target.checked);
-          }}
-        />
-        <div className="transition-pix-new"></div>
-      </label>
-      <div className="text-desc-pix">
-        <span className="text-pix">
-          {label}
-          <p className="desc-pix">Pagamento instantâneo</p>
-        </span>
-      </div>
-    </div>
-  );
-};
-
-// Componente de Checkbox para Produtos (mesmo estilo do "Selecionar todos")
-const ProductCheckbox = ({ id, checked, onChange }) => {
-  return (
-    <div className="checkbox-product-container">
+// Radio de pagamento
+const PaymentRadio = ({ id, label, name, checked, onChange, description }) => (
+  <div className="content-pix" onClick={() => onChange(true)}>
+    <label className="checkBox-pix-new">
       <input 
-        type="checkbox" 
+        type="radio" 
         id={id}
+        name={name}
         checked={checked}
-        onChange={onChange}
+        onChange={(e) => {
+          e.stopPropagation();
+          onChange(e.target.checked);
+        }}
       />
-      <label htmlFor={id} className="checkBox-product">
-        <div className="transition-product"></div>
-      </label>
+      <div className="transition-pix-new"></div>
+    </label>
+    <div className="text-desc-pix">
+      <span className="text-pix">
+        {label}
+        <p className="desc-pix">{description}</p>
+      </span>
     </div>
-  );
-};
+  </div>
+);
+
+// Checkbox Produto
+const ProductCheckbox = ({ id, checked, onChange }) => (
+  <div className="checkbox-product-container">
+    <input 
+      type="checkbox" 
+      id={id}
+      checked={checked}
+      onChange={onChange}
+    />
+    <label htmlFor={id} className="checkBox-product">
+      <div className="transition-product"></div>
+    </label>
+  </div>
+);
 
 function CarrinhoContent() {
   ThemeEffect();
-  
-  // Estado para controlar os checkboxes
-  const [selectAll, setSelectAll] = useState(false);
-  const [products, setProducts] = useState([
-    { id: "product1", checked: false },
-    { id: "product2", checked: false }
-  ]);
-  const [pixSelected, setPixSelected] = useState(false);
 
-  // Função para lidar com a seleção de todos os produtos
+  const [products, setProducts] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("");
+
+  // Cupom
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+
+  // Buscar produtos do localStorage
+  useEffect(() => {
+    const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setProducts(savedCart);
+  }, []);
+
+  // Selecionar todos
   const handleSelectAll = () => {
     const newSelectAll = !selectAll;
     setSelectAll(newSelectAll);
-    
-    // Atualiza todos os produtos
-    setProducts(products.map(product => ({
-      ...product,
-      checked: newSelectAll
-    })));
+    const updated = products.map(p => ({ ...p, checked: newSelectAll }));
+    setProducts(updated);
+    localStorage.setItem("cart", JSON.stringify(updated));
   };
 
-  // Função para lidar com a seleção individual de produtos
-  const handleProductSelect = (productId) => {
-    const updatedProducts = products.map(product => 
-      product.id === productId 
-        ? { ...product, checked: !product.checked } 
-        : product
+  // Selecionar individual
+  const handleProductSelect = (id) => {
+    const updated = products.map(p => 
+      p.id === id ? { ...p, checked: !p.checked } : p
     );
-    
-    setProducts(updatedProducts);
-    
-    // Verifica se todos os produtos estão selecionados
-    const allChecked = updatedProducts.every(product => product.checked);
-    setSelectAll(allChecked);
+    setProducts(updated);
+    setSelectAll(updated.every(p => p.checked));
+    localStorage.setItem("cart", JSON.stringify(updated));
+  };
+
+  // Remover produto
+  const handleRemoveProduct = (id) => {
+    const updated = products.filter(p => p.id !== id);
+    setProducts(updated);
+    localStorage.setItem("cart", JSON.stringify(updated));
+  };
+
+  // Calcular valores
+  const subtotal = products
+    .filter(p => p.checked)
+    .reduce((acc, p) => acc + p.price, 0);
+
+  const desconto = appliedCoupon ? subtotal * appliedCoupon.discount : 0;
+  const total = subtotal - desconto;
+
+  // Função aplicar cupom
+  const handleApplyCoupon = () => {
+    if (couponInput.toLowerCase() === "desconto15") {
+      setAppliedCoupon({ code: "DESCONTO15", discount: 0.15 });
+    } else if (couponInput.toLowerCase() === "migration20") {
+      setAppliedCoupon({ code: "MIGRATION20", discount: 0.20 });
+    } else {
+      alert("Cupom inválido!");
+    }
+  };
+
+  // Função remover cupom
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
   };
 
   return (
@@ -113,77 +138,97 @@ function CarrinhoContent() {
           <Header/>
         </div>
         <div className='contener-contener-Carrinho'>
-          {/* Seção de itens do carrinho */}
+
+          {/* Itens */}
           <div className='carrinho-mostrar-itens'>
             <div className='carrinho-pedidos'>
-              <div className="select-all">
-                <CustomCheckbox 
-                  id="selectAll" 
-                  label={`Selecionar todos os itens (${products.length})`}
-                  checked={selectAll}
-                  onChange={handleSelectAll}
-                />
-              </div>
-              
-              <div className="item-card">
-                <div className="item-header">
-                  <ProductCheckbox 
-                    id="product1" 
-                    checked={products[0].checked}
-                    onChange={() => handleProductSelect("product1")}
+              {products.length > 0 && (
+                <div className="select-all">
+                  <CustomCheckbox 
+                    id="selectAll" 
+                    label={`Selecionar todos os itens (${products.length})`}
+                    checked={selectAll}
+                    onChange={handleSelectAll}
                   />
                 </div>
-                <div className="item-info">
-                  <h3>Maleta de Viagem, Bolsa para Armazenamento de Roupas, mala dobrável</h3>
-                  <div className="item-details">
-                    <span>80L</span>
-                    <span className="item-price">R$ 119,99</span>
-                  </div>
-                </div>
-              </div>
+              )}
               
-              <div className="item-card">
-                <div className="item-header">
-                  <ProductCheckbox 
-                    id="product2" 
-                    checked={products[1].checked}
-                    onChange={() => handleProductSelect("product2")}
-                  />
-                </div>
-                <div className="item-info">
-                  <h3>Outro Produto</h3>
-                  <div className="item-details">
-                    <span>Tamanho Único</span>
-                    <span className="item-price">R$ 247,51</span>
+              {products.length === 0 && (
+                <p className="empty-cart">Seu carrinho está vazio 🛒</p>
+              )}
+
+              {products.map((p) => (
+                <div className="item-card" key={p.id}>
+                  <div className="item-header">
+                    <ProductCheckbox 
+                      id={p.id} 
+                      checked={p.checked}
+                      onChange={() => handleProductSelect(p.id)}
+                    />
                   </div>
+                  <div className="item-info">
+                    <h3>{p.name}</h3>
+                    <div className="item-details">
+                      <span>{p.size}</span>
+                      <span className="item-price">R$ {p.price.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <button 
+                    className="remove-button" 
+                    onClick={() => handleRemoveProduct(p.id)}
+                  >
+                    Remover
+                  </button>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
-          
-          {/* Seção de pagamento */}
+
+          {/* Pagamento */}
           <div className='carrinho-pagar-o-itens'>
             <div className='carrinho-pagamento'>
               <div className="payment-container">
-                <h1 className="payment-title">Produtos selecionados</h1>
+                <h1 className="payment-title">Resumo da compra</h1>
                 <hr className="payment-divider" />
                 
                 <div className="price-section">
                   <div className="price-row">
-                    <span className="price-label">Preço sem desconto</span>
-                    <span className="price-value bold">R$ 367,50</span>
+                    <span className="price-label">Subtotal</span>
+                    <span className="price-value bold">R$ {subtotal.toFixed(2)}</span>
+                  </div>
+
+                  {/* Área do cupom */}
+                  <div className="coupon-section">
+                    {!appliedCoupon ? (
+                      <div className="coupon-input-area">
+                        <input 
+                          type="text" 
+                          placeholder="Digite seu cupom" 
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value)}
+                        />
+                        <button onClick={handleApplyCoupon}>Aplicar</button>
+                      </div>
+                    ) : (
+                      <div className="applied-coupon">
+                        <span>Cupom aplicado: <strong>{appliedCoupon.code}</strong></span>
+                        <button onClick={handleRemoveCoupon}>Remover</button>
+                      </div>
+                    )}
                   </div>
                   
-                  <div className="price-row">
-                    <span className="price-label small">Cupom</span>
-                    <span className="price-value small">R$ -60,86</span>
-                  </div>
+                  {appliedCoupon && (
+                    <div className="price-row">
+                      <span className="price-label small">Desconto ({appliedCoupon.code})</span>
+                      <span className="price-value small">- R$ {desconto.toFixed(2)}</span>
+                    </div>
+                  )}
                   
                   <hr className="payment-divider" />
                   
                   <div className="price-row">
-                    <span className="price-label">Preço total</span>
-                    <span className="price-value bold">R$306,64</span>
+                    <span className="price-label">Total</span>
+                    <span className="price-value bold">R$ {total.toFixed(2)}</span>
                   </div>
                 </div>
                 
@@ -191,15 +236,38 @@ function CarrinhoContent() {
                 
                 <div className="payment-method">
                   <h3>Forma de pagamento</h3>
-                  <PaymentCheckbox 
+                  <PaymentRadio 
                     id="pixPayment" 
+                    name="paymentMethod"
                     label="Pix"
-                    checked={pixSelected}
-                    onChange={setPixSelected}
+                    description="Pagamento instantâneo"
+                    checked={paymentMethod === "pix"}
+                    onChange={() => setPaymentMethod("pix")}
+                  />
+                  <PaymentRadio 
+                    id="visaPayment" 
+                    name="paymentMethod"
+                    label="Visa"
+                    description="Pagamento com cartão Visa"
+                    checked={paymentMethod === "visa"}
+                    onChange={() => setPaymentMethod("visa")}
+                  />
+                  <PaymentRadio 
+                    id="outroPayment" 
+                    name="paymentMethod"
+                    label="Outro"
+                    description="Outras formas"
+                    checked={paymentMethod === "outro"}
+                    onChange={() => setPaymentMethod("outro")}
                   />
                 </div>
                 
-                <button className="buy-button">Comprar agora</button>
+                <button 
+                  className="buy-button" 
+                  disabled={products.filter(p => p.checked).length === 0 || !paymentMethod}
+                >
+                  Comprar agora
+                </button>
               </div>
             </div>
           </div>
