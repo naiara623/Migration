@@ -95,6 +95,7 @@ function LoginContext() {
             placeholder=' Ex: Nayllany Rodrigues da silva'
             value={email}
             onChange={(e) => setEmail(e.target.value)}/>
+            {mensagemEmail && <p style={{ color: 'red', marginTop: '-3%', fontSize: '1rem' }}>{mensagemEmail}</p>}
         </div>
 
 
@@ -104,13 +105,16 @@ function LoginContext() {
             placeholder=' Ex: 123456'
             value={senha}
             onChange={(e) => setSenha(e.target.value)}/>
+            {mensagemSenha && <p style={{ color: 'red', marginTop: '-5%' }}>{mensagemSenha}</p>}
         </div>
       </div>
 
       <div className='Buttons-Login'>
 
         <div className='butonLogar-Login'>
-          <button className='ButtonLogar-Login' onClick={handleLogin} disabled={isLoading}>Logar</button>
+          <button className='ButtonLogar-Login' onClick={handleLogin} disabled={isLoading}>
+            {isLoading ? 'Carregando...' : 'Logar'}
+          </button>
         </div>
 
         <div className='butoncadastrar-Login'>

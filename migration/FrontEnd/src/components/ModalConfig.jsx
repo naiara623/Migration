@@ -1,7 +1,7 @@
 import React from "react";
 import "./ModalConfig.css";
 
-export default function ModalConfig({ isOpen, onClose, onAddCarrinho }) {
+export default function ModalConfig({onClose, isOpen, onAddCarrinho}) {
   if (!isOpen) return null;
 
 
@@ -132,16 +132,35 @@ export default function ModalConfig({ isOpen, onClose, onAddCarrinho }) {
 <div className="inp2uts">
                       <label className="buti">Estampas:</label>
                       <div className="oibu">
-                      <input className="color10" type="radio" name="estampa"/>
-                      <label></label>
-                     <div class="radio-input">
-  <input type="radio" id="estampa-listras" name="estampa" value="listras" hidden />
-  <div class="estampa estampa-listras"></div>
-</div>
-<div class="radio-input">
-  <input type="radio" id="estampa-bolinhas" name="estampa" value="bolinhas" hidden/>
-  <div class="estampa estampa-bolinhas"></div>
-</div>
+
+                        <label className="Nuvem">
+                          <input className="Nuvemoi" type="radio" name="estampa" value="Nuvem" />
+                          {/* <div className="radio-img">
+                            <img className="nuvembu" src="EstampaNuvem.jpg" alt="Nuvem" />
+                          </div> */}
+                        </label>
+                     {/* <label> */}
+  {/* <input type="radio" name="estampa" value="estampa2">
+  <div className="radio-img">
+    <img src="estampa2.png" alt="Estampa 2">
+  </div>
+</label> */}
+
+   <div className="radio1">
+        <input defaultValue={1} name="estampa" type="radio" id="rating-1" />
+        <label title="1 stars" htmlFor="rating-1">
+          <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512">
+            <path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z" />
+          </svg>
+        </label>
+      </div>
+
+<label>
+   <input className="luaoi" type="radio" id="estampa-bolinhas" name="estampa" value="Lua"/>
+</label>
+ 
+  
+
                       <input className="color13" type="radio" name="estampa"/>
                   
 

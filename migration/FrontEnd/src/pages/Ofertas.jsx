@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import './Ofertas.css';
 import Header from '../components/Header';
-import ModalConfig from '../components/ModalConfig';
+// import ModalConfig from '../components/ModalConfig';
 import { ThemeProvider } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
+import ModalConfig from '../components/ModalConfig';
 // import EditarProduct from '../components/EditarProduct';
 // import Header from '../components/Header';
 
@@ -59,11 +60,18 @@ function OfertasContext() {
                 </div>
               ))}
 
-                 <ModalConfig 
+              <ModalConfig 
+              
   isOpen={openModal}
   onClose={() => setOpenModal(false)} 
   onAddCarrinho={(config) => console.log("Config recebida:", config)}
-/>
+              />
+
+                 {/* <ModalConfig 
+  isOpen={openModal}
+  onClose={() => setOpenModal(false)} 
+  onAddCarrinho={(config) => console.log("Config recebida:", config)}
+/> */}
             </div>
         </div>
     </section>     

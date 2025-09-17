@@ -13,6 +13,7 @@ import Produtos from "../pages/Produtos.jsx";
 
 
 import Endereco from "../pages/Endereco.jsx";
+import ProductForm from "../components/ProductForm.jsx";
 
 
 const router = createBrowserRouter([
@@ -24,10 +25,7 @@ const router = createBrowserRouter([
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
     {path: "/minhasCompras", element: <MinhasCompras/>},
     {path: "/meusFavoritos", element: <MeusFavoritos/>},
-<<<<<<< HEAD:migration/src/router/Router.jsx
-    {path: "/produto-novo", element: <ProductForm/>},
-=======
->>>>>>> c617052ebec75bfdbb64e0eecbd7f32d1dacb0c9:migration/FrontEnd/src/router/Router.jsx
+    {path: "/produto-novo", element: <ProductForm />},
     {path: "/car", element: <Carrinho/>},
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
     {path: "/loja", element: <Loja/>},
