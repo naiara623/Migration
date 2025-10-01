@@ -18,7 +18,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 20px;
+  padding: 5px;
 }
 
 .product-container {
@@ -53,7 +53,7 @@ body {
   background: var(--bg-tertiary);
   border-radius: 10px;
   box-shadow: 0 3px 15px var(--shadow-color);
-  padding: 1.8rem;
+  padding: 1.3rem;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -65,7 +65,7 @@ body {
 .product-form {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 1rem;
 }
 
 .form-row {
@@ -299,4 +299,25 @@ body {
     width: 100%;
     padding: 0.8rem;
   }
+}
+
+/* Adicione no seu ProductForm.css */
+
+
+.form-group.image-group {
+  display: flex;
+  align-items: center;
+  gap: 2px; /* reduzido para dar mais espaço */
+}
+
+.product-image-preview {
+  width: 40px;  /* imagem ainda menor */
+  height: auto;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+textarea#description {
+  height: 40px; /* mais compacta */
+  resize: vertical;
 }

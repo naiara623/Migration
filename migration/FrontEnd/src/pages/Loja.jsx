@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import { FaPlusCircle, FaBoxOpen, FaChartPie, FaEdit, FaTrash, FaCheckSquare, FaSquare, FaTimes, FaShoppingCart, FaShare, FaHeart, FaStar } from "react-icons/fa";
 import ProductForm from '../components/ProductForm';
 import './Loja.css';
-
+import NovoProduct from '../components/NovoProduct';
 
 function Lojacontext() {
   ThemeEffect();
@@ -15,6 +15,7 @@ function Lojacontext() {
   const [selectedProducts, setSelectedProducts] = useState(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Dados de desempenho (mockados para demonstração)
   const [performanceData, setPerformanceData] = useState({
@@ -26,53 +27,175 @@ function Lojacontext() {
     salesLabels: ['Jan 15', 'Feb 16', 'Mar 17', 'Apr 18', 'May 19', 'Jun 21', 'Jul 22', 'Aug 23', 'Sep 24', 'Oct 25', 'Nov 26', 'Dec 27']
   });
 
-  // Carregar produtos do localStorage ao iniciar
-  useEffect(() => {
-    const savedProducts = localStorage.getItem("products");
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
+   // CORREÇÃO: Função para carregar produtos com tratamento de IDs
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:3001/api/produtos');
+      if (response.ok) {
+        const data = await response.json();
+        // Garantir que os IDs são números
+        const productsWithNumericIds = data.map(product => ({
+          ...product,
+          id: Number(product.id_produto) // Converter ID para número
+        }));
+        setProducts(productsWithNumericIds);
+        console.log('Produtos carregados:', productsWithNumericIds);
+      } else {
+        console.error('Erro ao carregar produtos');
+      }
+    } catch (error) {
+      console.error('Erro ao conectar com o servidor:', error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+
+  // Carregar produtos ao iniciar
+  useEffect(() => {
+    fetchProducts();
   }, []);
 
-  // Salvar no localStorage sempre que mudar
-  useEffect(() => {
-    localStorage.setItem("products", JSON.stringify(products));
-  }, [products]);
-
-  const handleAddProduct = (newProduct) => {
-    if (editingProduct) {
-      const updatedProducts = products.map(product =>
-        product.id === editingProduct.id
-          ? { ...newProduct, id: editingProduct.id }
-          : product
-      );
-      setProducts(updatedProducts);
-      setEditingProduct(null);
-    } else {
-      setProducts([...products, { id: Date.now(), ...newProduct }]);
+  // Loja.js - Corrigir a função handleAddProduct
+const handleAddProduct = async (newProduct) => {
+  try {
+    const formData = new FormData();
+    formData.append('nome_produto', newProduct.name);
+    formData.append('descricao', newProduct.descricao || '');
+    formData.append('valor_produto', newProduct.price);
+    formData.append('categoria', newProduct.categoria);
+    formData.append('estoque', newProduct.estoque || 0);
+    
+    if (newProduct.image && newProduct.image !== editingProduct?.image_url) {
+      formData.append('image_url', newProduct.image);
     }
-    setActiveSection(null);
+
+    let response;
+    if (editingProduct) {
+      // Atualizar produto existente
+      response = await fetch(`http://localhost:3001/api/produtos/${editingProduct.id_produto}`, {
+        method: 'PUT',
+        body: formData,
+      });
+    } else {
+      // Adicionar novo produto
+      response = await fetch('http://localhost:3001/api/produtos', {
+        method: 'POST',
+        body: formData,
+      });
+    }
+
+    if (response.ok) {
+      await fetchProducts(); // Recarregar a lista
+      setEditingProduct(null);
+      setActiveSection(null);
+    } else {
+      const errorData = await response.json();
+      console.error('Erro do servidor:', errorData);
+      alert('Erro ao salvar produto: ' + (errorData.erro || 'Erro desconhecido'));
+    }
+  } catch (error) {
+    console.error('Erro ao salvar produto:', error);
+    alert('Erro ao conectar com o servidor');
+  }
+};
+
+// Loja.js - A função deleteSelectedProducts já está correta, mas vou melhorar o tratamento de erro
+const deleteSelectedProducts = async () => {
+  if (selectedProducts.size === 0) {
+    alert('Nenhum produto selecionado para excluir.');
+    return;
+  }
+
+  if (window.confirm(`Tem certeza que deseja excluir ${selectedProducts.size} produto(s)?`)) {
+    try {
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const productId of selectedProducts) {
+        try {
+          const response = await fetch(`http://localhost:3001/api/produtos/${productId}`, {
+            method: 'DELETE',
+          });
+          
+          if (response.ok) {
+            successCount++;
+          } else {
+            const errorData = await response.json();
+            console.error(`Erro ao deletar produto ${productId}:`, errorData.erro);
+            errorCount++;
+          }
+        } catch (error) {
+          console.error(`Erro ao deletar produto ${productId}:`, error);
+          errorCount++;
+        }
+      }
+      
+      // Recarregar a lista
+      await fetchProducts();
+      exitSelectionMode();
+      
+      if (errorCount === 0) {
+        alert(`${successCount} produto(s) excluído(s) com sucesso!`);
+      } else {
+        alert(`${successCount} produto(s) excluído(s), ${errorCount} falha(s). Verifique o console.`);
+      }
+      
+    } catch (error) {
+      console.error('Erro geral ao excluir produtos:', error);
+      alert('Erro ao excluir produtos. Verifique o console.');
+    }
+  }
+};
+ // CORREÇÃO: Função de editar corrigida
+  const editSelectedProduct = () => {
+    if (selectedProducts.size === 1) {
+      const productId = Array.from(selectedProducts)[0];
+      console.log('ID do produto para editar:', productId);
+      
+      const productToEdit = products.find(p => Number(p.id) === Number(productId));
+      
+      if (productToEdit) {
+        setEditingProduct(productToEdit);
+        setActiveSection('produtos');
+        exitSelectionMode();
+      } else {
+        alert('Produto não encontrado.');
+      }
+    } else if (selectedProducts.size > 1) {
+      alert('Por favor, selecione apenas um produto para editar.');
+    } else {
+      alert('Por favor, selecione um produto para editar.');
+    }
   };
 
-  // Funções para seleção de produtos
+
   const toggleProductSelection = (productId) => {
+    // Converter para número para garantir consistência
+    const id = Number(productId);
     const newSelected = new Set(selectedProducts);
-    if (newSelected.has(productId)) {
-      newSelected.delete(productId);
+    
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
     } else {
-      newSelected.add(productId);
+      newSelected.add(id);
     }
     setSelectedProducts(newSelected);
+    console.log('Produtos selecionados:', Array.from(newSelected));
   };
 
-  const toggleSelectAll = () => {
+   const toggleSelectAll = () => {
     if (selectedProducts.size === products.length) {
       setSelectedProducts(new Set());
     } else {
-      const allIds = new Set(products.map(product => product.id));
+      // CORREÇÃO: Garantir que todos os IDs são números
+      const allIds = new Set(products.map(product => Number(product.id_produto)));
       setSelectedProducts(allIds);
     }
   };
+
+
 
   const enterSelectionMode = () => {
     setIsSelectionMode(true);
@@ -86,31 +209,24 @@ function Lojacontext() {
     setEditingProduct(null);
   };
 
-  const deleteSelectedProducts = () => {
-    if (window.confirm(`Tem certeza que deseja excluir ${selectedProducts.size} produto(s)?`)) {
-      const updatedProducts = products.filter(product => !selectedProducts.has(product.id));
-      setProducts(updatedProducts);
-      exitSelectionMode();
-    }
-  };
 
-  const editSelectedProduct = () => {
-    if (selectedProducts.size === 1) {
-      const productId = Array.from(selectedProducts)[0];
-      const productToEdit = products.find(p => p.id === productId);
-      setEditingProduct(productToEdit);
-      setActiveSection('produtos');
-    } else if (selectedProducts.size > 1) {
-      alert('Por favor, selecione apenas um produto para editar.');
-    } else {
-      alert('Por favor, selecione um produto para editar.');
-    }
-  };
+  
+
+
 
   const cancelEdit = () => {
     setEditingProduct(null);
     setActiveSection(null);
   };
+
+
+
+
+
+
+
+
+  
 
   // Componente do Dashboard de Desempenho
   const PerformanceDashboard = () => {
@@ -239,8 +355,7 @@ return (
 </div>
 );
   };
-
-  return (
+ return (
     <div className='container-loja'>
       <div className='navebar-ok'>
         <Header/>
@@ -250,10 +365,30 @@ return (
         <div className='opções-ok'> 
           {activeSection === 'produtos' ? (
             <div className="form-container">
-              <div className="form-header">
-                <h2>{editingProduct ? 'Editar Produto' : 'Adicionar Novo Produto'}</h2>
+              <div className="form-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h2 style={{ marginRight: '2px' }}>
+                  {editingProduct ? 'Editar Produto' : 'Adicionar Novo Produto'}
+                </h2>
+                <button
+                  className="cancel-btn"
+                  onClick={() => {
+                    setEditingProduct(null);
+                    setActiveSection(null);
+                  }}
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  X
+                </button>
                 {editingProduct && (
-                  <button className="cancel-edit-btn" onClick={cancelEdit}>
+                  <button className="cancel-edit-btn" onClick={cancelEdit} style={{ marginLeft: '10px' }}>
                     <FaTimes /> Cancelar Edição
                   </button>
                 )}
@@ -310,7 +445,7 @@ return (
           ) : isSelectionMode ? (
             <div className="selection-mode">
               <div className="selection-header">
-                <h2 className='h2'>({selectedProducts.size}) Selecionada/s</h2>
+             <h2 className='h2'>({selectedProducts.size}) {selectedProducts.size === 1 ? 'Selecionada' : 'Selecionadas'}</h2>
                 <div className="selection-actions">
                   <button 
                     className="select-all-btn"
@@ -340,64 +475,32 @@ return (
                   </button>
                 </div>
               </div>
-
-              <div className="products-grid selection-grid">
-                {products.map((product) => (
-                  <div 
-                    key={product.id} 
-                    className={`product-card ${selectedProducts.has(product.id) ? 'selected' : ''}`}
-                    onClick={() => toggleProductSelection(product.id)}
-                  >
-                    <div className="selection-checkbox">
-                      {selectedProducts.has(product.id) ? <FaCheckSquare /> : <FaSquare />}
-                    </div>
-                    
-                    <img src={product.imagePreview} alt={product.name} className="product-image" />
-                    <h3 className="product-title">{product.name}</h3>
-                    
-                    <div className="product-rating">
-                      {[...Array(5)].map((_, i) => (
-                        <i
-                          key={i}
-                          className={`fas fa-star ${i < product.rating ? 'filled' : ''}`}
-                        ></i>
-                      ))}
-                    </div>
-
-                    <p className="product-price">R$ {product.price}</p>
-                  </div>
-                ))}
-              </div>
+    <NovoProduct 
+      products={products} 
+      isSelectionMode={isSelectionMode} 
+      selectedProducts={selectedProducts} 
+      toggleProductSelection={toggleProductSelection} 
+    />         
             </div>
-          ) : products.length === 0 ? (
-            <div className="placeholder-image">
-              <img className='imagg' src="io.png" alt="My Store" />
-            </div>
-          ) : (
-            <div className="featured-products">
-              <h2 className="section-title">Produtos Cadastrados</h2>
-              <div className="products-grid">
-                {products.map((product) => (
-                  <div key={product.id} className="product-card">
-                    <img src={product.imagePreview} alt={product.name} className="product-image" />
-                    <h3 className="product-title">{product.name}</h3>
-                    
-                    <div className="product-rating">
-                      {[...Array(5)].map((_, i) => (
-                        <i
-                          key={i}
-                          className={`fas fa-star ${i < product.rating ? 'filled' : ''}`}
-                        ></i>
-                      ))}
-                    </div>
+          ) : loading ? (
+            <div className="loading">Carregando produtos...</div>
+            //oi
+          ) :products.length === 0 ? (
+  <div className="placeholder-image">
+    <img className='imagg' src="io.png" alt="My Store" />
+  </div>
+) : (
+  <div className="featured-products">
+    <h2 className="section-title">Produtos Cadastrados</h2>
+  <NovoProduct 
+    products={products}
+    isSelectionMode={isSelectionMode}
+    selectedProducts={selectedProducts}
+    toggleProductSelection={toggleProductSelection}
+  />
 
-                    <p className="product-price">R$ {product.price}</p>
-                    <button className="add-to-cart">Adicionar ao Carrinho</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+  </div>
+)}
         </div>
       </div>
     </div>

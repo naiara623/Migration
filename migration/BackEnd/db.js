@@ -56,7 +56,7 @@ async function selectUser(email_user, senhauser) {
   try {
     const result = await client.query(sql, [email_user, senhauser]);
     if (result.rows.length > 0) {
-      const { senha, ...userWithoutPassword } = result.rows[0];
+      const { senhauser, ...userWithoutPassword } = result.rows[0];
       console.log("Usuário encontrado=====>>>>>>> ", userWithoutPassword);
       
       return userWithoutPassword;
@@ -66,6 +66,40 @@ async function selectUser(email_user, senhauser) {
     client.release();
   }
 }
+
+async function updateUser(email, user) {
+  const client = await pool.connect();
+  const sql = `
+    UPDATE usuarios
+    SET nome_usuario = $1,
+        email_user = $2,
+        estado_cidade = $3,
+        nome_rua = $4,
+        complemento = $5,
+        numero = $6,
+        referencia = $7
+    WHERE email_user = $8
+    RETURNING *;
+  `;
+  const values = [
+    user.nome_usuario,
+    user.email_user,
+    user.estado_cidade,
+    user.nome_rua,
+    user.complemento,
+    user.numero,
+    user.referencia,
+    email
+  ];
+
+  try {
+    const result = await client.query(sql, values);
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+}
+
 
 
 
@@ -88,13 +122,208 @@ async function getUserByEmail(email_user) {
 
 
 
+
+
+// Função para buscar todas as categorias
+async function selectAllCategories() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT * FROM categorias ORDER BY nome_categoria');
+    return result.rows;
+  } catch (error) {
+    console.error('Erro ao buscar categorias:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Função para buscar categoria por nome
+async function selectCategoryByName(nome_categoria) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT * FROM categorias WHERE nome_categoria = $1', [nome_categoria]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Erro ao buscar categoria:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+
+
+
+// Remover estas funções duplicadas do db.js (elas já existem no frontend)
+// const deleteSelectedProducts = async () => { ... };
+// const editSelectedProduct = () => { ... };
+
+
+
+
+
+
+// db.js - Corrigir TODAS as funções para usar id_produto
+
+// Função para inserir produto (já está correta)
+async function insertProduct(product) {
+  const client = await pool.connect();
+  const sql = `
+    INSERT INTO produtos (nome_produto, descricao, valor_produto, id_categoria, estoque, imagem_url, avaliacao_produto, data_criacao)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) 
+    RETURNING *
+  `;
+  
+  const values = [
+    product.nome_produto,
+    product.descricao,
+    product.valor_produto,
+    product.id_categoria,
+    product.estoque,
+    product.image_url,
+    product.avaliacao_produto || 0 // valor padrão
+  ];
+
+  try {
+    const result = await client.query(sql, values);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Erro ao inserir produto:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Função para buscar todos os produtos
+async function selectAllProducts() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT p.*, c.nome_categoria 
+      FROM produtos p 
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria 
+      ORDER BY p.data_criacao DESC
+    `);
+    return result.rows;
+  } catch (error) {
+    console.error('Erro ao buscar produtos:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Função para buscar produto por ID
+async function selectProductById(id) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT p.*, c.nome_categoria 
+      FROM produtos p 
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria 
+      WHERE p.id_produto = $1
+    `, [id]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Erro ao buscar produto:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Função para atualizar produto
+async function updateProduct(id, product) {
+  const client = await pool.connect();
+  
+  let sql;
+  let values;
+  
+  if (product.image_url) {
+    sql = `
+      UPDATE produtos 
+      SET nome_produto = $1, descricao = $2, valor_produto = $3, 
+          id_categoria = $4, estoque = $5, imagem_url = $6
+      WHERE id_produto = $7
+      RETURNING *
+    `;
+    values = [
+      product.nome_produto,
+      product.descricao,
+      product.valor_produto,
+      product.id_categoria,
+      product.estoque,
+      product.image_url,
+      id
+    ];
+  } else {
+    sql = `
+      UPDATE produtos 
+      SET nome_produto = $1, descricao = $2, valor_produto = $3, 
+          id_categoria = $4, estoque = $5
+      WHERE id_produto = $6
+      RETURNING *
+    `;
+    values = [
+      product.nome_produto,
+      product.descricao,
+      product.valor_produto,
+      product.id_categoria,
+      product.estoque,
+      id
+    ];
+  }
+
+  try {
+    const result = await client.query(sql, values);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Erro ao atualizar produto:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Função para deletar produto (NOVA - corrigida)
+async function deleteProduct(id) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'DELETE FROM produtos WHERE id_produto = $1 RETURNING *', 
+      [id]
+    );
+    
+    if (result.rowCount === 0) {
+      throw new Error('Produto não encontrado');
+    }
+    
+    return result.rows[0];
+  } catch (error) {
+    console.error('Erro ao deletar produto:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// REMOVER as funções duplicadas do frontend que estavam no db.js
+// (manter apenas as funções de banco de dados)
+
 module.exports = {
-  pool,              // conexão com o banco
-  insertUser,        // cadastra usuário
-  selectUser,        // login
-  getUserByEmail,    // pega usuário por email
-//   updateUser,        // edita usuário
-//   deleteUser,        // exclui usuário e posts
-//   inserirComentario, // salva comentário
-//   listarComentarios  // lista comentários
+  pool,
+  insertProduct,
+  selectAllProducts,
+  selectProductById,
+  updateProduct,
+  deleteProduct, // Adicionar a função corrigida
+  selectAllCategories,
+  selectCategoryByName,
+  insertUser,
+  selectUser,
+  getUserByEmail,
+  updateUser
+  // REMOVER: editSelectedProduct, deleteSelectedProducts (são do frontend)
 };

@@ -4,6 +4,18 @@ import "./ModalConfig.css";
 export default function ModalConfig({onClose, isOpen, onAddCarrinho}) {
   if (!isOpen) return null;
 
+  const addToCart = (product) => {
+  const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+  const exists = savedCart.some(p => p.id === product.id);
+
+  if (!exists) {
+    const updatedCart = [...savedCart, { ...product, checked: false }];
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    alert("Produto adicionado ao carrinho!");
+  } else {
+    alert("Esse produto já está no carrinho!");
+  }
+};
 
 
   return (
@@ -191,7 +203,7 @@ export default function ModalConfig({onClose, isOpen, onAddCarrinho}) {
                   </div>
 
                   <div className="Buton-carrinho">
-                    <button className="buton-carrinho2">Adicionar ao carrinho</button>
+                    <button className="buton-carrinho2" onClick={addToCart}>Adicionar ao carrinho</button>
                   </div>
                 </div>
               </div>

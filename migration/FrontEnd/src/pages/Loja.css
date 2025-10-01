@@ -341,8 +341,9 @@ body {
 .form-header {
   display: flex;
   justify-content: space-between;
+  Width: 100%;
   align-items: center;
-  padding: 8px;
+  padding: 7px;
   background: var( --text-primary);
   border-radius: 10px;
   box-shadow: var(--shadow);
