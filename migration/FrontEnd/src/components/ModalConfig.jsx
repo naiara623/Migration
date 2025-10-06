@@ -173,7 +173,7 @@ export default function ModalConfig({onClose, isOpen, onAddCarrinho}) {
  
   
 
-                      <input className="color13" type="radio" name="estampa"/>
+                      <input className="colorsem" type="radio" name="estampa"/>
                   
 
 </div>
