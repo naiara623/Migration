@@ -5,9 +5,13 @@ import './MinhasCompras.css'
 import Header from '../components/Header'
 
 import ConteineFino from '../components/ConteineFino'
+import Pagar from '../components/Pagar'
 
 function MinhasComprasContex() {
     ThemeEffect()
+
+    //modal dos icones
+    const [modalAberto, setModalAberto] = useState(false);
 
     // Essa é a nossa "memória". O 0 é o valor inicial, a primeira etapa.
     const [etapaAtual, setEtapaAtual] = useState(0);
@@ -46,14 +50,23 @@ function MinhasComprasContex() {
 
                         {/* Ícone da Carteira */}
                         <div className={`div-icone-carteira-MC ${etapaAtual === 0 ? 'passo-ativo' : etapaAtual > 0 ? 'passo-concluido' : ''}`} >
-                            <img className='img-icone-carteira-MC' src="icone-carteira.png" alt="" />
+                            <img className='img-icone-carteira-MC' onClick={() => setModalAberto(true) } src="icone-carteira.png" alt="" />
+
+                               <Pagar 
+                               isOpen={modalAberto}
+                               onClose ={() => setModalAberto(false)}
+                               />         
+
                             <h3 className='text-icone-carteira-MC' >A pagar</h3>
                         </div>
 
 
                         {/* Ícone da Caixa */}
                         <div className={`div-icone-caixa-MC ${etapaAtual === 1 ? 'passo-ativo' : etapaAtual > 1 ? 'passo-concluido' : ''}`} >
-                            <img className='img-icone-caixa-MC' src="icone-caixa.png" alt="" />
+                            <img className='img-icone-caixa-MC'  src="icone-caixa.png" alt="Clique-Aqui" />  
+
+
+
                             <h3 className='text-icone-caixa-MC' >Preparando</h3>
                         </div>
 

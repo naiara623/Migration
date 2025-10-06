@@ -31,6 +31,9 @@
     text-align: center;
     color: #324973;
     font-size: 1.3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .div-LINHA2-MC{
@@ -42,7 +45,7 @@
 
 .conteine-LINHA2-MC{
     border: 1px solid rgb(80, 80, 84);
-    width: 90%;
+    width: 95%;
     height: 0%;
 }
 
@@ -141,7 +144,7 @@
 
 .conteine-LINHA3-MC{
     border: 1px solid rgb(80, 80, 84);
-    width: 90%;
+    width: 95%;
     height: 0%;
 }
 

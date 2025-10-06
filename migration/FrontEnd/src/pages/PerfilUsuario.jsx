@@ -4,6 +4,7 @@ import { ThemeEffect } from '../ThemeEffect'
 import './PerfilUsuario.css'; 
 import Header from '../components/Header';
 import { Link } from 'react-router-dom';
+import ConteineFino from '../components/ConteineFino'
 
 function PerfilUsuariocontext(){
     ThemeEffect()
@@ -16,31 +17,10 @@ function PerfilUsuariocontext(){
 
               <div className='conteine-preto-PRF'>
                 
-                  <div className='conteine-fino-PRF'>
-
-                        <div className='conteine-icon-nomeUsu-PRF'>
-
-                           <div className='icone-user-PRF' >
-                            <img src="User1.png" alt="Foto de usuario" className='img-USER-PRF' />
-                           </div>
-
-                           <div  className='conteine-nomeUsu-PRF'>
-                            <h3>Nome_Usuario</h3></div>
-                          </div>
-
-                        <div  className='conteine-LINHA1-PRF'></div>
-
-                        <div  className='conteine-M-F-E-PRF'>
-                         
-                            <Link className='nome-minhascompras-PRF' to='/MinhasCompras'> <h3>Minhas compras</h3></Link>
-
-                           <Link className='nome-meusFavorito-PRF' to='/MeusFavoritos'><h3>Meus Favoritos</h3></Link>
-
-                            <Link className='nome-endereço-PRF' to='/Endereco'><h3>Endereço</h3></Link> 
-
-                        </div>
-
-                  </div>
+                 {/* colocar o componente AQUI! */}
+                 <div className='conteine-fino-MC' >
+                   <ConteineFino />
+                </div>
 
                    <div className='conteine-grosso-PRF'>
 
@@ -48,28 +28,32 @@ function PerfilUsuariocontext(){
                               <h2>Informações Pessoais</h2>
                       </div>
                       
-                      <div  className='conteine-LINHA2-PRF'></div>
-
+                      <div className="conteine-LINHA2-PRF">
+                       <div  className='div-LINHA2-PRF'></div>
+                      </div>
  
+                      <div className='div-vazia3' ></div>
+
                       <div className='campo-formulario-nome-PRF' >
-                            <label className='text-nome-PRF'   htmlFor="">Nome do usuário:</label>
+                            <label className='funcao-cor-Em-SE-SX'htmlFor="">Nome do usuário:</label>
                               <input type="text" name="" id="" className='input-nome-PRF' />
                       </div> 
 
                       
                       <div className='campo-formulario-Email-PRF' >
-                            <label htmlFor="">Email:</label>
+                            <label className='funcao-cor-Em-SE-SX'  htmlFor="">Email:</label>
                               <input type="text" name="" id="" className='input-Email-PRF' />
                       </div> 
 
                           
                       <div className='campo-formulario-senha-PRF' >
-                            <label htmlFor="">Senha:</label>
+                            <label className='funcao-cor-Em-SE-SX' htmlFor="">Senha:</label>
                               <input type="text" name="" id="" className='input-senha-PRF' />
                       </div>         
  
                       <div className='campo-de-opção-sexo-PRF'>
 
+                                <div className='div-VAZIA4-PRF' ></div>
 
                                 <label className='label-sexo-PRF' >Sexo:</label>
 

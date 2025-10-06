@@ -1,0 +1,20 @@
+.englobaTudo-Modal{
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #324973b1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    /* border: 2px solid red; */
+    /* height: 100vh; */
+    height: 100%;
+    width: 100%;
+}
+
+.grande-modal{
+    border: 2px solid yellow;
+    width: 40%;
+    height: 40%;
+}

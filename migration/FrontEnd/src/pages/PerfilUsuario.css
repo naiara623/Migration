@@ -1,18 +1,18 @@
 .vermelha-PRF{
     background: linear-gradient(to bottom, #324973, #324973, #F7F7F7);
-    border: 4px solid red;
+    /* border: 4px solid red; */
     width: 100%;
     height: 100vh;
 }
 
 .navbar-PRF{
-    border: 4px solid rgb(200, 255, 0);
+    /* border: 4px solid rgb(200, 255, 0); */
     width: 100%;
     height:11%;
 }
 
 .conteine-preto-PRF{
-    border: 4px solid rgb(0, 0, 0);
+    /* border: 4px solid rgb(0, 0, 0); */
     width: 100%;
     height:89%;
     display: flex;
@@ -22,7 +22,7 @@
 }
 
 .conteine-fino-PRF{
-    border: 4px solid rgb(9, 190, 28);
+    /* border: 4px solid rgb(9, 190, 28); */
     width: 17%;
     height:80%;
     background-color: #D9D9D9;
@@ -33,90 +33,49 @@
 }
 
 .conteine-grosso-PRF{
-    border: 4px solid rgb(11, 166, 233);
+    /* border: 4px solid rgb(11, 166, 233); */
     width: 35%;
     height:80%;
     background-color: #D9D9D9;
 }
 
-.conteine-icon-nomeUsu-PRF{
-    border: 4px solid rgb(197, 165, 22);
-    width: 100%;
-    height: 15%;
-    display: flex;
-}
-
-.icone-user-PRF{
-    border: 4px solid rgb(22, 197, 95);
-     width: 30%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.conteine-nomeUsu-PRF{
-    border: 4px solid rgb(22, 197, 95);
-     width: 70%;
-    height: 100%;
-    padding-top: 7%;
-}
-
-.img-USER-PRF{
-    width: 80%;
-    height: 80%;
-}
-
-.conteine-LINHA1-PRF{
-    border: 2px solid rgb(80, 80, 84);
-    width: 90%;
-    height: 0%;
-}
-
-.conteine-M-F-E-PRF{
-    border: 4px solid rgb(197, 22, 150);
-    width: 100%;
-    height: 85%;
-    padding: 10%;
-    display: flex;
-    flex-direction: column;
-    gap: 3%;
-}
-
-.nome-minhascompras-PRF{
-    text-decoration-line: none;
-    color: #324973;
-}
-
-.nome-meusFavorito-PRF{
-    text-decoration-line: none;
-    color: #324973;
-}
-
-.nome-endereço-PRF{
-    text-decoration-line: none;
-    color: #324973;
-}
-
-
 .informação-pessoais-PRF{
-     border: 4px solid rgb(197, 165, 22);
+     /* border: 4px solid rgb(197, 165, 22); */
     width: 100%;
     height: 15%;
     text-align: center;
     color: #324973;
     font-size: 1.3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .conteine-LINHA2-PRF{
- border: 2px solid rgb(80, 80, 84);
-    width: 90%;
+     /* border: 1px solid rgb(80, 80, 84); */
+    width: 100%;
+    height: 0%;
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+}
+
+
+.div-LINHA2-PRF{
+ border: 1px solid rgb(80, 80, 84);
+    width: 95%;
     height: 0%;
 
 }
 
+.div-vazia3{
+     /* border: 4px solid rgb(95, 5, 5); */
+    width: 100%;
+    height: 6%;
+}
+
 .campo-formulario-nome-PRF{
-    border: 4px solid rgb(197, 165, 22);
+    /* border: 4px solid rgb(95, 5, 5); */
     width: 100%;
     height: 15%;
     display: flex;
@@ -136,7 +95,7 @@
 }
 
 .campo-formulario-Email-PRF{
-    border: 4px solid rgb(48, 22, 197);
+    /* border: 4px solid rgb(48, 22, 197); */
     width: 100%;
     height: 15%;
     display: flex;
@@ -155,7 +114,7 @@
 }
 
 .campo-formulario-senha-PRF{
-      border: 4px solid rgb(197, 22, 142);
+      /* border: 4px solid rgb(197, 22, 142); */
     width: 100%;
     height: 15%;
     display: flex;
@@ -175,7 +134,7 @@
 }
 
 .campo-de-opção-sexo-PRF{
-    border: 4px solid rgb(239, 237, 236);
+    /* border: 4px solid rgb(214, 76, 8); */
     width: 100%;
     height: 9%;
     display: flex;
@@ -183,21 +142,30 @@
     align-items: center;
 }
 
+.div-VAZIA4-PRF{
+    /* border: 4px solid blue; */
+    color: #554;
+    height: 100%;
+    width: 5%;
+}
+
 .label-sexo-PRF{
-    border: 4px solid blue;
-      font-weight: bold;
+    /* border: 4px solid blue; */
      color: #554;
      height: 100%;
-     width: 20%;
-     padding-left: 9%;
+     width: 17%;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+    
 }
 
 
 .opcoes-sexo{
     display: flex;
-    width: 60%;
+    width: 62%;
     height: 100%;
-     border: 4px solid rgb(8, 37, 27);
+     /* border: 4px solid rgb(8, 37, 27); */
      display: flex;
      justify-content: center;
      align-items: center;
@@ -206,19 +174,20 @@
 }
 
 .div-vazia-1-PRF{
-border: 4px solid rgb(22, 197, 31);
- width: 20%;
+/* border: 4px solid rgb(22, 197, 31); */
+ width: 17%;
 height: 100%;
 }
 
 .div-vazia-2-PRF{
-border: 4px solid rgb(22, 197, 31);
-height: 6%;
+/* border: 2px solid rgb(132, 148, 133); */
+height: 2%;
 }
+
 .conteine-dos-buttons-PRF{
- border: 4px solid rgb(22, 197, 31);
+ /* border: 4px solid rgb(59, 237, 68); */
     width: 100%;
-    height: 25%;
+    height: 23%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -278,4 +247,8 @@ height: 6%;
     .botao-editar, .botao-deletar {
         width: 100%;
     }
+}
+
+.funcao-cor-Em-SE-SX{
+color: #324973;
 }
