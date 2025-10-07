@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './ProductForm.css';
 
 
-function ProductForm({ onAddCarrinho }) {
+function ProductForm({ onAddCarrinho, editingProduct, onSave, onCancel }) {
   const [product, setProduct] = useState({
    nome_produto: '',
     descricao: '',

@@ -5,20 +5,27 @@ const bodyParser = require("body-parser");    // Facilita o tratamento de JSON n
 const multer = require("multer");           // Usado para upload de arquivos
 const path = require("path");                 // Lida com caminhos de arquivos/pastas
 const session = require('express-session');   // Gerencia sessões de usuário
-require("dotenv").config();                   // Carrega variáveis de ambiente do arquivo .env
-const db = require("./db");                   // Importa a conexão com o banco de dados
+require("dotenv").config();                   // Carrega variáveis de ambiente do arquivo .env                // Importa a conexão com o banco de dados
 const {pool,
+  deleteProduct,
   insertProduct,
   updateProduct,
   selectAllCategories,
   selectCategoryByName,
   insertUser,
   selectUser,
-   editSelectedProduct,
-  deleteSelectedProducts,
+  selectCategoryByName,
+  selectAllCategories,
   selectAllProducts,
   getUserByEmail,     // adicione aqui
-  updateUser          // parece que você usa updateUser na rota PUT /api/usuarios/:email, então importe também
+  updateUser,
+  getCarrinhoByUserId,
+  addToCarrinho,
+  updateCarrinhoItem,
+  removeFromCarrinho,
+  clearCarrinho,
+  createPedido,
+  getPedidosByUserId       // parece que você usa updateUser na rota PUT /api/usuarios/:email, então importe também
 } = require("./db");
  // Importa funções do banco
 
@@ -153,6 +160,83 @@ app.get('/api/categorias', async (req, res) => {
   }
 });
 
+
+// Rota para obter todas as categorias
+app.get('/api/categorias', async (req, res) => {
+  try {
+    console.log('Buscando categorias...');
+    const categorias = await selectAllCategories();
+    console.log('Categorias encontradas:', categorias);
+    res.json(categorias);
+  } catch (error) {
+    console.error('Erro ao buscar categorias:', error);
+    res.status(500).json({ erro: 'Erro ao buscar categorias' });
+  }
+});
+
+
+app.get('/api/produtos/categoria/id/:id_categoria', async (req, res) => {
+  const id_categoria = parseInt(req.params.id_categoria);
+
+  try {
+    const client = await pool.connect();
+
+    // Verifica se a categoria existe
+    const categoriaCheck = await client.query(
+      'SELECT * FROM categorias WHERE id_categoria = $1',
+      [id_categoria]
+    );
+
+    if (categoriaCheck.rowCount === 0) {
+      client.release();
+      return res.status(404).json({ erro: 'Categoria não encontrada' });
+    }
+
+    const result = await client.query(`
+      SELECT p.*, c.nome_categoria 
+      FROM produtos p 
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria 
+      WHERE p.id_categoria = $1
+      ORDER BY p.data_criacao DESC
+    `, [id_categoria]);
+
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar produtos por categoria:', error);
+    res.status(500).json({ erro: 'Erro ao buscar produtos por categoria' });
+  }
+});
+
+
+app.get('/api/produtos/categoria/:nome_categoria', async (req, res) => {
+  const nome_categoria = req.params.nome_categoria;
+
+  try {
+    const categoria = await selectCategoryByName(nome_categoria);
+
+    if (!categoria) {
+      return res.status(404).json({ erro: 'Categoria não encontrada' });
+    }
+
+    const client = await pool.connect();
+    const result = await client.query(`
+      SELECT p.*, c.nome_categoria 
+      FROM produtos p 
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria 
+      WHERE c.nome_categoria = $1
+      ORDER BY p.data_criacao DESC
+    `, [nome_categoria]);
+    
+    res.json(result.rows);
+    client.release();
+  } catch (error) {
+    console.error('Erro ao buscar produtos por categoria:', error);
+    res.status(500).json({ erro: 'Erro ao buscar produtos por categoria' });
+  }
+});
+
+
 // Rota para cadastrar produto (modificada)
 app.post('/api/produtos', upload.single('image_url'), async (req, res) => {
   try {
@@ -184,6 +268,24 @@ app.post('/api/produtos', upload.single('image_url'), async (req, res) => {
     res.status(500).json({ erro: 'Erro ao cadastrar produto' });
   }
 });
+
+app.get('/api/produtos', (req, res) => {
+  const categoria = req.query.categoria;
+  let query = 'SELECT * FROM produtos';
+  if (categoria) {
+    query += ' WHERE categoria = ?';
+    db.query(query, [categoria], (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(results);
+    });
+  } else {
+    db.query(query, (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(results);
+    });
+  }
+});
+
 
 // server.js - Corrigir a rota de atualização
 app.put('/api/produtos/:id', upload.single('image_url'), async (req, res) => {
@@ -263,6 +365,139 @@ app.delete('/api/produtos/:id', async (req, res) => {
     } else {
       res.status(500).json({ erro: 'Erro ao deletar produto' });
     }
+  }
+});
+
+app.get('/api/produtos/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await selectProductById(id);
+    if (!product) {
+      return res.status(404).json({ erro: 'Produto não encontrado' });
+    }
+    res.json(product);
+  } catch (error) {
+    console.error('Erro ao buscar produto:', error);
+    res.status(500).json({ erro: 'Erro ao buscar produto' });
+  }
+});
+
+
+
+// Rotas do Carrinho
+app.get('/api/carrinho', async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ erro: 'Não autenticado' });
+  }
+
+  try {
+    const usuario = await getUserByEmail(req.session.user.email_user);
+    if (!usuario) {
+      return res.status(404).json({ erro: 'Usuário não encontrado' });
+    }
+
+    const carrinhoItens = await getCarrinhoByUserId(usuario.idusuarios);
+    res.json(carrinhoItens);
+  } catch (error) {
+    console.error('Erro ao buscar carrinho:', error);
+    res.status(500).json({ erro: 'Erro ao buscar carrinho' });
+  }
+});
+
+app.post('/api/carrinho', async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ erro: 'Não autenticado' });
+  }
+
+  try {
+    const usuario = await getUserByEmail(req.session.user.email_user);
+    if (!usuario) {
+      return res.status(404).json({ erro: 'Usuário não encontrado' });
+    }
+
+    const { id_produto, quantidade = 1, tamanho = '', cor = '' } = req.body;
+    
+    const carrinhoItem = await addToCarrinho({
+      id_usuario: usuario.idusuarios,
+      id_produto,
+      quantidade,
+      tamanho,
+      cor
+    });
+
+    res.status(201).json({ mensagem: 'Produto adicionado ao carrinho', item: carrinhoItem });
+  } catch (error) {
+    console.error('Erro ao adicionar ao carrinho:', error);
+    res.status(500).json({ erro: 'Erro ao adicionar ao carrinho' });
+  }
+});
+
+app.put('/api/carrinho/:id', async (req, res) => {
+  try {
+    const { quantidade } = req.body;
+    const updatedItem = await updateCarrinhoItem(req.params.id, quantidade);
+    res.json({ mensagem: 'Carrinho atualizado', item: updatedItem });
+  } catch (error) {
+    console.error('Erro ao atualizar carrinho:', error);
+    res.status(500).json({ erro: 'Erro ao atualizar carrinho' });
+  }
+});
+
+app.delete('/api/carrinho/:id', async (req, res) => {
+  try {
+    const removedItem = await removeFromCarrinho(req.params.id);
+    res.json({ mensagem: 'Item removido do carrinho', item: removedItem });
+  } catch (error) {
+    console.error('Erro ao remover do carrinho:', error);
+    res.status(500).json({ erro: 'Erro ao remover do carrinho' });
+  }
+});
+
+// Rotas de Pedidos
+app.post('/api/pedidos', async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ erro: 'Não autenticado' });
+  }
+
+  try {
+    const usuario = await getUserByEmail(req.session.user.email_user);
+    if (!usuario) {
+      return res.status(404).json({ erro: 'Usuário não encontrado' });
+    }
+
+    const { itens, total, metodo_pagamento, endereco_entrega } = req.body;
+
+    const pedido = await createPedido({
+      id_usuario: usuario.idusuarios,
+      itens,
+      total,
+      metodo_pagamento,
+      endereco_entrega
+    });
+
+    res.status(201).json({ mensagem: 'Pedido criado com sucesso', pedido });
+  } catch (error) {
+    console.error('Erro ao criar pedido:', error);
+    res.status(500).json({ erro: 'Erro ao criar pedido' });
+  }
+});
+
+app.get('/api/pedidos', async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ erro: 'Não autenticado' });
+  }
+
+  try {
+    const usuario = await getUserByEmail(req.session.user.email_user);
+    if (!usuario) {
+      return res.status(404).json({ erro: 'Usuário não encontrado' });
+    }
+
+    const pedidos = await getPedidosByUserId(usuario.idusuarios);
+    res.json(pedidos);
+  } catch (error) {
+    console.error('Erro ao buscar pedidos:', error);
+    res.status(500).json({ erro: 'Erro ao buscar pedidos' });
   }
 });
 

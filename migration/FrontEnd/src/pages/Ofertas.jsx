@@ -1,96 +1,92 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
 import './Ofertas.css';
 import Header from '../components/Header';
-// import ModalConfig from '../components/ModalConfig';
+import ModalConfig from '../components/ModalConfig';
 import { ThemeProvider } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
-import ModalConfig from '../components/ModalConfig';
-// import EditarProduct from '../components/EditarProduct';
-// import Header from '../components/Header';
-
-const products = [
-  { id: 1, name: 'Mochila Viagem Pro', price: 299.90, image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', rating: 5 },
-  { id: 2, name: 'Organizador de mala', price: 199.90, image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', rating: 4 },
-  { id: 3, name: 'Mapa Mundi', price: 499.90, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', rating: 5 },
-  { id: 4, name: 'Tênis para trilhas', price: 249.90, image: 'https://images.unsplash.com/photo-1600269452121-4f2416e55c28?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', rating: 4 },
-];
-
+import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 
 function OfertasContext() {
-   ThemeEffect();
+  ThemeEffect();
+const location = useLocation();
 
+const queryParams = new URLSearchParams(location.search);
+const categoria = queryParams.get('categoria');
 
+  const [openModal, setOpenModal] = useState(false);
+  const [products, setProducts] = useState([]);
 
+  useEffect(() => {
+    // Buscar os produtos da API
+    const fetchProducts = async () => {
+      try {
+     const response = await axios.get('http://localhost:3001/api/produtos', {
+  params: { categoria }
+});
 
-  // const [open, setOpen] = useState(false);
-  const  [openModal, setOpenModal] = useState(false);
+        setProducts(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar produtos:', error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   return (
-      <div className='amarela-Ofertas'>
+    <div className='amarela-Ofertas'>
+      <div className='Navbar-global'>
+        <Header />
+      </div>
 
-        <div className='Navbar-global'>
-            <Header />
-        </div>
-
-        <div className='DivGlobal-Ofertas'>
-            <div className="produtos1-Ofertas">
-                 <section className="featured-products">
-
-        <div className="container2">
-
-            {/* <h2 className="section-title">Produtos em Ofertas</h2> */}
-            <h2 className='oiTest'>Promoções do Dia</h2>
-            
-            <div className="products-grid">
-                
-              {products.map(product => (
-                <div key={product.id} className="product-card">
+      <div className='DivGlobal-Ofertas'>
+        <div className="produtos1-Ofertas">
+          <section className="featured-products">
+            <div className="container2">
+              <h2 className='oiTest'>Promoções do Dia</h2>
+              <div className="products-grid">
+                {products.map(product => (
+                  <div key={product.id_produto} className="product-card">
                     <div className="product-image">
-                      <img src={product.image} alt={product.name} />
-                      <div className="product-badge">Novo</div>
+                      <img src={`http://localhost:3001${product.image_url}`} alt={product.nome_produto} />
+                      <div className="product-badge">Oferta</div>
                     </div>
-                  <div className="product-info">
-                    <h3>{product.name}</h3>
-                    <div className="product-rating">
-                      {[...Array(5)].map((_, i) => (
-                        <i key={i} className={`fas fa-star ${i < product.rating ? 'filled' : ''}`}></i>
-                      ))}
+                    <div className="product-info">
+                      <h3>{product.nome_produto}</h3>
+                      <div className="product-rating">
+                        {[...Array(5)].map((_, i) => (
+                          <i key={i} className={`fas fa-star ${i < 3 ? 'filled' : ''}`}></i>
+                        ))}
+                      </div>
+                      <div className="product-price">R$ {parseFloat(product.valor_produto).toFixed(2)}</div>
+                      <button onClick={() => setOpenModal(true)} className="btn btn-primary">
+                        Adicionar ao Carrinho
+                      </button>
                     </div>
-                    <div className="product-price">R$ {product.price.toFixed(2)}</div>
-                    <button onClick={() => setOpenModal(true)} className="btn btn-primary">Adicionar ao Carrinho</button>
-               
                   </div>
-                </div>
-              ))}
+                ))}
 
-              <ModalConfig 
-              
-  isOpen={openModal}
-  onClose={() => setOpenModal(false)} 
-  onAddCarrinho={(config) => console.log("Config recebida:", config)}
-              />
-
-                 <ModalConfig 
-  isOpen={openModal}
-  onClose={() => setOpenModal(false)} 
-  onAddCarrinho={(config) => console.log("Config recebida:", config)}
-/>
+                <ModalConfig
+                  isOpen={openModal}
+                  onClose={() => setOpenModal(false)}
+                  onAddCarrinho={(config) => console.log("Config recebida:", config)}
+                />
+              </div>
             </div>
+          </section>
         </div>
-    </section>     
-        </div>
+      </div>
     </div>
-    </div>
-  )
+  );
 }
 
 function Ofertas() {
   return (
     <ThemeProvider>
-        <OfertasContext />
+      <OfertasContext />
     </ThemeProvider>
-  
-  )
+  );
 }
 
-export default Ofertas
+export default Ofertas;
