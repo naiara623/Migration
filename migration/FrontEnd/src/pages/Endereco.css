@@ -38,24 +38,19 @@
     background-color:#D9D9D9;
 }
 
-.conteine-grosso-Endereco{
-    /* border: 4px solid rgb(11, 166, 233); */
-    width: 35%;
-    height:80%;
-    background-color: #D9D9D9;  
-}
-
 .informação-pessoais-Endereco{
-      /* border: 4px solid rgb(197, 165, 22); */
+    /* border: 4px solid rgb(197, 165, 22); */
     width: 100%;
     height: 15%;
     text-align: center;
     color: #324973;
     font-size: 1.3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .conteine-LINHA2-Endereco{
-
     /* border: 1px solid rgb(84, 81, 80); */
     width: 100%;
     height: 0%;
@@ -64,72 +59,256 @@
 }
 
 .div-LINHA2-Endereco{
-
-      border: 1px solid rgb(80, 80, 84);
-    width: 90%;
+    border: 1px solid rgb(80, 80, 84);
+    width: 95%;
     height: 0%;
 }
 
-.campos-Endereco{
-    border: 4px solid rgb(242, 72, 16);
-    height: 85%;
+.LINHA-3-Endereco{
+     /* border: 4px solid rgb(242, 72, 16); */
+    height: 4%;
 }
 
-.cep-estado{
-    border: 2px solid rgb(0, 255, 128);
-    width: 100%;
-    /* height: 15%; */
+
+.campos-Endereco{
+    /* border: 4px solid rgb(242, 72, 16); */
+    height: 81%;
     display: flex;
-    justify-content: center;
-    gap: 5%;
+    flex-direction: column;
+
+}
+
+/* .div-vazia-Estado{
+    border: 4px solid rgb(242, 72, 16);
+    height: 2%;
+} */
+
+.cep-estado{
+    /* border: 2px solid rgb(166, 0, 255); */
+    width: 100%;
+    height: 25%;
+    display: flex;
+    justify-content: end;
+    /* align-items: end; */
+    gap: 4%;
 
 }
 
 .outros-inputs{
-    border: 2px solid rgb(0, 170, 255);
+    /* border: 2px solid rgb(0, 170, 255); */
     width: 100%;
-    height: 10%;
+    height: 25%;
+    display: flex;
+    /* justify-content: end; */
+    /* align-items: end; */
+    flex-direction: column;
 }
 
 .Oicep{
     /* border: 2px solid yellowgreen; */
-    width: 45%;
-    height: 11%;
+    width: 50%;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    /* align-items: end;- */
 }
 
 .OiEstado{
     /* border: 2px solid yellowgreen; */
-    width: 45%;
-    height: 11%;
+    width: 50%;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    /* margin-top: auto; */
 }
 
 .cep-Endereco{
-    border: 2px solid #C5B2A4;
-    width: 100%;
-    height: 54%;
+     width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex;
+    position: relative;
+    left: 5%;
 }
 
-.Estado-Endereco{
-    border: 2px solid #C5B2A4;
-    width: 100%;
-    height: 54%;
-
+.Estado-input-Endereco{
+     width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex;
+    position: relative;
+    left: 5%;
 }
 
-.rua-Endereço{
-    border: 2px solid red;
-    width: 60%;
+.rua-input-Endereco{
+    width: 94.4%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex;
+    position: relative;
+    left: 3%;
+}
+
+.rua-text-Endereco{
+    /* border: 2px solid rgb(255, 0, 183); */
+    width: 10%;
+    height: 35%;
     display: flex;
     position: relative;
     /* left: %; */
+    left: 3%;
+    top: 4%;
 }
 
-.divvaziha{
-    border: 1px solid orangered;
-    width: 5%;
-    height: 5%;
+.CEP2-Endereco{
+     /* border: 2px solid rgb(255, 0, 183); */
+    width: 15%;
+    height: 35%;
+    display: flex;
+    position: relative;
+    left: 6%;
+}
+
+.numero-text-Endereco{
+     /* border: 2px solid rgb(255, 0, 183); */
+    width: 27%;
+    height: 35%;
+    display: flex;
+    position: relative;
+    /* left: %; */
+    left: 5%;
+}
+
+.comple-text-Endereco{
+     /* border: 2px solid rgb(255, 0, 183); */
+    width: 45%;
+    height: 35%;
+    display: flex;
+    position: relative;
+    /* left: %; */
+    left: 6%;
+}
+
+.estado-text-Endereco{
+     /* border: 2px solid rgb(255, 0, 183); */
+    width: 23%;
+    height: 35%;
+    display: flex;
+    position: relative;
+    /* left: %; */
+    left: 5%;
+}
+
+.complemento-numero-Estado{
+     /* border: 2px solid rgb(0, 255, 128); */
+  width: 100%;
+    height: 25%;
+    display: flex;
+    justify-content: end;
+    /* align-items: end; */
+    gap: 4%;
+    
+}
+
+.complemento-Endereco{
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex;
+    position: relative;
+    left: 6%;
+
+}
+
+.numero-Endereco{
+     width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex;
+    position: relative;
+    left: 5%;
+}
+
+.referencia-Endereco{
+    /* border: 2px solid rgb(6, 63, 91); */
+    width: 100%;
+    height: 25%;
+}
+
+.referencia-text-Endereco{
+    /* border: 2px solid rgb(255, 0, 183); */
+    width: 15%;
+    height: 40%;
+    display: flex;
+    position: relative;
+    /* left: %; */
+    left: 3%;
+    top: 6%;
+}
+
+.referencia-input-Endereco{
+   width: 94.4%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex;
+    position: relative;
+    left: 3%;
+}
+
+.butons-Endereco{
+    /* border: 4px solid rgb(22, 197, 31); */
+    width: 100%;
+    height: 25%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30%;
+
+}
+
+.botao-editar-Endereco, .botao-deletar-Endereco {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.botao-editar-Endereco {
+    background-color: #324973;
+    color: white;
+}
+
+.botao-deletar-Endereco {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.botao-editar-Endereco:hover {
+    background-color: #25365a;
+}
+
+.botao-deletar-Endereco:hover {
+    background-color: #ff3333;
+}
+
+
+
+.TodosIpunts{
+    /* border: 2px solid green; */
+    width: 100%;
+    height: 75%;
+    /* display: grid; */
 }

@@ -34,54 +34,67 @@ function EnderecoContex(){
                           <div className='div-LINHA2-Endereco' ></div>
                           </div>
 
+                          <div className='LINHA-3-Endereco' ></div>
+
+
                         <div className='campos-Endereco' >
-                          
+                          <div className="TodosIpunts">
+
+                             {/* <div className='div-vazia-Estado' ></div> */}
+
                           <div className='cep-estado'>
 
                              <div className='Oicep'>
-                            <label htmlFor="cep">CEP:</label>
+                            <label className='CEP2-Endereco'>CEP:</label>
                             <input className='cep-Endereco' type="text" id="cep" name="cep" />
                           </div>
                           
 
                              <div className='OiEstado'>
-                            <label htmlFor="cep">Estado:</label>
-                            <input className='Estado-Endereco' type="text" id="cep" name="cep" />
+                            <label htmlFor="cep" className='estado-text-Endereco'>Estado:</label>
+                            <input className='Estado-input-Endereco' type="text" id="cep" name="cep" />
                           </div>
 
                           </div>
 
-
+ 
                           <div className='outros-inputs'>
-                            <div className='divvaziha3'></div>
-
-                            <label htmlFor="cep">Estado:</label>
-                            <input className='rua-Endereço' type="text" />
+                            
+                            <label  htmlFor="rua" className='rua-text-Endereco' >Rua:</label>
+                            <input className='rua-input-Endereco' type="text" />
 
                           </div>
                 
+                           <div className='complemento-numero-Estado'>
 
-                         
+                             <div className='Oicep'>
+                            <label htmlFor="" className='comple-text-Endereco'>Complemento:</label>
+                            <input className='complemento-Endereco' type="text" id="Complemento" name="Complemento" />
+                          </div>
+                          
 
-                           {/* <div className='Oicep'>
-                            <label htmlFor="cep">CEP:</label>
-                            <input className='cep-Endereco' type="text" id="cep" name="cep" />
+                             <div className='OiEstado'>
+                            <label htmlFor="cep" className='numero-text-Endereco'>Numero:</label>
+                            <input className='numero-Endereco' type="text" id="numero" name="numero" />
                           </div>
 
-                           <div className='Oicep'>
-                            <label htmlFor="cep">CEP:</label>
-                            <input className='cep-Endereco' type="text" id="cep" name="cep" />
                           </div>
+                              
+                          <div className='referencia-Endereco'>
+                            
+                            <label  htmlFor="rua" className='referencia-text-Endereco' >Referencia:</label>
+                            <input className='referencia-input-Endereco' type="text" />
 
-                               <div className='Oicep'>
-                            <label htmlFor="cep">CEP:</label>
-                            <input className='cep-Endereco' type="text" id="cep" name="cep" />
                           </div>
+                          
+                          </div>
+                          
+                           
 
-                           <div className='Oicep'>
-                            <label htmlFor="cep">CEP:</label>
-                            <input className='cep-Endereco' type="text" id="cep" name="cep" />
-                          </div> */}
+                            <div className='butons-Endereco' >
+                              <button className='botao-editar-Endereco'>Editar campos</button>
+                            <button className='botao-deletar-Endereco'>Limpar campos</button>
+                            </div>
                         </div>
                         
 

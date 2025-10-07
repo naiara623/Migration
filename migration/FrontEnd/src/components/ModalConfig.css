@@ -432,6 +432,18 @@ gap: 15px;
   background-color: green;
 }
 
+.colorsem{
+  background-color: transparent;
+  background-image: url('public/Bloqueio.png');
+    background-repeat: no-repeat;
+  background-size: 35px 40px;
+  position: relative;
+  padding-left: 20px; /* espaço para a imagem */
+  height: 40px;
+   background-position: -7px center; /* esquerda centralizado verticalmente */
+  /* font-size: 20px; */
+}
+
 /* efeito ao selecionar */
 .oibu input[type="radio"]:checked {
   transform: scale(1.2);         /* aumenta a bolinha */

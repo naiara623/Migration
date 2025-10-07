@@ -19,7 +19,7 @@ function ConteineFino() {
                         <div className='conteine-LINHA1-MC2'></div>
                     </div>
                     <div className='conteine-M-F-E-MC2'>
-                        <Link className='nome-minhascompras-MC2' to='/MinhasCompras'> <h3>Minhas compras</h3></Link>
+                        <Link className='nome-minhascompras-MC2' to='/MinhasCompras'> <h3>Minhas Compras</h3></Link>
                         <Link className='nome-meusFavorito-MC2' to='/MeusFavoritos'><h3>Meus Favoritos</h3></Link>
                         <Link className='nome-endereço-MC2' to='/Endereco'><h3>Endereço</h3></Link>
                     </div>
