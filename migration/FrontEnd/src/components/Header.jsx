@@ -94,8 +94,10 @@ const Header = () => {
               </div>
             </div>
             <button className="cart-btn">
+              <Link to={"/car"} className="cart-link">
               <i className="fas fa-shopping-cart"></i>
               <span className="cart-count">0</span>
+              </Link>
             </button>
 
             <button className='Perfil-btn'>

@@ -1,0 +1,375 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+  line-height: 1.6;
+}
+
+.container-avaliacao {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header do Produto */
+.produto-header {
+  display: flex;
+  gap: 30px;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+.produto-imagem img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.produto-info h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.avaliacao-geral {
+  display: flex;
+  gap: 50px;
+  align-items: flex-start;
+}
+
+.nota-media {
+  text-align: center;
+}
+
+.numero-media {
+  display: block;
+  font-size: 48px;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.total-avaliacoes {
+  display: block;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Distribuição de notas */
+.distribuicao-notas {
+  flex: 1;
+}
+
+.barra-nota {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.numero-nota {
+  width: 40px;
+  font-size: 14px;
+  color: #666;
+}
+
+.barra-container {
+  flex: 1;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barra-progresso {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ffa500, #ffd700, #90ee90, #4caf50);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.contador-nota {
+  width: 40px;
+  font-size: 12px;
+  color: #666;
+  text-align: right;
+}
+
+/* Sistema de Estrelas */
+.estrelas {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.estrelas.grande {
+  gap: 4px;
+}
+
+.estrela {
+  color: #ddd;
+  font-size: 20px;
+  transition: color 0.2s ease;
+}
+
+.estrelas.grande .estrela {
+  font-size: 24px;
+}
+
+.estrela.preenchida {
+  color: #ffc107;
+}
+
+.estrela-selecionavel {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #ddd;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 5px;
+}
+
+.estrela-selecionavel:hover {
+  color: #ffc107;
+  transform: scale(1.1);
+}
+
+.estrela-selecionavel.selecionada {
+  color: #ffc107;
+}
+
+/* Conteúdo Principal */
+.conteudo-avaliacao {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+/* Formulário */
+.formulario-avaliacao {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.formulario-avaliacao h2 {
+  margin-bottom: 25px;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
+.campo {
+  margin-bottom: 20px;
+}
+
+.campo label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.campo input,
+.campo textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.campo textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.campo-duplo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.campo-nota {
+  margin-bottom: 25px;
+}
+
+.selecao-estrelas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.texto-nota {
+  margin-left: 15px;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Botões */
+.botao-enviar {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.botao-enviar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+}
+
+/* Lista de Avaliações */
+.lista-avaliacoes {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.lista-avaliacoes h2 {
+  margin-bottom: 25px;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
+.sem-avaliacoes {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 40px;
+}
+
+/* Cards de Avaliação */
+.card-avaliacao {
+  padding: 25px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  transition: box-shadow 0.3s ease;
+}
+
+.card-avaliacao:hover {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.cabecalho-avaliacao {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.info-usuario {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nome-usuario {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.verificado {
+  font-size: 12px;
+  color: #28a745;
+  background: #d4edda;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.data-avaliacao {
+  color: #666;
+  font-size: 14px;
+}
+
+.titulo-avaliacao {
+  margin: 10px 0;
+  color: #2c3e50;
+  font-size: 18px;
+}
+
+.comentario-avaliacao {
+  color: #495057;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.acoes-avaliacao {
+  display: flex;
+  gap: 15px;
+}
+
+.botao-util,
+.botao-denunciar {
+  padding: 8px 16px;
+  border: 1px solid #e9ecef;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.botao-util:hover {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.botao-denunciar:hover {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .conteudo-avaliacao {
+    grid-template-columns: 1fr;
+  }
+  
+  .produto-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .avaliacao-geral {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .campo-duplo {
+    grid-template-columns: 1fr;
+  }
+  
+  .cabecalho-avaliacao {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

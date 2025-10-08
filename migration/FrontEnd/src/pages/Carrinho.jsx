@@ -112,6 +112,8 @@ function CarrinhoContent() {
     }
   };
 
+  
+
   // Atualizar quantidade no carrinho
   const updateQuantity = async (id, newQuantity) => {
     try {
@@ -255,30 +257,35 @@ function CarrinhoContent() {
                 <p className="empty-cart">Seu carrinho está vazio 🛒</p>
               )}
 
-              {products.map((p) => (
-                <div className="item-card" key={p.id}>
-                  <div className="item-header">
-                    <ProductCheckbox 
-                      id={p.id} 
-                      checked={p.checked}
-                      onChange={() => handleProductSelect(p.id)}
-                    />
-                  </div>
-                  <div className="item-info">
-                    <h3>{p.name}</h3>
-                    <div className="item-details">
-                      <span>{p.size}</span>
-                      <span className="item-price">R$ {p.price.toFixed(2)}</span>
-                    </div>
-                  </div>
-                  <button 
-                    className="remove-button" 
-                    onClick={() => handleRemoveProduct(p.id)}
-                  >
-                    Remover
-                  </button>
-                </div>
-              ))}
+           
+{products.map((p) => (
+  <div className="item-card" key={p.id}>
+    <div className="item-header">
+      <ProductCheckbox 
+        id={p.id} 
+        checked={p.checked}
+        onChange={() => handleProductSelect(p.id)}
+      />
+    </div>
+    <div className="item-info">
+      <h3>{p.name}</h3>
+      <div className="item-details">
+        {/* Mostrar as opções selecionadas */}
+        {p.tamanho && <span>Tamanho: {p.tamanho}</span>}
+        {p.cor && <span>Cor: {p.cor}</span>}
+        {p.material && <span>Material: {p.material}</span>}
+        {p.estampa && <span>Estampa: {p.estampa}</span>}
+        <span className="item-price">R$ {p.price.toFixed(2)}</span>
+      </div>
+    </div>
+    <button 
+      className="remove-button" 
+      onClick={() => handleRemoveProduct(p.id)}
+    >
+      Remover
+    </button>
+  </div>
+))}
             </div>
           </div>
 

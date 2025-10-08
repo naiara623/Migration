@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Produtos.css';
 import Header from '../components/Header';
 import ModalConfig from '../components/ModalConfig';
-import Categorias from '../components/Categorias';  // Importe o modal Categorias
+import Categorias from '../components/Categorias';
 import { ThemeProvider } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
 import axios from 'axios';
@@ -11,6 +11,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 function ProdutosContext() {
   ThemeEffect();
   const [openModal, setOpenModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null); // Novo estado para produto selecionado
   const [products, setProducts] = useState([]);
   const [openCategoriaModal, setOpenCategoriaModal] = useState(false);
 
@@ -21,47 +22,150 @@ function ProdutosContext() {
   const queryParams = new URLSearchParams(location.search);
   const categoria = queryParams.get('categoria');
 
-useEffect(() => {
-  console.log('Buscando produtos para categoria:', categoria);
-  const fetchProducts = async () => {
+  useEffect(() => {
+    if (categoria) {
+      // Busca produtos filtrando pela categoria
+      const fetchProductsByCategoria = async () => {
+        try {
+          const response = await axios.get('http://localhost:3001/api/produtos', {
+            params: { categoria }
+          });
+          setProducts(response.data);
+        } catch (error) {
+          console.error('Erro ao buscar produtos:', error);
+        }
+      };
+      fetchProductsByCategoria();
+    } else {
+      // Se não tem categoria, busca todos os produtos
+      fetchAllProducts();
+    }
+  }, [categoria]);
+
+  const resetarFiltro = () => {
+    navigate('/produtos');
+    fetchAllProducts();
+  };
+
+  const fetchAllProducts = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/produtos');
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar todos os produtos:', error);
+    }
+  };
+
+  // Função para abrir o modal com o produto selecionado
+  const handleOpenModal = (product) => {
+    setSelectedProduct(product);
+    setOpenModal(true);
+  };
+
+  // Função para fechar o modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedProduct(null);
+  };
+
+
+
+  // Função para adicionar ao carrinho
+  const handleAddToCart = async (product) => {
+    try {
+      const response = await fetch('http://localhost:3001/api/carrinho', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id_produto: product.id_produto,
+          quantidade: 1,
+          tamanho: '', // Você pode pegar esses valores do modal se necessário
+          cor: ''
+        }),
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        alert('Produto adicionado ao carrinho!');
+        handleCloseModal();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.erro || 'Erro ao adicionar ao carrinho');
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao adicionar ao carrinho');
+    }
+  };
+
+  // No componente pai (Header, Home, etc.)
+  const [modalAberto, setModalAberto] = useState(false);
+
+  const categoriasValidas = [1, 2, 3, 4, 5, 6, 7, 8];
+
+  const handleCategoriaSelecionada = async (id_categoria, nome_categoria) => {
+    if (!categoriasValidas.includes(id_categoria)) {
+      console.warn("Categoria inválida:", id_categoria);
+      return;
+    }
+
     try {
       const response = await axios.get('http://localhost:3001/api/produtos', {
-        params: { categoria }
+        params: { categoria: nome_categoria }
       });
+
       setProducts(response.data);
+      setModalAberto(false);
     } catch (error) {
       console.error('Erro ao buscar produtos:', error);
     }
   };
 
-  fetchProducts();
-}, [categoria]);
+  // No seu componente principal (ex: Home, ProductList, etc.)
 
+const [isModalOpen, setIsModalOpen] = useState(false);
 
-
-
-// No componente pai (Header, Home, etc.)
-const [modalAberto, setModalAberto] = useState(false);
-
-const categoriasValidas = [1, 2, 3, 4, 5, 6, 7, 8];
-
-const handleCategoriaSelecionada = async (id_categoria, nome_categoria) => {
-  if (!categoriasValidas.includes(id_categoria)) {
-    console.warn("Categoria inválida:", id_categoria);
-    return;
-  }
-
+// Função para adicionar ao carrinho via API
+const handleAddToCarrinho = async (productWithSelections) => {
   try {
-    const response = await fetch(`http://localhost:3001/api/produtos/categoria/id/${id_categoria}`);
-    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+    const response = await fetch('/api/carrinho', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_produto: productWithSelections.id_produto,
+        quantidade: productWithSelections.quantidade,
+        tamanho: productWithSelections.tamanho,
+        cor: productWithSelections.cor
+      }),
+      credentials: 'include'
+    });
 
-    const produtos = await response.json();
-    setProducts(produtos);
-    setModalAberto(false);
+    if (response.ok) {
+      alert('Produto adicionado ao carrinho!');
+      setIsModalOpen(false);
+    } else {
+      alert('Erro ao adicionar ao carrinho');
+    }
   } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
+    console.error('Erro ao adicionar ao carrinho:', error);
+    alert('Erro ao adicionar ao carrinho');
   }
 };
+
+// Quando abrir o modal
+
+
+// No seu JSX
+<ModalConfig 
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  product={selectedProduct}
+  onAddCarrinho={handleAddToCarrinho}
+/>
 
   return (
     <div className='amarela-Ofertas'>
@@ -70,13 +174,14 @@ const handleCategoriaSelecionada = async (id_categoria, nome_categoria) => {
       </div>
       <div className='DivGlobal-Ofertas'>
 
-<button onClick={() => setModalAberto(true)}>Abrir Categorias</button>
+        <button onClick={() => setModalAberto(true)}>Abrir Categorias</button>
+        <button onClick={resetarFiltro}>Mostrar Todos os Produtos</button>
 
-<Categorias 
-  isOpen={modalAberto} 
-  onClose={() => setModalAberto(false)} 
-  onCategoriaSelecionada={handleCategoriaSelecionada}
-/>
+        <Categorias 
+          isOpen={modalAberto} 
+          onClose={() => setModalAberto(false)} 
+          onCategoriaSelecionada={handleCategoriaSelecionada}
+        />
 
         <div className="produtos1-Ofertas">
           <section className="featured-products">
@@ -91,26 +196,36 @@ const handleCategoriaSelecionada = async (id_categoria, nome_categoria) => {
                 {products.map(product => (
                   <div key={product.id_produto} className="product-card">
                     <div className="product-image">
-                      <img src={`http://localhost:3001${product.image_url}`} alt={product.nome_produto} />
+                      <img 
+                        src={product.imagem_url ? `http://localhost:3001${product.imagem_url}` : 'placeholder-image.jpg'} 
+                        alt={product.nome_produto} 
+                      />
                       <div className="product-badge">Novo</div>
                     </div>
                     <div className="product-info">
                       <h3>{product.nome_produto}</h3>
                       <div className="product-rating">
                         {[...Array(5)].map((_, i) => (
-                          <i key={i} className={`fas fa-star ${i < 3 ? 'filled' : ''}`}></i>
+                          <i key={i} className={`fas fa-star ${i < (product.avaliacao_produto || 3) ? 'filled' : ''}`}></i>
                         ))}
                       </div>
                       <div className="product-price">R$ {parseFloat(product.valor_produto).toFixed(2)}</div>
-                      <button onClick={() => setOpenModal(true)} className="btn btn-primary">Adicionar ao Carrinho</button>
+                      <button 
+                        onClick={() => handleOpenModal(product)} 
+                        className="btn btn-primary"
+                      >
+                        Adicionar ao Carrinho
+                      </button>
                     </div>
                   </div>
                 ))}
 
+                {/* Modal com produto selecionado */}
                 <ModalConfig
                   isOpen={openModal}
-                  onClose={() => setOpenModal(false)}
-                  onAddCarrinho={(config) => console.log("Config recebida:", config)}
+                  onClose={handleCloseModal}
+                  product={selectedProduct}
+                  onAddCarrinho={handleAddToCart}
                 />
               </div>
             </div>
@@ -127,7 +242,6 @@ const handleCategoriaSelecionada = async (id_categoria, nome_categoria) => {
     </div>
   );
 }
-
 
 function Produtos() {
   return (

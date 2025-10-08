@@ -6,7 +6,9 @@ const multer = require("multer");           // Usado para upload de arquivos
 const path = require("path");                 // Lida com caminhos de arquivos/pastas
 const session = require('express-session');   // Gerencia sessões de usuário
 require("dotenv").config();                   // Carrega variáveis de ambiente do arquivo .env                // Importa a conexão com o banco de dados
-const {pool,
+const {
+  pool,
+  selectProductById,
   deleteProduct,
   insertProduct,
   updateProduct,
@@ -14,10 +16,8 @@ const {pool,
   selectCategoryByName,
   insertUser,
   selectUser,
-  selectCategoryByName,
-  selectAllCategories,
   selectAllProducts,
-  getUserByEmail,     // adicione aqui
+  getUserByEmail,
   updateUser,
   getCarrinhoByUserId,
   addToCarrinho,
@@ -25,8 +25,9 @@ const {pool,
   removeFromCarrinho,
   clearCarrinho,
   createPedido,
-  getPedidosByUserId       // parece que você usa updateUser na rota PUT /api/usuarios/:email, então importe também
+  getPedidosByUserId
 } = require("./db");
+
  // Importa funções do banco
 
 const storage = multer.diskStorage({
@@ -235,6 +236,46 @@ app.get('/api/produtos/categoria/:nome_categoria', async (req, res) => {
     res.status(500).json({ erro: 'Erro ao buscar produtos por categoria' });
   }
 });
+
+
+app.get('/api/produtos', async (req, res) => {
+  const categoria = req.query.categoria;
+
+  try {
+    const client = await pool.connect();
+
+    let query = `
+      SELECT p.*, c.nome_categoria
+      FROM produtos p
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria
+    `;
+    let params = [];
+
+    if (categoria) {
+      // Aqui você pode aceitar id_categoria (número) ou nome_categoria (string)
+      if (!isNaN(categoria)) {
+        // categoria é id_categoria
+        query += ' WHERE p.id_categoria = $1';
+        params.push(parseInt(categoria));
+      } else {
+        // categoria é nome_categoria
+        query += ' WHERE c.nome_categoria ILIKE $1';
+        params.push(categoria);
+      }
+    }
+
+    query += ' ORDER BY p.data_criacao DESC';
+
+    const result = await client.query(query, params);
+    client.release();
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar produtos:', error);
+    res.status(500).json({ erro: 'Erro ao buscar produtos' });
+  }
+});
+
 
 
 // Rota para cadastrar produto (modificada)
@@ -500,6 +541,22 @@ app.get('/api/pedidos', async (req, res) => {
     res.status(500).json({ erro: 'Erro ao buscar pedidos' });
   }
 });
+
+// Rota para obter quantidade de itens no carrinho
+app.get('/api/carrinho/quantidade', autenticar, async (req, res) => {
+  try {
+    const resultado = await db.query(
+      'SELECT COUNT(*) as quantidade FROM carrinho WHERE id_usuario = $1',
+      [req.usuario.id]
+    );
+    
+    res.json({ quantidade: parseInt(resultado.rows[0].quantidade) });
+  } catch (error) {
+    console.error('Erro ao buscar quantidade do carrinho:', error);
+    res.status(500).json({ erro: 'Erro interno do servidor' });
+  }
+});
+
 
 
 

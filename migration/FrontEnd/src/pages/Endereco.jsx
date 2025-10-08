@@ -1,5 +1,5 @@
 import React from 'react'
-import { ThemeProvider } from '../ThemeContext'
+import { ThemeContext } from '../ThemeContext'
 import { ThemeEffect } from '../ThemeEffect'
 import Header from '../components/Header'
 import './Endereco.css'
@@ -115,9 +115,9 @@ function EnderecoContex(){
 function Endereco() {
  return (
 
-    <ThemeProvider>
+    <ThemeContext>
       <EnderecoContex/>
-    </ThemeProvider>
+    </ThemeContext>
 
 
   )

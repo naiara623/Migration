@@ -534,14 +534,13 @@ module.exports = {
   selectAllCategories,
   insertProduct,
   selectAllProducts,
-  selectProductById,
+
   updateProduct,
   deleteProduct, // Adicionar a função corrigida
   selectAllCategories,
   selectCategoryByName,
   insertUser,
   selectUser,
-  getUserByEmail,
   updateUser,
     getCarrinhoByUserId,
   addToCarrinho,
@@ -549,6 +548,7 @@ module.exports = {
   removeFromCarrinho,
   clearCarrinho,
   createPedido,
+  selectProductById,
   getPedidosByUserId
   // REMOVER: editSelectedProduct, deleteSelectedProducts (são do frontend)
 };
