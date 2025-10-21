@@ -4,14 +4,15 @@ import './Header.css';
 import { useTheme } from '../ThemeContext';
 import { Link } from 'react-router-dom';
 import Categorias from "./Categorias";
-
+import ModalIdiomas from './ModalIdiomas';
 
 
 const Header = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const { darkMode, toggleTheme } = useTheme();
-   const [openCategorias, setOpenCategorias] = useState(false);
+  const [openCategorias, setOpenCategorias] = useState(false);
+  const [openIdiomas, setOpenIdiomas] = useState (false)
 
   const toggleSearch = () => {
     setIsCollapsed(!isCollapsed);
@@ -103,7 +104,19 @@ const Header = () => {
               
             </button>
 
+<div>
 
+
+               
+                  <Link onClick={() => setOpenIdiomas(true)}><img className='perfilUser' src="idioma.png" alt="Modal de idiomas" /></Link>
+                
+                
+
+                 <ModalIdiomas 
+                  isOpen={openIdiomas} 
+                  onClose={() => setOpenIdiomas(false)}
+                />
+</div>
           </div>
         </div>
       </div>
