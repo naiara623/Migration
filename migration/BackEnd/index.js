@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");    // Facilita o tratamento de JSON n
 const multer = require("multer");           // Usado para upload de arquivos
 const path = require("path");                 // Lida com caminhos de arquivos/pastas
 const session = require('express-session');   // Gerencia sessões de usuário
+const app = express();
 require("dotenv").config();                   // Carrega variáveis de ambiente do arquivo .env                // Importa a conexão com o banco de dados
 const {
   pool,
@@ -28,6 +29,42 @@ const {
   getPedidosByUserId
 } = require("./db");
 
+function autenticar(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({ erro: 'Não autenticado' }); // JSON garantido
+  }
+  next();
+}
+
+
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  credentials: true
+}));
+
+
+
+// Exemplo com express-session
+app.use(session({
+  secret: 'sua_chave_secreta',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // true se HTTPS
+    sameSite: 'lax' // ou 'strict' se for mesma origem
+  }
+}));
+
+
+
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+
+
+
+
  // Importa funções do banco
 
 const storage = multer.diskStorage({
@@ -41,28 +78,38 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de arquivo não permitido'));
+    }
+  }
+});
+
 
 
 //Inicializa o servidor
-const app = express();
 const port=3001;
 
 //variavel temporaria (Não usada com banco, apenas exemplo )
 let posts = []
 
-//middlewares globais
-app.use(cors({ origin: 'http://localhost:5173', credentials: true })); // Libera CORS para o front-end
-app.use(bodyParser.json()); // Permite interpretar JSON no corpo das requisições
-app.use(
-  session({
-    secret: 'sua_chave_secreta',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Em produção, use true se estiver com HTTPS
-  })
-);
 
+
+// Rota de teste
+app.get('/api/check-session', (req, res) => {
+  console.log('Sessão:', req.session);
+  if (req.session.userId) {
+    res.json({ autenticado: true });
+  } else {
+    res.json({ autenticado: false });
+  }
+});
 
 
 // --------------ROTAS -------------------
@@ -85,15 +132,30 @@ app.post('/api/cadastro', async (req, res) => {
 });
 
 
-//login de usuario
+
+// Rota para obter produtos do usuário logado - CORRIGIDA
+
+
+// Corrigir a rota de login para garantir que o ID seja salvo
 app.post('/api/login', async (req, res) => {
-  const { email_user, senhauser } = req.body;  // aqui pega os nomes do banco
+  const { email_user, senhauser } = req.body;
   try {
-    const usuario = await selectUser(email_user, senhauser); // busca o usuário no banco
+    const usuario = await selectUser(email_user, senhauser);
     if (usuario) {
-      req.session.user = { email_user: usuario.email_user }; // salva o email na sessão (com o nome correto)
-      console.log("req.session.user =======>>>>>>", req.session.user);
-      res.json({ sucesso: true, usuario });
+      req.session.user = {
+        id: usuario.idusuarios, // Garantir que o ID está sendo salvo
+        email_user: usuario.email_user
+      };
+      
+      // Salvar a sessão antes de responder
+      req.session.save((err) => {
+        if (err) {
+          console.error('Erro ao salvar sessão:', err);
+          return res.status(500).json({ erro: 'Erro interno do servidor' });
+        }
+        console.log("Sessão salva - User ID:", req.session.user.id);
+        res.json({ sucesso: true, usuario });
+      });
     } else {
       res.status(401).json({ erro: 'Email ou senha incorretos' });
     }
@@ -103,12 +165,39 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Adicionar rota de logout para limpar sessão
+app.post('/api/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Erro ao fazer logout:', err);
+      return res.status(500).json({ erro: 'Erro ao fazer logout' });
+    }
+    res.json({ sucesso: true, mensagem: 'Logout realizado com sucesso' });
+  });
+});
+
+// Rota para verificar sessão
+app.get('/api/check-session', (req, res) => {
+  if (req.session.user) {
+    res.json({ 
+      autenticado: true, 
+      user: req.session.user 
+    });
+  } else {
+    res.json({ autenticado: false });
+  }
+});
+
+
+
+
 // Retorna dados do usuário logado
-app.get('/api/usuario-atual', async (req, res) => {
+app.get('/api/usuario-atual', autenticar,  async (req, res) => {
   if (!req.session.user || !req.session.user.email_user) {
   return res.status(401).json({ erro: 'Não autenticado' });
 }
 const email = req.session.user.email_user;
+const usuario = await getUserByEmail(email);
 
   try {
     const usuario = await getUserByEmail(email); // Busca usuário no banco
@@ -136,7 +225,7 @@ const email = req.session.user.email_user;
 });
 
 // Atualizar dados de usuário
-app.put('/api/usuarios/:email', async (req, res) => {
+app.put('/api/usuarios/:email', autenticar,  async (req, res) => {
   const { email } = req.params; // Email vem pela URL
   const { nome_usuario, email_user, estado_cidade, nome_rua, complemento, numero, referencia } = req.body;
   try {
@@ -150,8 +239,12 @@ app.put('/api/usuarios/:email', async (req, res) => {
 
 
 
+
+
+
 // Rota para obter todas as categorias
 app.get('/api/categorias', async (req, res) => {
+  console.log('Requisição recebida em /api/categorias');
   try {
     const categorias = await selectAllCategories();
     res.json(categorias);
@@ -162,21 +255,8 @@ app.get('/api/categorias', async (req, res) => {
 });
 
 
-// Rota para obter todas as categorias
-app.get('/api/categorias', async (req, res) => {
-  try {
-    console.log('Buscando categorias...');
-    const categorias = await selectAllCategories();
-    console.log('Categorias encontradas:', categorias);
-    res.json(categorias);
-  } catch (error) {
-    console.error('Erro ao buscar categorias:', error);
-    res.status(500).json({ erro: 'Erro ao buscar categorias' });
-  }
-});
 
-
-app.get('/api/produtos/categoria/id/:id_categoria', async (req, res) => {
+app.get('/api/produtos/categoria/id/:id_categoria',  autenticar, async (req, res) => {
   const id_categoria = parseInt(req.params.id_categoria);
 
   try {
@@ -210,7 +290,7 @@ app.get('/api/produtos/categoria/id/:id_categoria', async (req, res) => {
 });
 
 
-app.get('/api/produtos/categoria/:nome_categoria', async (req, res) => {
+app.get('/api/produtos/categoria/:nome_categoria', autenticar,  async (req, res) => {
   const nome_categoria = req.params.nome_categoria;
 
   try {
@@ -238,58 +318,26 @@ app.get('/api/produtos/categoria/:nome_categoria', async (req, res) => {
 });
 
 
-app.get('/api/produtos', async (req, res) => {
-  const categoria = req.query.categoria;
 
-  try {
-    const client = await pool.connect();
-
-    let query = `
-      SELECT p.*, c.nome_categoria
-      FROM produtos p
-      INNER JOIN categorias c ON p.id_categoria = c.id_categoria
-    `;
-    let params = [];
-
-    if (categoria) {
-      // Aqui você pode aceitar id_categoria (número) ou nome_categoria (string)
-      if (!isNaN(categoria)) {
-        // categoria é id_categoria
-        query += ' WHERE p.id_categoria = $1';
-        params.push(parseInt(categoria));
-      } else {
-        // categoria é nome_categoria
-        query += ' WHERE c.nome_categoria ILIKE $1';
-        params.push(categoria);
-      }
-    }
-
-    query += ' ORDER BY p.data_criacao DESC';
-
-    const result = await client.query(query, params);
-    client.release();
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
-    res.status(500).json({ erro: 'Erro ao buscar produtos' });
-  }
-});
 
 
 
 // Rota para cadastrar produto (modificada)
-app.post('/api/produtos', upload.single('image_url'), async (req, res) => {
+app.post('/api/produtos', upload.single('imagem_url'), async (req, res) => {
+  console.log("📦 Dados recebidos para cadastro de produto:");
+console.log("body:", req.body);
+console.log("file:", req.file);
+console.log("usuário logado:", req.session.user);
+
   try {
     const { nome_produto, descricao, valor_produto, categoria, estoque } = req.body;
-    
-    // Buscar o ID da categoria pelo nome
+
     const categoriaObj = await selectCategoryByName(categoria);
     if (!categoriaObj) {
       return res.status(400).json({ erro: 'Categoria inválida' });
     }
 
-    const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+    const imagem_url = req.file ? `/uploads/${req.file.filename}` : null;
 
     const product = await insertProduct({
       nome_produto,
@@ -297,7 +345,8 @@ app.post('/api/produtos', upload.single('image_url'), async (req, res) => {
       valor_produto: parseFloat(valor_produto),
       id_categoria: categoriaObj.id_categoria,
       estoque: parseInt(estoque) || 0,
-      image_url
+      imagem_url,
+      idusuarios: req.session.user.id // <-- salvar o dono do produto
     });
 
     res.status(201).json({ 
@@ -310,64 +359,80 @@ app.post('/api/produtos', upload.single('image_url'), async (req, res) => {
   }
 });
 
-app.get('/api/produtos', (req, res) => {
-  const categoria = req.query.categoria;
-  let query = 'SELECT * FROM produtos';
-  if (categoria) {
-    query += ' WHERE categoria = ?';
-    db.query(query, [categoria], (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json(results);
-    });
-  } else {
-    db.query(query, (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json(results);
-    });
-  }
-});
 
 
-// server.js - Corrigir a rota de atualização
-app.put('/api/produtos/:id', upload.single('image_url'), async (req, res) => {
+
+// Corrigir a rota de produtos para aceitar parâmetro de categoria
+app.get('/api/produtos', upload.single('imagem_url'), autenticar, async (req, res) => {
   try {
-    const { nome_produto, descricao, valor_produto, categoria, estoque } = req.body;
+    const { categoria } = req.query;
     
-    // Buscar o ID da categoria pelo nome
-    const categoriaObj = await selectCategoryByName(categoria);
-    if (!categoriaObj) {
-      return res.status(400).json({ erro: 'Categoria inválida' });
+    if (categoria) {
+      // Buscar produtos por nome da categoria
+      const categoriaObj = await selectCategoryByName(categoria);
+      if (!categoriaObj) {
+        return res.status(404).json({ erro: 'Categoria não encontrada' });
+      }
+      
+      const client = await pool.connect();
+      const result = await client.query(`
+        SELECT p.*, c.nome_categoria 
+        FROM produtos p 
+        INNER JOIN categorias c ON p.id_categoria = c.id_categoria 
+        WHERE c.nome_categoria = $1
+        ORDER BY p.data_criacao DESC
+      `, [categoria]);
+      client.release();
+      
+      res.json(result.rows);
+    } else {
+      // Buscar todos os produtos
+      const products = await selectAllProducts();
+      res.json(products);
     }
-
-    const updateData = {
-      nome_produto,
-      descricao,
-      valor_produto: parseFloat(valor_produto),
-      id_categoria: categoriaObj.id_categoria,
-      estoque: parseInt(estoque) || 0
-    };
-
-    // Apenas adiciona image_url se uma nova imagem foi enviada
-    if (req.file) {
-      updateData.image_url = `/uploads/${req.file.filename}`;
-    }
-
-    const product = await updateProduct(req.params.id, updateData);
-
-    res.json({ 
-      mensagem: 'Produto atualizado com sucesso!',
-      product 
-    });
-  } catch (error) {
-    console.error('Erro ao atualizar produto:', error);
-    res.status(500).json({ erro: 'Erro ao atualizar produto' });
+  } catch (err) {
+    console.error('Erro ao buscar produtos:', err);
+    res.status(500).json({ message: 'Erro ao buscar produtos' });
   }
 });
-
 // Expor a pasta de imagens
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.get('/api/produtos', async (req, res) => {
+// Rota para obter produtos do usuário logado
+app.get('/api/meus-produtos', autenticar, async (req, res) => {
+  console.log('Session atual na rota /api/meus-produtos:', req.session);
+  console.log('User ID na sessão:', req.session.user?.id);
+  
+  try {
+    if (!req.session.user || !req.session.user.id) {
+      console.log('Usuário não autenticado ou ID não encontrado na sessão');
+      return res.status(401).json({ erro: 'Não autenticado' });
+    }
+
+    const client = await pool.connect();
+    const result = await client.query(`
+      SELECT p.*, c.nome_categoria 
+      FROM produtos p 
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria 
+      WHERE p.idusuarios = $1
+      ORDER BY p.data_criacao DESC
+    `, [req.session.user.id]);
+    
+    client.release();
+    console.log(`Encontrados ${result.rows.length} produtos para o usuário ${req.session.user.id}`);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro detalhado ao buscar produtos do usuário:', error);
+    res.status(500).json({ 
+      erro: 'Erro ao buscar produtos',
+      detalhes: error.message 
+    });
+  }
+});
+
+
+
+app.get('/api/produtos', autenticar,  async (req, res) => {
   try {
     const products = await selectAllProducts();
     res.json(products);
@@ -377,39 +442,47 @@ app.get('/api/produtos', async (req, res) => {
     res.status(500).json({ message: 'Erro ao buscar produtos' });
   }
 });
-;
+
 
 // server.js - Corrigir a rota DELETE
 // index.js - Rota DELETE corrigida
-app.delete('/api/produtos/:id', async (req, res) => {
+app.delete('/api/produtos/:id', autenticar, async (req, res) => {
   try {
-    const productId = req.params.id;
-    console.log('Tentando deletar produto ID:', productId);
+    const id_produto = req.params.id;
+    console.log('Tentando deletar produto ID:', id_produto);
     
     // Validar o ID
-    if (!productId || productId === 'undefined') {
+    if (!id_produto || id_produto === 'undefined') {
       return res.status(400).json({ erro: 'ID do produto inválido' });
     }
 
-    // Usar a função corrigida do db.js
-    const deletedProduct = await deleteProduct(productId);
+    // Verificar se o produto pertence ao usuário
+    const client = await pool.connect();
+    const productCheck = await client.query(
+      'SELECT * FROM produtos WHERE id_produto = $1 AND idusuarios = $2',
+      [id_produto, req.session.user.id]
+    );
+    
+    if (productCheck.rowCount === 0) {
+      client.release();
+      return res.status(404).json({ erro: 'Produto não encontrado ou não pertence ao usuário' });
+    }
+
+    // Deletar o produto
+    await client.query('DELETE FROM produtos WHERE id_produto = $1', [id_produto]);
+    client.release();
     
     res.json({ 
-      mensagem: 'Produto deletado com sucesso', 
-      produto: deletedProduct 
+      mensagem: 'Produto deletado com sucesso'
     });
     
   } catch (error) {
     console.error('Erro ao deletar produto:', error);
-    if (error.message === 'Produto não encontrado') {
-      res.status(404).json({ erro: 'Produto não encontrado' });
-    } else {
-      res.status(500).json({ erro: 'Erro ao deletar produto' });
-    }
+    res.status(500).json({ erro: 'Erro ao deletar produto' });
   }
 });
 
-app.get('/api/produtos/:id', async (req, res) => {
+app.get('/api/produtos/:id', autenticar,  async (req, res) => {
   try {
     const id = req.params.id;
     const product = await selectProductById(id);
@@ -426,7 +499,9 @@ app.get('/api/produtos/:id', async (req, res) => {
 
 
 // Rotas do Carrinho
-app.get('/api/carrinho', async (req, res) => {
+app.get('/api/carrinho', autenticar, async (req, res) => {
+    
+  console.log('Session user:', req.session.user); // <-- ADICIONE ISSO
   if (!req.session.user) {
     return res.status(401).json({ erro: 'Não autenticado' });
   }
@@ -445,21 +520,13 @@ app.get('/api/carrinho', async (req, res) => {
   }
 });
 
-app.post('/api/carrinho', async (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ erro: 'Não autenticado' });
-  }
+app.post('/api/carrinho', autenticar, async (req, res) => {
+  const idusuarios = req.session.user.id;
+  const { id_produto, quantidade = 1, tamanho = '', cor = '' } = req.body;
 
   try {
-    const usuario = await getUserByEmail(req.session.user.email_user);
-    if (!usuario) {
-      return res.status(404).json({ erro: 'Usuário não encontrado' });
-    }
-
-    const { id_produto, quantidade = 1, tamanho = '', cor = '' } = req.body;
-    
     const carrinhoItem = await addToCarrinho({
-      id_usuario: usuario.idusuarios,
+      idusuarios,
       id_produto,
       quantidade,
       tamanho,
@@ -473,7 +540,8 @@ app.post('/api/carrinho', async (req, res) => {
   }
 });
 
-app.put('/api/carrinho/:id', async (req, res) => {
+
+app.put('/api/carrinho/:id', autenticar, async (req, res) => {
   try {
     const { quantidade } = req.body;
     const updatedItem = await updateCarrinhoItem(req.params.id, quantidade);
@@ -484,7 +552,7 @@ app.put('/api/carrinho/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/carrinho/:id', async (req, res) => {
+app.delete('/api/carrinho/:id', autenticar, async (req, res) => {
   try {
     const removedItem = await removeFromCarrinho(req.params.id);
     res.json({ mensagem: 'Item removido do carrinho', item: removedItem });
@@ -494,68 +562,22 @@ app.delete('/api/carrinho/:id', async (req, res) => {
   }
 });
 
-// Rotas de Pedidos
-app.post('/api/pedidos', async (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ erro: 'Não autenticado' });
-  }
 
-  try {
-    const usuario = await getUserByEmail(req.session.user.email_user);
-    if (!usuario) {
-      return res.status(404).json({ erro: 'Usuário não encontrado' });
-    }
-
-    const { itens, total, metodo_pagamento, endereco_entrega } = req.body;
-
-    const pedido = await createPedido({
-      id_usuario: usuario.idusuarios,
-      itens,
-      total,
-      metodo_pagamento,
-      endereco_entrega
-    });
-
-    res.status(201).json({ mensagem: 'Pedido criado com sucesso', pedido });
-  } catch (error) {
-    console.error('Erro ao criar pedido:', error);
-    res.status(500).json({ erro: 'Erro ao criar pedido' });
-  }
-});
-
-app.get('/api/pedidos', async (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ erro: 'Não autenticado' });
-  }
-
-  try {
-    const usuario = await getUserByEmail(req.session.user.email_user);
-    if (!usuario) {
-      return res.status(404).json({ erro: 'Usuário não encontrado' });
-    }
-
-    const pedidos = await getPedidosByUserId(usuario.idusuarios);
-    res.json(pedidos);
-  } catch (error) {
-    console.error('Erro ao buscar pedidos:', error);
-    res.status(500).json({ erro: 'Erro ao buscar pedidos' });
-  }
-});
 
 // Rota para obter quantidade de itens no carrinho
 app.get('/api/carrinho/quantidade', autenticar, async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ erro: 'Não autenticado' });
+
   try {
-    const resultado = await db.query(
-      'SELECT COUNT(*) as quantidade FROM carrinho WHERE id_usuario = $1',
-      [req.usuario.id]
-    );
-    
-    res.json({ quantidade: parseInt(resultado.rows[0].quantidade) });
+    const usuario = await getUserByEmail(req.session.user.email_user);
+    const result = await pool.query('SELECT COUNT(*) as quantidade FROM carrinho WHERE idusuarios = $1', [usuario.idusuarios]);
+    res.json({ quantidade: parseInt(result.rows[0].quantidade) });
   } catch (error) {
     console.error('Erro ao buscar quantidade do carrinho:', error);
     res.status(500).json({ erro: 'Erro interno do servidor' });
   }
 });
+
 
 
 

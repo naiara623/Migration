@@ -83,34 +83,58 @@ function CarrinhoContent() {
   const total = subtotal - desconto;
 
   // Buscar produtos do carrinho do banco
-  useEffect(() => {
-    fetchCarrinho();
-  }, []);
-
-  const fetchCarrinho = async () => {
+useEffect(() => {
+  const checkAuthAndFetchCart = async () => {
     try {
-      const response = await fetch('/api/carrinho', {
-        credentials: 'include'
+      const userResponse = await fetch('/api/usuario-atual', { 
+        credentials: 'include' 
       });
-      if (response.ok) {
-        const carrinhoItens = await response.json();
-        const formattedProducts = carrinhoItens.map(item => ({
-          id: item.id_carrinho,
-          productId: item.id_produto,
-          name: item.nome_produto,
-          price: parseFloat(item.valor_produto),
-          quantity: item.quantidade,
-          size: item.tamanho || '',
-          color: item.cor || '',
-          image: item.imagem_url,
-          checked: false
-        }));
-        setProducts(formattedProducts);
+      
+      if (!userResponse.ok) {
+        throw new Error('Usuário não autenticado');
       }
-    } catch (error) {
-      console.error('Erro ao buscar carrinho:', error);
+      
+      const user = await userResponse.json();
+      console.log('Usuário logado:', user);
+      fetchCarrinho();
+      
+    } catch (err) {
+      console.warn('Usuário não logado', err);
+      setProducts([]);
+      // Redirecionar para login ou mostrar mensagem
+      // navigate('/login');
     }
   };
+
+  checkAuthAndFetchCart();
+}, []);
+
+
+const fetchCarrinho = () => {
+  fetch('/api/carrinho', { credentials: 'include' })
+    .then(res => {
+      if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      const formatted = data.map(item => ({
+        id: item.id_carrinho,
+        id_produto: item.id_produto,
+        name: item.nome_produto,
+        price: parseFloat(item.valor_produto),
+        quantity: item.quantidade,
+        size: item.tamanho || '',
+        color: item.cor || '',
+        image: item.imagem_url,
+        checked: false
+      }));
+      setProducts(formatted);
+    })
+    .catch(err => {
+      console.error('Erro ao buscar carrinho:', err);
+    });
+};
+
 
   
 
@@ -176,7 +200,7 @@ function CarrinhoContent() {
     try {
       const pedidoData = {
         itens: selectedProducts.map(p => ({
-          id_produto: p.productId,
+          id_produto: p.id_produto,
           quantidade: p.quantity,
           preco_unitario: p.price,
           tamanho: p.size,
@@ -276,6 +300,13 @@ function CarrinhoContent() {
         {p.material && <span>Material: {p.material}</span>}
         {p.estampa && <span>Estampa: {p.estampa}</span>}
         <span className="item-price">R$ {p.price.toFixed(2)}</span>
+
+<div className="quantity-controls">
+  <button onClick={() => updateQuantity(p.id, p.quantity - 1)} disabled={p.quantity <= 1}>-</button>
+  <span>{p.quantity}</span>
+  <button onClick={() => updateQuantity(p.id, p.quantity + 1)}>+</button>
+</div>
+
       </div>
     </div>
     <button 

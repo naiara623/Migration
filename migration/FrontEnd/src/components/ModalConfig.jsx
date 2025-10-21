@@ -4,7 +4,7 @@ import "./ModalConfig.css";
 
 export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho }) {
   if (!isOpen || !product) return null;
- const { adicionarAoCarrinho } = useCarrinho(); // Usar o contexto
+
   // Estado para armazenar as seleções do usuário
   const [selections, setSelections] = useState({
     tamanho: 'M', // valor padrão
@@ -22,38 +22,44 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
     }));
   };
 
-  const addToCart = () => {
-    // Preparar os dados para enviar ao carrinho
-    const productWithSelections = {
-      ...product,
-      tamanho: selections.tamanho,
-      cor: `${selections.corDentro}${selections.corFora ? `/${selections.corFora}` : ''}`,
-      material: selections.material,
-      estampa: selections.estampa,
-      checked: false,
-      quantidade: 1
-    };
-
-    if (onAddCarrinho) {
-      onAddCarrinho(productWithSelections);
-    } else {
-      // Fallback para o localStorage
-      const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-      const exists = savedCart.some(p => 
-        p.id_produto === product.id_produto && 
-        p.tamanho === selections.tamanho && 
-        p.cor === `${selections.corDentro}${selections.corFora ? `/${selections.corFora}` : ''}`
-      );
-
-      if (!exists) {
-        const updatedCart = [...savedCart, productWithSelections];
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
-        alert("Produto adicionado ao carrinho!");
-      } else {
-        alert("Esse produto já está no carrinho!");
-      }
+  const handleAddToCart = async (product) => {
+  try {
+    // Verificar se usuário está logado
+    const userCheck = await fetch('http://localhost:3001/api/usuario-atual', {
+      credentials: 'include'
+    });
+    
+    if (!userCheck.ok) {
+      alert("Você precisa estar logado para adicionar ao carrinho.");
+      return;
     }
-  };
+
+    const response = await fetch('http://localhost:3001/api/carrinho', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        id_produto: product.id_produto,
+        quantidade: 1,
+        tamanho: product.tamanho || '',
+        cor: product.cor || ''
+      }),
+    });
+
+    if (response.ok) {
+      alert('Produto adicionado ao carrinho!');
+      if (onClose) onClose();
+    } else {
+      const errorData = await response.json();
+      alert(errorData.erro || 'Erro ao adicionar ao carrinho');
+    }
+  } catch (error) {
+    console.error('Erro:', error);
+    alert('Erro ao adicionar ao carrinho');
+  }
+};
 
   return (
     <div className="modal-mudar" onClick={onClose}>
@@ -342,7 +348,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
               </div>
 
               <div className="Buton-carrinho">
-                <button className="buton-carrinho2" onClick={addToCart}>
+                <button className="buton-carrinho2" onClick={handleAddToCart}>
                   Adicionar ao carrinho
                 </button>
               </div>

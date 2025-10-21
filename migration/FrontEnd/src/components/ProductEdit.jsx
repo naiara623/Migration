@@ -9,7 +9,7 @@ function ProductEdit({ product, onUpdateProduct, onCancel }) {
     valor_produto: '',
     categoria: '',
     estoque: '',
-    image_url: null,
+    imagem_url: null,
     imagePreview: ''
   });
   const [successMessage, setSuccessMessage] = useState('');
@@ -41,7 +41,7 @@ function ProductEdit({ product, onUpdateProduct, onCancel }) {
         valor_produto: product.valor_produto || '',
         categoria: product.nome_categoria || '',
         estoque: product.estoque || '',
-        image_url: null,
+        imagem_url: null,
         imagePreview: product.imagem_url || ''
       });
     }
@@ -64,7 +64,7 @@ function ProductEdit({ product, onUpdateProduct, onCancel }) {
       reader.onloadend = () => {
         setFormData(prev => ({
           ...prev,
-          image_url: file,
+          imagem_url: file,
           imagePreview: reader.result
         }));
       };
@@ -180,8 +180,8 @@ function ProductEdit({ product, onUpdateProduct, onCancel }) {
                 <label>Imagem do Produto</label>
                 <input 
                   type="file" 
-                  id="image_url" 
-                  name="image_url" 
+                  id="imagem_url" 
+                  name="imagem_url" 
                   accept="image/*" 
                   onChange={handleImageChange} 
                 />

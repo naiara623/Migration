@@ -9,7 +9,7 @@ function ProductForm({ onAddCarrinho, editingProduct, onSave, onCancel }) {
     valor_produto: '',
     categoria: '', // Agora usamos o nome da categoria
     estoque: '',
-    image_url: null,
+    imagem_url: null,
     imagePreview: ''
   });
   
@@ -18,21 +18,32 @@ function ProductForm({ onAddCarrinho, editingProduct, onSave, onCancel }) {
   const [errorMessage, setErrorMessage] = useState('');
 
   // Carregar categorias do banco
-  useEffect(() => {
-    const fetchCategorias = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/categorias');
-        if (response.ok) {
-          const data = await response.json();
-          setCategorias(data);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar categorias:', error);
-      }
-    };
+ useEffect(() => {
+  const fetchCategorias = async () => {
     
-    fetchCategorias();
-  }, []);
+    try { // Ajuste conforme seu armazenamento
+
+    const response = await fetch('http://localhost:3001/api/categorias', {
+  credentials: 'include'  // 👈 Obrigatório
+});
+
+
+
+      if (response.ok) {
+        const data = await response.json();
+        setCategorias(data);
+      } else if (response.status === 401) {
+        setErrorMessage('Usuário não autorizado. Faça login novamente.');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
+      setErrorMessage('Erro ao carregar categorias.');
+    }
+  };
+
+  fetchCategorias();
+}, []);
+
 
  const handleChange = (e) => {
   const { name, value } = e.target;
@@ -45,6 +56,7 @@ function ProductForm({ onAddCarrinho, editingProduct, onSave, onCancel }) {
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
         setErrorMessage('A imagem deve ter menos de 10MB');
+        formData.append('imagem_url', product.imagem_url);
         setTimeout(() => setErrorMessage(''), 3000);
         return;
       }
@@ -52,7 +64,7 @@ function ProductForm({ onAddCarrinho, editingProduct, onSave, onCancel }) {
       reader.onloadend = () => {
         setProduct(prev => ({
           ...prev,
-          image_url: file,
+          imagem_url: file,
           imagePreview: reader.result
         }));
       };
@@ -60,65 +72,64 @@ function ProductForm({ onAddCarrinho, editingProduct, onSave, onCancel }) {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Validação
-    if (!product.nome_produto || !product.valor_produto || !product.categoria) {
-      setErrorMessage('Preencha os campos obrigatórios.');
-      setTimeout(() => setErrorMessage(''), 3000);
-      return;
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (parseFloat(product.valor_produto) <= 0) {
-      setErrorMessage('O preço deve ser maior que zero.');
-      setTimeout(() => setErrorMessage(''), 3000);
-      return;
-    }
+  if (!product.nome_produto || !product.valor_produto || !product.categoria) {
+    setErrorMessage('Preencha os campos obrigatórios.');
+    setTimeout(() => setErrorMessage(''), 3000);
+    return;
+  }
 
-    try {
-      const formData = new FormData();
-      formData.append('nome_produto', product.nome_produto);
-      formData.append('descricao', product.descricao);
-      formData.append('valor_produto', product.valor_produto);
-      formData.append('categoria', product.categoria); // Enviamos o nome da categoria
-      formData.append('estoque', product.estoque);
-      if (product.image_url) {
-        formData.append('image_url', product.image_url);
-      }
+  if (parseFloat(product.valor_produto) <= 0) {
+    setErrorMessage('O preço deve ser maior que zero.');
+    setTimeout(() => setErrorMessage(''), 3000);
+    return;
+  }
 
-      const response = await fetch('http://localhost:3001/api/produtos', {
-        method: 'POST',
-        body: formData,
+  try {
+    // Enviar os dados para o pai
+   const formData = new FormData();
+formData.append("nome_produto", product.nome_produto);
+formData.append("descricao", product.descricao);
+formData.append("valor_produto", product.valor_produto);
+formData.append("categoria", product.categoria);
+formData.append("estoque", product.estoque || 0);
+if (product.imagem_url) {
+  formData.append("imagem_url", product.imagem_url);
+}
+
+const response = await fetch("http://localhost:3001/api/produtos", {
+  method: "POST",
+  body: formData,
+  credentials: "include" // 👈 ESSENCIAL para sessões
+});
+
+if (!response.ok) {
+  const data = await response.json();
+  throw new Error(data.erro || "Erro ao cadastrar produto");
+}
+
+
+    setSuccessMessage('Produto cadastrado com sucesso!');
+    setTimeout(() => {
+      setSuccessMessage('');
+      setProduct({
+        nome_produto: '',
+        descricao: '',
+        valor_produto: '',
+        categoria: '',
+        estoque: '',
+        imagem_url: null,
+        imagePreview: ''
       });
+    }, 3000);
+  } catch (error) {
+    setErrorMessage('Erro ao cadastrar produto.');
+    setTimeout(() => setErrorMessage(''), 3000);
+  }
+};
 
-      if (response.ok) {
-        const result = await response.json();
-        setSuccessMessage('Produto cadastrado com sucesso!');
-        
-        // Limpa o formulário
-        setTimeout(() => {
-          setSuccessMessage('');
-          setProduct({
-            nome_produto: '',
-            descricao: '',
-            valor_produto: '',
-            categoria: '',
-            estoque: '',
-            image_url: null,
-            imagePreview: ''
-          });
-        }, 3000);
-      } else {
-        const error = await response.json();
-        setErrorMessage(error.erro || 'Erro ao cadastrar produto');
-        setTimeout(() => setErrorMessage(''), 3000);
-      }
-    } catch (error) {
-      setErrorMessage('Erro ao conectar com o servidor');
-      setTimeout(() => setErrorMessage(''), 3000);
-    }
-  };
 
   return (
     <div className="product-screen">
@@ -163,7 +174,8 @@ function ProductForm({ onAddCarrinho, editingProduct, onSave, onCancel }) {
 
             <div className="form-group image-group">
                 <label>Imagem do Produto</label>
-  <input type="file" id="image_url" name="image_url" accept="image_url/*" onChange={handleImageChange} />
+ <input type="file" id="imagem_url" name="imagem_url" accept="image/*" onChange={handleImageChange} />
+
                 {product.imagePreview && (
                   <img src={product.imagePreview} alt="Prévia do Produto" className="product-image-preview" />
                 )}

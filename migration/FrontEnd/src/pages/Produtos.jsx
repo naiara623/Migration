@@ -25,16 +25,19 @@ function ProdutosContext() {
   useEffect(() => {
     if (categoria) {
       // Busca produtos filtrando pela categoria
-      const fetchProductsByCategoria = async () => {
-        try {
-          const response = await axios.get('http://localhost:3001/api/produtos', {
-            params: { categoria }
-          });
-          setProducts(response.data);
-        } catch (error) {
-          console.error('Erro ao buscar produtos:', error);
-        }
-      };
+      // Em ambos os componentes, garantir que a rota está correta
+const fetchProductsByCategoria = async () => {
+  try {
+    const response = await axios.get('http://localhost:3001/api/produtos', {
+      params: { categoria },
+      withCredentials: true // Importante para enviar a sessão
+    });
+    setProducts(response.data);
+  } catch (error) {
+    console.error('Erro ao buscar produtos:', error);
+    setProducts([]);
+  }
+};
       fetchProductsByCategoria();
     } else {
       // Se não tem categoria, busca todos os produtos

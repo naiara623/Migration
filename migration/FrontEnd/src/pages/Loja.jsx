@@ -4,7 +4,7 @@ import { ThemeEffect } from '../ThemeEffect';
 import Header from '../components/Header';
 import { FaPlusCircle, FaBoxOpen, FaChartPie, FaEdit, FaTrash, FaCheckSquare, FaSquare, FaTimes, FaShoppingCart, FaShare, FaHeart, FaStar } from "react-icons/fa";
 import ProductForm from '../components/ProductForm';
-import ProductEdit from '../components/ProductEdit'; // Importar o novo componente
+// import ProductEdit from '../components/ProductEdit'; // Importar o novo componente
 import './Loja.css';
 import NovoProduct from '../components/NovoProduct';
 
@@ -28,29 +28,84 @@ function Lojacontext() {
     salesLabels: ['Jan 15', 'Feb 16', 'Mar 17', 'Apr 18', 'May 19', 'Jun 21', 'Jul 22', 'Aug 23', 'Sep 24', 'Oct 25', 'Nov 26', 'Dec 27']
   });
 
-   // CORREÇÃO: Função para carregar produtos com tratamento de IDs
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:3001/api/produtos');
-      if (response.ok) {
-        const data = await response.json();
-        // Garantir que os IDs são números
-        const productsWithNumericIds = data.map(product => ({
-          ...product,
-          id: Number(product.id_produto) // Converter ID para número
-        }));
-        setProducts(productsWithNumericIds);
-        console.log('Produtos carregados:', productsWithNumericIds);
-      } else {
-        console.error('Erro ao carregar produtos');
-      }
-    } catch (error) {
-      console.error('Erro ao conectar com o servidor:', error);
-    } finally {
-      setLoading(false);
+
+
+
+
+// Adicionar verificação de sessão antes de fazer requisições
+const checkSession = async () => {
+  try {
+    const response = await fetch('http://localhost:3001/api/check-session', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Status da sessão:', data);
+      return data.autenticado;
     }
-  };
+    return false;
+  } catch (error) {
+    console.error('Erro ao verificar sessão:', error);
+    return false;
+  }
+};
+
+// CORREÇÃO: Função para carregar produtos com melhor tratamento de erro
+const fetchProducts = async () => {
+  setLoading(true);
+  try {
+    // Verificar se está autenticado primeiro
+    const isAuthenticated = await checkSession();
+    if (!isAuthenticated) {
+      console.log('Usuário não autenticado, redirecionando...');
+      setProducts([]);
+      // Aqui você pode redirecionar para login se quiser
+      return;
+    }
+
+    const response = await fetch('http://localhost:3001/api/meus-produtos', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    
+    if (response.status === 401) {
+      console.log('Não autorizado - sessão expirada');
+      setProducts([]);
+      return;
+    }
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Erro do servidor:', errorData);
+      throw new Error(errorData.erro || 'Erro ao carregar produtos');
+    }
+    
+    const data = await response.json();
+    // Garantir que os IDs são números
+    const productsWithNumericIds = data.map(product => ({
+      ...product,
+      id: Number(product.id_produto)
+    }));
+    setProducts(productsWithNumericIds);
+    console.log('Produtos do usuário carregados:', productsWithNumericIds);
+  } catch (error) {
+    console.error('Erro ao carregar produtos:', error);
+    alert('Erro ao carregar produtos: ' + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
+
+
+   // CORREÇÃO: Função para carregar produtos com tratamento de IDs
+ // CORREÇÃO: Função para carregar produtos DO USUÁRIO LOGADO
+
 
 
   // Carregar produtos ao iniciar
@@ -67,8 +122,8 @@ const handleAddProduct = async (newProduct) => {
     formData.append('categoria', newProduct.categoria);
     formData.append('estoque', newProduct.estoque || 0);
 
-    if (newProduct.image_url && newProduct.image_url !== editingProduct?.imagem_url) {
-      formData.append('image_url', newProduct.image_url); // corrigido
+    if (newProduct.imagem_url && newProduct.imagem_url !== editingProduct?.imagem_url) {
+      formData.append('imagem_url', newProduct.imagem_url); // corrigido
     }
 
     let response;
