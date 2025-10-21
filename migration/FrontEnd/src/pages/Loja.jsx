@@ -4,6 +4,7 @@ import { ThemeEffect } from '../ThemeEffect';
 import Header from '../components/Header';
 import { FaPlusCircle, FaBoxOpen, FaChartPie, FaEdit, FaTrash, FaCheckSquare, FaSquare, FaTimes, FaShoppingCart, FaShare, FaHeart, FaStar } from "react-icons/fa";
 import ProductForm from '../components/ProductForm';
+// import ProductEdit from '../components/ProductEdit'; // Importar o novo componente
 import './Loja.css';
 import NovoProduct from '../components/NovoProduct';
 
@@ -27,29 +28,84 @@ function Lojacontext() {
     salesLabels: ['Jan 15', 'Feb 16', 'Mar 17', 'Apr 18', 'May 19', 'Jun 21', 'Jul 22', 'Aug 23', 'Sep 24', 'Oct 25', 'Nov 26', 'Dec 27']
   });
 
-   // CORREÇÃO: Função para carregar produtos com tratamento de IDs
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:3001/api/produtos');
-      if (response.ok) {
-        const data = await response.json();
-        // Garantir que os IDs são números
-        const productsWithNumericIds = data.map(product => ({
-          ...product,
-          id: Number(product.id_produto) // Converter ID para número
-        }));
-        setProducts(productsWithNumericIds);
-        console.log('Produtos carregados:', productsWithNumericIds);
-      } else {
-        console.error('Erro ao carregar produtos');
-      }
-    } catch (error) {
-      console.error('Erro ao conectar com o servidor:', error);
-    } finally {
-      setLoading(false);
+
+
+
+
+// Adicionar verificação de sessão antes de fazer requisições
+const checkSession = async () => {
+  try {
+    const response = await fetch('http://localhost:3001/api/check-session', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Status da sessão:', data);
+      return data.autenticado;
     }
-  };
+    return false;
+  } catch (error) {
+    console.error('Erro ao verificar sessão:', error);
+    return false;
+  }
+};
+
+// CORREÇÃO: Função para carregar produtos com melhor tratamento de erro
+const fetchProducts = async () => {
+  setLoading(true);
+  try {
+    // Verificar se está autenticado primeiro
+    const isAuthenticated = await checkSession();
+    if (!isAuthenticated) {
+      console.log('Usuário não autenticado, redirecionando...');
+      setProducts([]);
+      // Aqui você pode redirecionar para login se quiser
+      return;
+    }
+
+    const response = await fetch('http://localhost:3001/api/meus-produtos', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    
+    if (response.status === 401) {
+      console.log('Não autorizado - sessão expirada');
+      setProducts([]);
+      return;
+    }
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Erro do servidor:', errorData);
+      throw new Error(errorData.erro || 'Erro ao carregar produtos');
+    }
+    
+    const data = await response.json();
+    // Garantir que os IDs são números
+    const productsWithNumericIds = data.map(product => ({
+      ...product,
+      id: Number(product.id_produto)
+    }));
+    setProducts(productsWithNumericIds);
+    console.log('Produtos do usuário carregados:', productsWithNumericIds);
+  } catch (error) {
+    console.error('Erro ao carregar produtos:', error);
+    alert('Erro ao carregar produtos: ' + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
+
+
+   // CORREÇÃO: Função para carregar produtos com tratamento de IDs
+ // CORREÇÃO: Função para carregar produtos DO USUÁRIO LOGADO
+
 
 
   // Carregar produtos ao iniciar
@@ -57,29 +113,26 @@ function Lojacontext() {
     fetchProducts();
   }, []);
 
-  // Loja.js - Corrigir a função handleAddProduct
 const handleAddProduct = async (newProduct) => {
   try {
     const formData = new FormData();
-    formData.append('nome_produto', newProduct.name);
+    formData.append('nome_produto', newProduct.nome_produto); // corrigido
     formData.append('descricao', newProduct.descricao || '');
-    formData.append('valor_produto', newProduct.price);
+    formData.append('valor_produto', newProduct.valor_produto); // corrigido
     formData.append('categoria', newProduct.categoria);
     formData.append('estoque', newProduct.estoque || 0);
-    
-    if (newProduct.image && newProduct.image !== editingProduct?.image_url) {
-      formData.append('image_url', newProduct.image);
+
+    if (newProduct.imagem_url && newProduct.imagem_url !== editingProduct?.imagem_url) {
+      formData.append('imagem_url', newProduct.imagem_url); // corrigido
     }
 
     let response;
     if (editingProduct) {
-      // Atualizar produto existente
       response = await fetch(`http://localhost:3001/api/produtos/${editingProduct.id_produto}`, {
         method: 'PUT',
         body: formData,
       });
     } else {
-      // Adicionar novo produto
       response = await fetch('http://localhost:3001/api/produtos', {
         method: 'POST',
         body: formData,
@@ -87,12 +140,11 @@ const handleAddProduct = async (newProduct) => {
     }
 
     if (response.ok) {
-      await fetchProducts(); // Recarregar a lista
+      await fetchProducts();
       setEditingProduct(null);
       setActiveSection(null);
     } else {
       const errorData = await response.json();
-      console.error('Erro do servidor:', errorData);
       alert('Erro ao salvar produto: ' + (errorData.erro || 'Erro desconhecido'));
     }
   } catch (error) {
@@ -100,6 +152,8 @@ const handleAddProduct = async (newProduct) => {
     alert('Erro ao conectar com o servidor');
   }
 };
+
+
 
 // Loja.js - A função deleteSelectedProducts já está correta, mas vou melhorar o tratamento de erro
 const deleteSelectedProducts = async () => {
@@ -149,26 +203,31 @@ const deleteSelectedProducts = async () => {
   }
 };
  // CORREÇÃO: Função de editar corrigida
-  const editSelectedProduct = () => {
-    if (selectedProducts.size === 1) {
-      const productId = Array.from(selectedProducts)[0];
-      console.log('ID do produto para editar:', productId);
-      
-      const productToEdit = products.find(p => Number(p.id) === Number(productId));
-      
-      if (productToEdit) {
-        setEditingProduct(productToEdit);
-        setActiveSection('produtos');
-        exitSelectionMode();
-      } else {
-        alert('Produto não encontrado.');
-      }
-    } else if (selectedProducts.size > 1) {
-      alert('Por favor, selecione apenas um produto para editar.');
+// CORREÇÃO: Função de editar corrigida
+const editSelectedProduct = () => {
+  if (selectedProducts.size === 1) {
+    const productId = Array.from(selectedProducts)[0];
+    console.log('ID do produto para editar:', productId);
+    console.log('Todos os produtos:', products);
+    
+    // CORREÇÃO: Buscar pelo id_produto que vem do backend
+    const productToEdit = products.find(p => Number(p.id_produto) === Number(productId));
+    
+    if (productToEdit) {
+      console.log('Produto encontrado para edição:', productToEdit);
+      setEditingProduct(productToEdit);
+      setActiveSection('produtos');
+      exitSelectionMode();
     } else {
-      alert('Por favor, selecione um produto para editar.');
+      console.error('Produto não encontrado. IDs disponíveis:', products.map(p => p.id_produto));
+      alert('Produto não encontrado.');
     }
-  };
+  } else if (selectedProducts.size > 1) {
+    alert('Por favor, selecione apenas um produto para editar.');
+  } else {
+    alert('Por favor, selecione um produto para editar.');
+  }
+};
 
 
   const toggleProductSelection = (productId) => {
@@ -185,15 +244,15 @@ const deleteSelectedProducts = async () => {
     console.log('Produtos selecionados:', Array.from(newSelected));
   };
 
-   const toggleSelectAll = () => {
-    if (selectedProducts.size === products.length) {
-      setSelectedProducts(new Set());
-    } else {
-      // CORREÇÃO: Garantir que todos os IDs são números
-      const allIds = new Set(products.map(product => Number(product.id_produto)));
-      setSelectedProducts(allIds);
-    }
-  };
+ const toggleSelectAll = () => {
+  if (selectedProducts.size === products.length) {
+    setSelectedProducts(new Set());
+  } else {
+    // CORREÇÃO: Usar id_produto em vez de id
+    const allIds = new Set(products.map(product => Number(product.id_produto)));
+    setSelectedProducts(allIds);
+  }
+};
 
 
 
@@ -486,7 +545,7 @@ return (
             <div className="loading">Carregando produtos...</div>
             //oi
           ) :products.length === 0 ? (
-  <div className="placeholder-image">
+  <div className="placeholder-image1">
     <img className='imagg' src="io.png" alt="My Store" />
   </div>
 ) : (

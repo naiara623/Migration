@@ -63,65 +63,172 @@ const ProductCheckbox = ({ id, checked, onChange }) => (
   </div>
 );
 
+// Carrinho.js - Atualizações
 function CarrinhoContent() {
   ThemeEffect();
-
   const [products, setProducts] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
-
-  // Cupom
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  
+  const subtotal = products.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  
+  // Calcular desconto
+  const desconto = appliedCoupon 
+    ? subtotal * (appliedCoupon.discountPercent / 100)
+    : 0;
+  
+  // Calcular total
+  const total = subtotal - desconto;
 
-  // Buscar produtos do localStorage
-  useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    setProducts(savedCart);
-  }, []);
+  // Buscar produtos do carrinho do banco
+useEffect(() => {
+  const checkAuthAndFetchCart = async () => {
+    try {
+      const userResponse = await fetch('/api/usuario-atual', { 
+        credentials: 'include' 
+      });
+      
+      if (!userResponse.ok) {
+        throw new Error('Usuário não autenticado');
+      }
+      
+      const user = await userResponse.json();
+      console.log('Usuário logado:', user);
+      fetchCarrinho();
+      
+    } catch (err) {
+      console.warn('Usuário não logado', err);
+      setProducts([]);
+      // Redirecionar para login ou mostrar mensagem
+      // navigate('/login');
+    }
+  };
 
-  // Selecionar todos
+  checkAuthAndFetchCart();
+}, []);
+
+
+const fetchCarrinho = () => {
+  fetch('/api/carrinho', { credentials: 'include' })
+    .then(res => {
+      if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      const formatted = data.map(item => ({
+        id: item.id_carrinho,
+        id_produto: item.id_produto,
+        name: item.nome_produto,
+        price: parseFloat(item.valor_produto),
+        quantity: item.quantidade,
+        size: item.tamanho || '',
+        color: item.cor || '',
+        image: item.imagem_url,
+        checked: false
+      }));
+      setProducts(formatted);
+    })
+    .catch(err => {
+      console.error('Erro ao buscar carrinho:', err);
+    });
+};
+
+
+  
+
+  // Atualizar quantidade no carrinho
+  const updateQuantity = async (id, newQuantity) => {
+    try {
+      const response = await fetch(`/api/carrinho/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ quantidade: newQuantity }),
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        fetchCarrinho(); // Recarrega o carrinho
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar quantidade:', error);
+    }
+  };
+
+  // Remover produto do carrinho
+  const handleRemoveProduct = async (id) => {
+    try {
+      const response = await fetch(`/api/carrinho/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setProducts(products.filter(p => p.id !== id));
+      }
+    } catch (error) {
+      console.error('Erro ao remover produto:', error);
+    }
+  };
+
+  // Selecionar/deselecionar todos os produtos
   const handleSelectAll = () => {
     const newSelectAll = !selectAll;
     setSelectAll(newSelectAll);
-    const updated = products.map(p => ({ ...p, checked: newSelectAll }));
-    setProducts(updated);
-    localStorage.setItem("cart", JSON.stringify(updated));
+    setProducts(products.map(p => ({ ...p, checked: newSelectAll })));
   };
 
-  // Selecionar individual
+  // Selecionar produto individual
   const handleProductSelect = (id) => {
-    const updated = products.map(p => 
+    setProducts(products.map(p => 
       p.id === id ? { ...p, checked: !p.checked } : p
-    );
-    setProducts(updated);
-    setSelectAll(updated.every(p => p.checked));
-    localStorage.setItem("cart", JSON.stringify(updated));
+    ));
   };
 
-  // Remover produto
-  const handleRemoveProduct = (id) => {
-    const updated = products.filter(p => p.id !== id);
-    setProducts(updated);
-    localStorage.setItem("cart", JSON.stringify(updated));
-  };
+  // Finalizar compra
+  const handleFinalizarCompra = async () => {
+    const selectedProducts = products.filter(p => p.checked);
+    
+    if (selectedProducts.length === 0 || !paymentMethod) {
+      alert('Selecione produtos e forma de pagamento');
+      return;
+    }
 
-  // Calcular valores
-  const subtotal = products
-    .filter(p => p.checked)
-    .reduce((acc, p) => acc + p.price, 0);
+    try {
+      const pedidoData = {
+        itens: selectedProducts.map(p => ({
+          id_produto: p.id_produto,
+          quantidade: p.quantity,
+          preco_unitario: p.price,
+          tamanho: p.size,
+          cor: p.color
+        })),
+        total: total,
+        metodo_pagamento: paymentMethod,
+        endereco_entrega: "Endereço do usuário" // Você pode pegar do perfil do usuário
+      };
 
-  const desconto = appliedCoupon ? subtotal * appliedCoupon.discount : 0;
-  const total = subtotal - desconto;
+      const response = await fetch('/api/pedidos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pedidoData),
+        credentials: 'include'
+      });
 
-  // Função aplicar cupom
-  const handleApplyCoupon = () => {
-    if (couponInput.toLowerCase() === "desconto15") {
-      setAppliedCoupon({ code: "DESCONTO15", discount: 0.15 });
-    } else if (couponInput.toLowerCase() === "migration20") {
-      setAppliedCoupon({ code: "MIGRATION20", discount: 0.20 });
-    } else {
-      alert("Cupom inválido!");
+      if (response.ok) {
+        alert('Pedido realizado com sucesso!');
+        fetchCarrinho(); // Recarrega o carrinho vazio
+      } else {
+        alert('Erro ao realizar pedido');
+      }
+    } catch (error) {
+      console.error('Erro ao finalizar compra:', error);
+      alert('Erro ao finalizar compra');
     }
   };
 
@@ -129,6 +236,22 @@ function CarrinhoContent() {
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponInput("");
+  };
+
+  const handleApplyCoupon = async () => {
+    try {
+      // Aqui estamos apenas simulando um cupom fixo para teste
+      const cupomValido = "DESCONTO10";
+
+      if (couponInput.toUpperCase() === cupomValido) {
+        setAppliedCoupon({ code: cupomValido, discountPercent: 10 });
+      } else {
+        alert("Cupom inválido");
+      }
+    } catch (error) {
+      console.error("Erro ao aplicar cupom:", error);
+      alert("Erro ao aplicar cupom");
+    }
   };
 
   return (
@@ -142,6 +265,7 @@ function CarrinhoContent() {
           {/* Itens */}
           <div className='carrinho-mostrar-itens'>
             <div className='carrinho-pedidos'>
+              
               {products.length > 0 && (
                 <div className="select-all">
                   <CustomCheckbox 
@@ -157,30 +281,42 @@ function CarrinhoContent() {
                 <p className="empty-cart">Seu carrinho está vazio 🛒</p>
               )}
 
-              {products.map((p) => (
-                <div className="item-card" key={p.id}>
-                  <div className="item-header">
-                    <ProductCheckbox 
-                      id={p.id} 
-                      checked={p.checked}
-                      onChange={() => handleProductSelect(p.id)}
-                    />
-                  </div>
-                  <div className="item-info">
-                    <h3>{p.name}</h3>
-                    <div className="item-details">
-                      <span>{p.size}</span>
-                      <span className="item-price">R$ {p.price.toFixed(2)}</span>
-                    </div>
-                  </div>
-                  <button 
-                    className="remove-button" 
-                    onClick={() => handleRemoveProduct(p.id)}
-                  >
-                    Remover
-                  </button>
-                </div>
-              ))}
+           
+{products.map((p) => (
+  <div className="item-card" key={p.id}>
+    <div className="item-header">
+      <ProductCheckbox 
+        id={p.id} 
+        checked={p.checked}
+        onChange={() => handleProductSelect(p.id)}
+      />
+    </div>
+    <div className="item-info">
+      <h3>{p.name}</h3>
+      <div className="item-details">
+        {/* Mostrar as opções selecionadas */}
+        {p.tamanho && <span>Tamanho: {p.tamanho}</span>}
+        {p.cor && <span>Cor: {p.cor}</span>}
+        {p.material && <span>Material: {p.material}</span>}
+        {p.estampa && <span>Estampa: {p.estampa}</span>}
+        <span className="item-price">R$ {p.price.toFixed(2)}</span>
+
+<div className="quantity-controls">
+  <button onClick={() => updateQuantity(p.id, p.quantity - 1)} disabled={p.quantity <= 1}>-</button>
+  <span>{p.quantity}</span>
+  <button onClick={() => updateQuantity(p.id, p.quantity + 1)}>+</button>
+</div>
+
+      </div>
+    </div>
+    <button 
+      className="remove-button" 
+      onClick={() => handleRemoveProduct(p.id)}
+    >
+      Remover
+    </button>
+  </div>
+))}
             </div>
           </div>
 
@@ -265,6 +401,7 @@ function CarrinhoContent() {
                 <button 
                   className="buy-button" 
                   disabled={products.filter(p => p.checked).length === 0 || !paymentMethod}
+                  onClick={handleFinalizarCompra}
                 >
                   Comprar agora
                 </button>
@@ -280,7 +417,7 @@ function CarrinhoContent() {
 function Carrinho() {
   return (
     <ThemeProvider>
-      <CarrinhoContent/>
+      <CarrinhoContent />
     </ThemeProvider>
   );
 }

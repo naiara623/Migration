@@ -38,7 +38,7 @@ const Header = () => {
             <ul>
               <li><Link to="/">Home</Link></li>
               <li><Link to="/produtos">Produtos</Link></li>
-              <li><Link  onClick={() => setOpenCategorias(true)}>Categorias</Link></li>
+              {/* <li><Link  onClick={() => setOpenCategorias(true)}>Categorias</Link></li> */}
               <li><Link to="/ofertas">Ofertas</Link></li>
               <li><Link>Contato</Link></li>
                 <li><Link to="/loja">MinhaLoja</Link></li>
@@ -95,8 +95,10 @@ const Header = () => {
               </div>
             </div>
             <button className="cart-btn">
+              <Link to={"/car"} className="cart-link">
               <i className="fas fa-shopping-cart"></i>
               <span className="cart-count">0</span>
+              </Link>
             </button>
 
             <button className='Perfil-btn'>

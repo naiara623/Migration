@@ -7,6 +7,24 @@
   background-color: var(--bg-primary);
 }
 
+.item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.item-details span {
+  font-size: 14px;
+  color: #666;
+}
+
+.item-price {
+  font-weight: bold;
+  color: #333 !important;
+  margin-top: 8px;
+}
+
 .contener-carrinho {
   height: 100%;
   width: 100%;
