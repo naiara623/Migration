@@ -1,0 +1,183 @@
+{
+  "footer": {
+    "brand": {
+      "title": "Migrando",
+      "description": "Sua loja completa de produtos para viagem. Qualidade e conforto para suas aventuras."
+    },
+    "links": {
+      "title": "Links Úteis",
+      "about": "Sobre Nós",
+      "stores": "Nossas Lojas",
+      "blog": "Blog de Viagens",
+      "work": "Trabalhe Conosco"
+    },
+    "help": {
+      "title": "Ajuda",
+      "faq": "FAQ",
+      "returns": "Trocas e Devoluções",
+      "privacy": "Política de Privacidade",
+      "terms": "Termos de Serviço"
+    },
+    "contact": {
+      "title": "Contato",
+      "address": "Av. das Viagens, 1234",
+      "phone": "(11) 98765-4321",
+      "email": "contato@travelgear.com"
+    },
+    "bottom": "© 2025 Migrando. Todos os direitos reservados."
+  },
+
+  "hero": {
+     "oi": {
+        "title": "Prepare-se para sua próxima aventura",
+        "infor": "Os melhores equipamentos e acessórios para suas viagens",
+        "button": "Explorar Produtos"
+
+     }
+  },
+
+  "featuredproduct": {
+     "produto": {
+        "title": "Produtos em Destaque",
+        "novo": "Novo",
+        "button": "Adicionar as carrinhos"
+     }
+
+  },
+
+  "helpsaction": {
+    "ajuda": {
+      "title": "Precisa de ajuda?",
+      "atendi": "Atendimento rápido",
+      "via": "Via chat",
+      "fazer": "Fazer agora",
+      "menos": "Menos de R$100",
+      "confi": "Confira produtos com preços baixos",
+      "mostra": "Mostrar produtos",
+      "mais": "Mais vendido", 
+      "encon": "Encontre as tendências do momento",
+      "vendi": "É para mais vendidos",
+      "frete": "Produtos com frete grátis",
+      "econo": "Economize nas compras",
+      "categ": "Nossas categorias",
+      "procu": "Produtos recentemente procurados",
+      "tag": "Mascara de vapor"
+    }
+  },
+
+  "productcategories": {
+    "produtos": {
+      "nossas": "Nossas Categorias",
+      "vermai": "Ver Mais"
+    }
+  },
+
+  "cadastro": {
+    "cadstra":{
+      "title": "Bem vindo ao Migration!",
+      "nome": "Nome Completo",
+      "email": "Email",
+      "senha": "Senha"
+    },
+
+  "inputs":{
+     "nome": "Ex: Julia Santos",
+     "email": "Ex: juliaSantos@gmail.com",
+     "senha": "No minimo 6 caracteres"
+  },
+
+  "termos": {
+    "termo": "Li e aceito os termos de uso"
+  },
+
+  "button": {
+    "butonl": "Logar",
+    "butonc": "Cadastrar",
+    "button": "Cadastrando"
+  }
+},
+
+  "login": {
+    "logar": {
+      "title": "Bem vindo de volta ao Migration!"
+    },
+
+   "input": {
+      "email1": "Email",
+      "senha2": "Senha"
+    },
+
+  "place": {
+      "email": "EX: juliaSantos@gmail.com",
+      "senha": "Mínimo 6 caracteres"
+    },
+
+   "button": {
+    "butonl": "Logar",
+    "butonc": "Cadastrar",
+    "button": "Cadastrando"
+  }
+},
+
+  "produto": {
+    "categoria":{
+      "buton": "Ver Categorias"
+    },
+
+    "mostrar": {
+      "buton": "Mostrar Todos os Produtos"
+    },
+
+    "text": {
+      "text1": "Produtos em alta",
+      "text2": "Nenhum produto encontrado para esta categoria.",
+      "text3": "Promoções do Dia"
+    }
+  },
+
+  "perfil": {
+    "dadospessoais": {
+      "title": "Informações Pessoais",
+      "nome": "Nome de usuário:",
+      "email": "Email:",
+      "senha": "Senha:",
+      "sexo": "Sexo:",
+      "femi": "Feminino",
+      "masc": "Masculino",
+      "naoi": "Não Informar",
+      "buto": "Editar Perfil",
+      "but1": "Deletar Conta"
+    },
+
+    "endereco": {
+      "ende": "endereço",
+      "cep": "CEP:",
+      "estado": "Estado:",
+      "rua": "Rua:",
+      "comple": "Complemento:",
+      "refere": "Referencia:",
+      "numero": "Numero :",
+      "buto": "Editar Campos",
+      "but1": "Limpar Campos"
+    }
+  },
+
+  "fino": {
+    "info": {
+      "usuario": "Nome_Usuário",
+      "compras": "Minhas Compras",
+      "favorit": "Meus Favoritos",
+      "enderec": "Endereço"
+    }
+  },
+
+   "navbar": {
+    "nav": {
+      "lar": "Home",
+      "pro": "Produtos",
+      "ofe": "Ofertas",
+      "con": "Contato",
+      "min": "Minha Loja"
+    }
+  }
+}

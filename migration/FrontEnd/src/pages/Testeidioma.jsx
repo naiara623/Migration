@@ -1,14 +1,16 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import "../i18n"; // importa a inicialização do i18n
-import './Footer.css';
+import Header from "../components/Header";
+import "./Testidioma.css";
 
-const Footer = () => {
-
- const { t } = useTranslation();
+function Testeidioma() {
+  const { t } = useTranslation();
 
   return (
-    <footer className="footer">
+    <div>
+      <Header />
+      <footer className="footer">
         <div className="container">
           <div className="footer-content">
             <div className="footer-section">
@@ -83,7 +85,8 @@ const Footer = () => {
           </div>
         </div>
       </footer>
+    </div>
   );
-};
+}
 
-export default Footer;
+export default Testeidioma;

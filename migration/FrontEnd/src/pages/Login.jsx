@@ -3,6 +3,7 @@ import './Login.css'
 import { useNavigate } from 'react-router-dom'
 import { ThemeProvider } from '../ThemeContext'
 import { ThemeEffect } from '../ThemeEffect'
+import { useTranslation } from 'react-i18next'
 
 function LoginContext() {
   ThemeEffect()
@@ -14,6 +15,7 @@ function LoginContext() {
   const [isLoading, setIsLoading] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate()
+  const { t } = useTranslation();
 
   const handleLogin = async e => {
     e.preventDefault()
@@ -85,14 +87,14 @@ function LoginContext() {
     <div className='ladoDireito-Login'>
 
       <div className='Titulo-Login'>
-        <h1 className='BemVindo-Login'>Bem vindo de volta ao Migration!</h1>
+        <h1 className='BemVindo-Login'>{t("login.logar.title")}</h1>
       </div>
 
       <div className='Inputs-Login'>
         <div className='inputNome-Login'>
-          <label className='Labelemail-Login'>E-mail</label>
+          <label className='Labelemail-Login'>{t("login.input.email1")}</label>
            <input type="text" className='Email-Login'
-            placeholder=' Ex: Nayllany Rodrigues da silva'
+            placeholder={t("login.place.email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}/>
             {mensagemEmail && <p style={{ color: 'red', marginTop: '-3%', fontSize: '1rem' }}>{mensagemEmail}</p>}
@@ -100,9 +102,9 @@ function LoginContext() {
 
 
         <div className='inputsenha-Login'>
-          <label className='Labelsenha-Login'>Senha</label>
+          <label className='Labelsenha-Login'>{t("login.input.senha2")}</label>
            <input type="text" className='Senha-Login'
-            placeholder=' Ex: 123456'
+            placeholder={t("login.place.senha")}
             value={senha}
             onChange={(e) => setSenha(e.target.value)}/>
             {mensagemSenha && <p style={{ color: 'red', marginTop: '-5%' }}>{mensagemSenha}</p>}
@@ -111,14 +113,15 @@ function LoginContext() {
 
       <div className='Buttons-Login'>
 
+
         <div className='butonLogar-Login'>
           <button className='ButtonLogar-Login' onClick={handleLogin} disabled={isLoading}>
-            {isLoading ? 'Carregando...' : 'Logar'}
+            {isLoading ? t('login.button.buton') : t('login.button.butonl') }
           </button>
         </div>
 
         <div className='butoncadastrar-Login'>
-          <button className='ButtonCadastrar-Login' onClick={() => navigate('/cadastro')}>Cadastrar</button>
+          <button className='ButtonCadastrar-Login' onClick={() => navigate('/cadastro')}>{t("login.button.butonc")}</button>
         </div>
       </div>
 

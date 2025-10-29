@@ -5,8 +5,10 @@ import ModalConfig from '../components/ModalConfig';
 import Categorias from '../components/Categorias';
 import { ThemeProvider } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
-import axios from 'axios';
+// import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import "../i18n"
 
 function OfertasContext() {
   ThemeEffect();
@@ -17,6 +19,7 @@ function OfertasContext() {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const {t} = useTranslation();
 
   // Pega a categoria da URL
   const queryParams = new URLSearchParams(location.search);
@@ -138,8 +141,12 @@ const handleAddToCart = async (product) => {
       </div>
 
       <div className='DivGlobal-Ofertas'>
-        <button onClick={() => setModalAberto(true)}>Abrir Categorias</button>
-        <button onClick={resetarFiltro}>Mostrar Todos os Produtos</button>
+
+
+       <div className="buttons">
+          <button className='ButtonCategorias' onClick={() => setModalAberto(true)}>{t('produto.categoria.buton')}</button>
+        <button className='ButtonProdutos' onClick={resetarFiltro}>{t('produto.mostrar.buton')}</button>
+        </div>
 
         <Categorias 
           isOpen={modalAberto} 
@@ -151,11 +158,11 @@ const handleAddToCart = async (product) => {
           <section className="featured-products">
             <div className="container2">
               <h2 className='oiTest'>
-                {categoria ? `Promoções em ${categoria}` : 'Promoções do Dia'}
+                {categoria ? `Promoções em ${categoria}` : t('produto.text.text3')}
               </h2>
               <div className="products-grid">
                 {products.length === 0 ? (
-                  <p>Nenhum produto encontrado para esta categoria.</p>
+                  <p>{t('produto.text.text2')}</p>
                 ) : (
                   products.map(product => (
                     <div key={product.id_produto} className="product-card">

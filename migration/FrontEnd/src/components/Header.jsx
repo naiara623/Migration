@@ -5,6 +5,8 @@ import { useTheme } from '../ThemeContext';
 import { Link } from 'react-router-dom';
 import Categorias from "./Categorias";
 import ModalIdiomas from './ModalIdiomas';
+import { useTranslation } from 'react-i18next';
+import "../i18n"
 
 
 const Header = () => {
@@ -12,7 +14,8 @@ const Header = () => {
   const [searchValue, setSearchValue] = useState('');
   const { darkMode, toggleTheme } = useTheme();
   const [openCategorias, setOpenCategorias] = useState(false);
-  const [openIdiomas, setOpenIdiomas] = useState (false)
+  const [openIdiomas, setOpenIdiomas] = useState (false);
+  const {t} = useTranslation();
 
   const toggleSearch = () => {
     setIsCollapsed(!isCollapsed);
@@ -36,12 +39,12 @@ const Header = () => {
           </div>
           <nav className="nav">
             <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/produtos">Produtos</Link></li>
+              <li><Link to="/">{t("navbar.nav.lar")}</Link></li>
+              <li><Link to="/produtos">{t("navbar.nav.pro")}</Link></li>
               {/* <li><Link  onClick={() => setOpenCategorias(true)}>Categorias</Link></li> */}
-              <li><Link to="/ofertas">Ofertas</Link></li>
-              <li><Link>Contato</Link></li>
-                <li><Link to="/loja">MinhaLoja</Link></li>
+              <li><Link to="/ofertas">{t("navbar.nav.ofe")}</Link></li>
+              <li><Link>{t("navbar.nav.con")}</Link></li>
+                <li><Link to="/loja">{t("navbar.nav.min")}</Link></li>
             </ul>
 
              {/* Modal de Categorias */}
