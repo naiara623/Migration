@@ -5,7 +5,7 @@ import ModalConfig from '../components/ModalConfig';
 import Categorias from '../components/Categorias';
 import { ThemeProvider } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
-import axios from 'axios';
+// import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 function OfertasContext() {
