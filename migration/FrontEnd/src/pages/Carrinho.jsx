@@ -71,77 +71,86 @@ function CarrinhoContent() {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [loading, setLoading] = useState(false);
   
-  const subtotal = products.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  
-  // Calcular desconto
-  const desconto = appliedCoupon 
-    ? subtotal * (appliedCoupon.discountPercent / 100)
-    : 0;
-  
-  // Calcular total
-  const total = subtotal - desconto;
+const subtotal = products
+  .filter(item => item.checked) // só produtos marcados
+  .reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  // Buscar produtos do carrinho do banco
-useEffect(() => {
-  const checkAuthAndFetchCart = async () => {
+  // Calcular desconto
+const desconto = appliedCoupon 
+  ? subtotal * (appliedCoupon.discountPercent / 100)
+  : 0;
+
+const total = subtotal - desconto;
+
+
+  // ✅ ATUALIZADO: Buscar produtos do carrinho
+  const fetchCarrinho = async () => {
     try {
-      const userResponse = await fetch('/api/usuario-atual', { 
+      setLoading(true);
+      const response = await fetch('http://localhost:3001/api/carrinho', { 
         credentials: 'include' 
       });
       
-      if (!userResponse.ok) {
-        throw new Error('Usuário não autenticado');
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
       }
       
-      const user = await userResponse.json();
-      console.log('Usuário logado:', user);
-      fetchCarrinho();
+      const data = await response.json();
+      console.log('📦 Itens do carrinho:', data);
       
-    } catch (err) {
-      console.warn('Usuário não logado', err);
-      setProducts([]);
-      // Redirecionar para login ou mostrar mensagem
-      // navigate('/login');
-    }
-  };
-
-  checkAuthAndFetchCart();
-}, []);
-
-
-const fetchCarrinho = () => {
-  fetch('/api/carrinho', { credentials: 'include' })
-    .then(res => {
-      if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
       const formatted = data.map(item => ({
         id: item.id_carrinho,
         id_produto: item.id_produto,
         name: item.nome_produto,
         price: parseFloat(item.valor_produto),
         quantity: item.quantidade,
-        size: item.tamanho || '',
-        color: item.cor || '',
+        tamanho: item.tamanho || '',
+        cor: item.cor || '',
         image: item.imagem_url,
         checked: false
       }));
+      
       setProducts(formatted);
-    })
-    .catch(err => {
-      console.error('Erro ao buscar carrinho:', err);
-    });
-};
+    } catch (err) {
+      console.error('❌ Erro ao buscar carrinho:', err);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    const checkAuthAndFetchCart = async () => {
+      try {
+        const userResponse = await fetch('http://localhost:3001/api/check-session', { 
+          credentials: 'include' 
+        });
+        
+        if (!userResponse.ok) {
+          throw new Error('Usuário não autenticado');
+        }
+        
+        const user = await userResponse.json();
+        console.log('👤 Usuário logado:', user);
+        await fetchCarrinho();
+        
+      } catch (err) {
+        console.warn('⚠️ Usuário não logado', err);
+        setProducts([]);
+      }
+    };
 
-  
+    checkAuthAndFetchCart();
+  }, []);
 
-  // Atualizar quantidade no carrinho
+  // ✅ ATUALIZADO: Atualizar quantidade no carrinho
   const updateQuantity = async (id, newQuantity) => {
+    if (newQuantity < 1) return;
+    
     try {
-      const response = await fetch(`/api/carrinho/${id}`, {
+      const response = await fetch(`http://localhost:3001/api/carrinho/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -151,26 +160,55 @@ const fetchCarrinho = () => {
       });
 
       if (response.ok) {
-        fetchCarrinho(); // Recarrega o carrinho
+        // Atualizar localmente para resposta mais rápida
+        setProducts(products.map(p => 
+          p.id === id ? { ...p, quantity: newQuantity } : p
+        ));
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Erro ao atualizar quantidade:', errorData);
       }
     } catch (error) {
-      console.error('Erro ao atualizar quantidade:', error);
+      console.error('❌ Erro ao atualizar quantidade:', error);
     }
   };
 
-  // Remover produto do carrinho
+  // ✅ ATUALIZADO: Remover produto do carrinho
   const handleRemoveProduct = async (id) => {
     try {
-      const response = await fetch(`/api/carrinho/${id}`, {
+      const response = await fetch(`http://localhost:3001/api/carrinho/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
 
       if (response.ok) {
         setProducts(products.filter(p => p.id !== id));
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Erro ao remover produto:', errorData);
       }
     } catch (error) {
-      console.error('Erro ao remover produto:', error);
+      console.error('❌ Erro ao remover produto:', error);
+    }
+  };
+
+  // ✅ ATUALIZADO: Limpar carrinho
+  const handleClearCart = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/carrinho/limpar', {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setProducts([]);
+        setSelectAll(false);
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Erro ao limpar carrinho:', errorData);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao limpar carrinho:', error);
     }
   };
 
@@ -188,12 +226,17 @@ const fetchCarrinho = () => {
     ));
   };
 
-  // Finalizar compra
+  // ✅ ATUALIZADO: Finalizar compra
   const handleFinalizarCompra = async () => {
     const selectedProducts = products.filter(p => p.checked);
     
-    if (selectedProducts.length === 0 || !paymentMethod) {
-      alert('Selecione produtos e forma de pagamento');
+    if (selectedProducts.length === 0) {
+      alert('Selecione pelo menos um produto para comprar');
+      return;
+    }
+
+    if (!paymentMethod) {
+      alert('Selecione uma forma de pagamento');
       return;
     }
 
@@ -203,15 +246,17 @@ const fetchCarrinho = () => {
           id_produto: p.id_produto,
           quantidade: p.quantity,
           preco_unitario: p.price,
-          tamanho: p.size,
-          cor: p.color
+          tamanho: p.tamanho,
+          cor: p.cor
         })),
         total: total,
         metodo_pagamento: paymentMethod,
         endereco_entrega: "Endereço do usuário" // Você pode pegar do perfil do usuário
       };
 
-      const response = await fetch('/api/pedidos', {
+      console.log('📦 Dados do pedido:', pedidoData);
+
+      const response = await fetch('http://localhost:3001/api/pedidos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,14 +266,22 @@ const fetchCarrinho = () => {
       });
 
       if (response.ok) {
-        alert('Pedido realizado com sucesso!');
-        fetchCarrinho(); // Recarrega o carrinho vazio
+        const result = await response.json();
+        alert('✅ Pedido realizado com sucesso!');
+        console.log('📋 Pedido criado:', result);
+        
+        // Recarregar carrinho (deve estar vazio agora)
+        await fetchCarrinho();
+        setSelectAll(false);
+        setPaymentMethod("");
       } else {
-        alert('Erro ao realizar pedido');
+        const errorData = await response.json();
+        console.error('❌ Erro na resposta:', errorData);
+        alert('❌ Erro ao realizar pedido: ' + (errorData.erro || 'Erro desconhecido'));
       }
     } catch (error) {
-      console.error('Erro ao finalizar compra:', error);
-      alert('Erro ao finalizar compra');
+      console.error('❌ Erro ao finalizar compra:', error);
+      alert('❌ Erro ao finalizar compra: ' + error.message);
     }
   };
 
@@ -241,10 +294,9 @@ const fetchCarrinho = () => {
   const handleApplyCoupon = async () => {
     try {
       // Aqui estamos apenas simulando um cupom fixo para teste
-      const cupomValido = "DESCONTO10";
-
-      if (couponInput.toUpperCase() === cupomValido) {
-        setAppliedCoupon({ code: cupomValido, discountPercent: 10 });
+      const CupomValido = "MIGRANDO";
+      if (couponInput.toUpperCase() === CupomValido) {
+        setAppliedCoupon({ code: CupomValido, discountPercent: 50 });
       } else {
         alert("Cupom inválido");
       }
@@ -253,6 +305,21 @@ const fetchCarrinho = () => {
       alert("Erro ao aplicar cupom");
     }
   };
+
+  if (loading) {
+    return (
+      <div className='contener-Carrinho'>
+        <div className='contener-carrinho'>
+          <div className='contener-navbar'>
+            <Header/>
+          </div>
+          <div className='loading-carrinho'>
+            <p>🔄 Carregando carrinho...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='contener-Carrinho'>
@@ -267,56 +334,74 @@ const fetchCarrinho = () => {
             <div className='carrinho-pedidos'>
               
               {products.length > 0 && (
-                <div className="select-all">
-                  <CustomCheckbox 
-                    id="selectAll" 
-                    label={`Selecionar todos os itens (${products.length})`}
-                    checked={selectAll}
-                    onChange={handleSelectAll}
-                  />
+                <div className="cart-header">
+                  <div className="select-all">
+                    <CustomCheckbox 
+                      id="selectAll" 
+                      label={`Selecionar todos os itens (${products.length})`}
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                    />
+                  </div>
+                  <button 
+                    className="clear-cart-btn"
+                    onClick={handleClearCart}
+                  >
+                    🗑️ Limpar Carrinho
+                  </button>
                 </div>
               )}
               
               {products.length === 0 && (
-                <p className="empty-cart">Seu carrinho está vazio 🛒</p>
+                <div className="empty-cart">
+                  <p>🛒 Seu carrinho está vazio</p>
+                  <button 
+                    onClick={fetchCarrinho}
+                    className="refresh-cart-btn"
+                  >
+                    🔄 Recarregar Carrinho
+                  </button>
+                </div>
               )}
 
-           
-{products.map((p) => (
-  <div className="item-card" key={p.id}>
-    <div className="item-header">
-      <ProductCheckbox 
-        id={p.id} 
-        checked={p.checked}
-        onChange={() => handleProductSelect(p.id)}
-      />
-    </div>
-    <div className="item-info">
-      <h3>{p.name}</h3>
-      <div className="item-details">
-        {/* Mostrar as opções selecionadas */}
-        {p.tamanho && <span>Tamanho: {p.tamanho}</span>}
-        {p.cor && <span>Cor: {p.cor}</span>}
-        {p.material && <span>Material: {p.material}</span>}
-        {p.estampa && <span>Estampa: {p.estampa}</span>}
-        <span className="item-price">R$ {p.price.toFixed(2)}</span>
+              {products.map((p) => (
+                <div className="item-card" key={p.id}>
+                  <div className="item-header">
+                    <ProductCheckbox 
+                      id={p.id} 
+                      checked={p.checked}
+                      onChange={() => handleProductSelect(p.id)}
+                    />
+                  </div>
+                  <div className="item-info">
+                    <h3>{p.name}</h3>
+                    <div className="item-details">
+                      {p.tamanho && <span className="detail-tag">Tamanho: {p.tamanho}</span>}
+                      {p.cor && <span className="detail-tag">Cor: {p.cor}</span>}
+                      <span className="item-price">R$ {p.price.toFixed(2)}</span>
 
-<div className="quantity-controls">
-  <button onClick={() => updateQuantity(p.id, p.quantity - 1)} disabled={p.quantity <= 1}>-</button>
-  <span>{p.quantity}</span>
-  <button onClick={() => updateQuantity(p.id, p.quantity + 1)}>+</button>
-</div>
-
-      </div>
-    </div>
-    <button 
-      className="remove-button" 
-      onClick={() => handleRemoveProduct(p.id)}
-    >
-      Remover
-    </button>
-  </div>
-))}
+                      <div className="quantity-controls">
+                        <button 
+                          onClick={() => updateQuantity(p.id, p.quantity - 1)} 
+                          disabled={p.quantity <= 1}
+                        >
+                          -
+                        </button>
+                        <span>{p.quantity}</span>
+                        <button onClick={() => updateQuantity(p.id, p.quantity + 1)}>
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    className="remove-button" 
+                    onClick={() => handleRemoveProduct(p.id)}
+                  >
+                    Remover
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -329,7 +414,9 @@ const fetchCarrinho = () => {
                 
                 <div className="price-section">
                   <div className="price-row">
-                    <span className="price-label">Subtotal</span>
+                   <span className="price-label">
+  Subtotal ({products.filter(p => p.checked).length} itens)
+</span>
                     <span className="price-value bold">R$ {subtotal.toFixed(2)}</span>
                   </div>
 
@@ -356,15 +443,15 @@ const fetchCarrinho = () => {
                   {appliedCoupon && (
                     <div className="price-row">
                       <span className="price-label small">Desconto ({appliedCoupon.code})</span>
-                      <span className="price-value small">- R$ {desconto.toFixed(2)}</span>
+                      <span className="price-value small discount">- R$ {desconto.toFixed(2)}</span>
                     </div>
                   )}
                   
                   <hr className="payment-divider" />
                   
-                  <div className="price-row">
+                  <div className="price-row total-row">
                     <span className="price-label">Total</span>
-                    <span className="price-value bold">R$ {total.toFixed(2)}</span>
+                    <span className="price-value bold total">R$ {total.toFixed(2)}</span>
                   </div>
                 </div>
                 
@@ -403,8 +490,12 @@ const fetchCarrinho = () => {
                   disabled={products.filter(p => p.checked).length === 0 || !paymentMethod}
                   onClick={handleFinalizarCompra}
                 >
-                  Comprar agora
+                  Comprar agora ({products.filter(p => p.checked).length} itens)
                 </button>
+
+                {products.filter(p => p.checked).length === 0 && products.length > 0 && (
+                  <p className="selection-hint">Selecione pelo menos um produto para comprar</p>
+                )}
               </div>
             </div>
           </div>

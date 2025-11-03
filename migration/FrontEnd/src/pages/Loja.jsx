@@ -4,7 +4,6 @@ import { ThemeEffect } from '../ThemeEffect';
 import Header from '../components/Header';
 import { FaPlusCircle, FaBoxOpen, FaChartPie, FaEdit, FaTrash, FaCheckSquare, FaSquare, FaTimes, FaShoppingCart, FaShare, FaHeart, FaStar } from "react-icons/fa";
 import ProductForm from '../components/ProductForm';
-// import ProductEdit from '../components/ProductEdit'; // Importar o novo componente
 import './Loja.css';
 import NovoProduct from '../components/NovoProduct';
 
@@ -28,210 +27,215 @@ function Lojacontext() {
     salesLabels: ['Jan 15', 'Feb 16', 'Mar 17', 'Apr 18', 'May 19', 'Jun 21', 'Jul 22', 'Aug 23', 'Sep 24', 'Oct 25', 'Nov 26', 'Dec 27']
   });
 
-
-
-
-
-// Adicionar verificação de sessão antes de fazer requisições
-const checkSession = async () => {
-  try {
-    const response = await fetch('http://localhost:3001/api/check-session', {
-      method: 'GET',
-      credentials: 'include',
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('Status da sessão:', data);
-      return data.autenticado;
-    }
-    return false;
-  } catch (error) {
-    console.error('Erro ao verificar sessão:', error);
-    return false;
-  }
-};
-
-// CORREÇÃO: Função para carregar produtos com melhor tratamento de erro
-const fetchProducts = async () => {
-  setLoading(true);
-  try {
-    // Verificar se está autenticado primeiro
-    const isAuthenticated = await checkSession();
-    if (!isAuthenticated) {
-      console.log('Usuário não autenticado, redirecionando...');
-      setProducts([]);
-      // Aqui você pode redirecionar para login se quiser
-      return;
-    }
-
-    const response = await fetch('http://localhost:3001/api/meus-produtos', {
-      method: 'GET',
-      credentials: 'include',
-    });
-    
-    if (response.status === 401) {
-      console.log('Não autorizado - sessão expirada');
-      setProducts([]);
-      return;
-    }
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Erro do servidor:', errorData);
-      throw new Error(errorData.erro || 'Erro ao carregar produtos');
-    }
-    
-    const data = await response.json();
-    // Garantir que os IDs são números
-    const productsWithNumericIds = data.map(product => ({
-      ...product,
-      id: Number(product.id_produto)
-    }));
-    setProducts(productsWithNumericIds);
-    console.log('Produtos do usuário carregados:', productsWithNumericIds);
-  } catch (error) {
-    console.error('Erro ao carregar produtos:', error);
-    alert('Erro ao carregar produtos: ' + error.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
-
-
-
-   // CORREÇÃO: Função para carregar produtos com tratamento de IDs
- // CORREÇÃO: Função para carregar produtos DO USUÁRIO LOGADO
-
-
-
-  // Carregar produtos ao iniciar
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-const handleAddProduct = async (newProduct) => {
-  try {
-    const formData = new FormData();
-    formData.append('nome_produto', newProduct.nome_produto); // corrigido
-    formData.append('descricao', newProduct.descricao || '');
-    formData.append('valor_produto', newProduct.valor_produto); // corrigido
-    formData.append('categoria', newProduct.categoria);
-    formData.append('estoque', newProduct.estoque || 0);
-
-    if (newProduct.imagem_url && newProduct.imagem_url !== editingProduct?.imagem_url) {
-      formData.append('imagem_url', newProduct.imagem_url); // corrigido
-    }
-
-    let response;
-    if (editingProduct) {
-      response = await fetch(`http://localhost:3001/api/produtos/${editingProduct.id_produto}`, {
-        method: 'PUT',
-        body: formData,
-      });
-    } else {
-      response = await fetch('http://localhost:3001/api/produtos', {
-        method: 'POST',
-        body: formData,
-      });
-    }
-
-    if (response.ok) {
-      await fetchProducts();
-      setEditingProduct(null);
-      setActiveSection(null);
-    } else {
-      const errorData = await response.json();
-      alert('Erro ao salvar produto: ' + (errorData.erro || 'Erro desconhecido'));
-    }
-  } catch (error) {
-    console.error('Erro ao salvar produto:', error);
-    alert('Erro ao conectar com o servidor');
-  }
-};
-
-
-
-// Loja.js - A função deleteSelectedProducts já está correta, mas vou melhorar o tratamento de erro
-const deleteSelectedProducts = async () => {
-  if (selectedProducts.size === 0) {
-    alert('Nenhum produto selecionado para excluir.');
-    return;
-  }
-
-  if (window.confirm(`Tem certeza que deseja excluir ${selectedProducts.size} produto(s)?`)) {
+  // Adicionar verificação de sessão antes de fazer requisições
+  const checkSession = async () => {
     try {
-      let successCount = 0;
-      let errorCount = 0;
+      console.log('🔐 Verificando sessão...');
+      const response = await fetch('http://localhost:3001/api/check-session-detailed', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+      console.log('📋 Resposta da sessão:', data);
       
-      for (const productId of selectedProducts) {
-        try {
-          const response = await fetch(`http://localhost:3001/api/produtos/${productId}`, {
-            method: 'DELETE',
-          });
-          
-          if (response.ok) {
-            successCount++;
-          } else {
-            const errorData = await response.json();
-            console.error(`Erro ao deletar produto ${productId}:`, errorData.erro);
+      if (response.ok) {
+        return data.autenticado;
+      }
+      return false;
+    } catch (error) {
+      console.error('❌ Erro ao verificar sessão:', error);
+      return false;
+    }
+  };
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const isAuthenticated = await checkSession();
+      if (!isAuthenticated) {
+        console.log('❌ Usuário não autenticado');
+        setProducts([]);
+        return;
+      }
+
+      // ✅ ATUALIZADO: Usando a nova rota correta
+      const response = await fetch('http://localhost:3001/api/produtos', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.erro || 'Erro ao carregar produtos');
+      }
+
+      const data = await response.json();
+      console.log('📦 Dados recebidos do backend:', data);
+
+      // ✅ CORREÇÃO: Normalização correta dos produtos
+      const normalizedProducts = data.map(product => ({
+        ...product,
+        id: Number(product.id_produto), // Mantém compatibilidade com componentes existentes
+        id_produto: Number(product.id_produto) // Garante que existe
+      }));
+
+      setProducts(normalizedProducts);
+      console.log('🎯 Produtos normalizados:', normalizedProducts);
+
+    } catch (error) {
+      console.error('❌ Erro ao carregar produtos:', error);
+      alert('Erro ao carregar produtos: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carregar produtos ao iniciar e quando a seção mudar
+  useEffect(() => {
+    if (activeSection === 'itens' || activeSection === 'produtos') {
+      fetchProducts();
+    }
+  }, [activeSection]);
+
+  // ✅ ATUALIZADO: Função para adicionar/editar produto
+  const handleAddProduct = async (newProduct) => {
+    try {
+      const formData = new FormData();
+      formData.append('nome_produto', newProduct.nome_produto);
+      formData.append('descricao', newProduct.descricao || '');
+      formData.append('valor_produto', newProduct.valor_produto);
+      formData.append('categoria', newProduct.categoria);
+      formData.append('estoque', newProduct.estoque || 0);
+
+      if (newProduct.imagem_url && newProduct.imagem_url !== editingProduct?.imagem_url) {
+        formData.append('imagem_url', newProduct.imagem_url);
+      }
+
+      let response;
+      let url;
+
+      if (editingProduct) {
+        // ✅ ATUALIZADO: Usando a rota PUT correta
+        url = `http://localhost:3001/api/produtos/${editingProduct.id_produto}`;
+        response = await fetch(url, {
+          method: 'PUT',
+          body: formData,
+          credentials: 'include'
+        });
+      } else {
+        // ✅ ATUALIZADO: Usando a rota POST correta
+        url = 'http://localhost:3001/api/produtos';
+        response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+      }
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Produto salvo com sucesso:', result);
+        
+        // Recarregar a lista de produtos
+        await fetchProducts();
+        setEditingProduct(null);
+        setActiveSection(null);
+        
+        alert(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!');
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Erro na resposta:', errorData);
+        alert('Erro ao salvar produto: ' + (errorData.erro || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      console.error('❌ Erro ao salvar produto:', error);
+      alert('Erro ao conectar com o servidor: ' + error.message);
+    }
+  };
+
+  // ✅ ATUALIZADO: Função para deletar produtos selecionados
+  const deleteSelectedProducts = async () => {
+    if (selectedProducts.size === 0) {
+      alert('Nenhum produto selecionado para excluir.');
+      return;
+    }
+
+    if (window.confirm(`Tem certeza que deseja excluir ${selectedProducts.size} produto(s)?`)) {
+      try {
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (const productId of selectedProducts) {
+          try {
+            // ✅ ATUALIZADO: Usando a rota DELETE correta
+            const response = await fetch(`http://localhost:3001/api/produtos/${productId}`, {
+              method: 'DELETE',
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              successCount++;
+            } else {
+              const errorData = await response.json();
+              console.error(`❌ Erro ao deletar produto ${productId}:`, errorData.erro);
+              errorCount++;
+            }
+          } catch (error) {
+            console.error(`❌ Erro ao deletar produto ${productId}:`, error);
             errorCount++;
           }
-        } catch (error) {
-          console.error(`Erro ao deletar produto ${productId}:`, error);
-          errorCount++;
         }
+        
+        // Recarregar a lista
+        await fetchProducts();
+        exitSelectionMode();
+        
+        if (errorCount === 0) {
+          alert(`${successCount} produto(s) excluído(s) com sucesso!`);
+        } else {
+          alert(`${successCount} produto(s) excluído(s), ${errorCount} falha(s). Verifique o console.`);
+        }
+        
+      } catch (error) {
+        console.error('❌ Erro geral ao excluir produtos:', error);
+        alert('Erro ao excluir produtos. Verifique o console.');
       }
-      
-      // Recarregar a lista
-      await fetchProducts();
-      exitSelectionMode();
-      
-      if (errorCount === 0) {
-        alert(`${successCount} produto(s) excluído(s) com sucesso!`);
-      } else {
-        alert(`${successCount} produto(s) excluído(s), ${errorCount} falha(s). Verifique o console.`);
-      }
-      
-    } catch (error) {
-      console.error('Erro geral ao excluir produtos:', error);
-      alert('Erro ao excluir produtos. Verifique o console.');
     }
-  }
-};
- // CORREÇÃO: Função de editar corrigida
-// CORREÇÃO: Função de editar corrigida
-const editSelectedProduct = () => {
-  if (selectedProducts.size === 1) {
-    const productId = Array.from(selectedProducts)[0];
-    console.log('ID do produto para editar:', productId);
-    console.log('Todos os produtos:', products);
-    
-    // CORREÇÃO: Buscar pelo id_produto que vem do backend
-    const productToEdit = products.find(p => Number(p.id_produto) === Number(productId));
-    
-    if (productToEdit) {
-      console.log('Produto encontrado para edição:', productToEdit);
-      setEditingProduct(productToEdit);
-      setActiveSection('produtos');
-      exitSelectionMode();
-    } else {
-      console.error('Produto não encontrado. IDs disponíveis:', products.map(p => p.id_produto));
-      alert('Produto não encontrado.');
-    }
-  } else if (selectedProducts.size > 1) {
-    alert('Por favor, selecione apenas um produto para editar.');
-  } else {
-    alert('Por favor, selecione um produto para editar.');
-  }
-};
+  };
 
+  // ✅ CORRIGIDO: Função para editar produto selecionado
+  const editSelectedProduct = () => {
+    if (selectedProducts.size === 1) {
+      const productId = Array.from(selectedProducts)[0];
+      console.log('🔧 ID do produto para editar:', productId);
+      console.log('📦 Todos os produtos disponíveis:', products);
+      
+      // Buscar usando o ID correto
+      const productToEdit = products.find(p => 
+        Number(p.id) === Number(productId) || 
+        Number(p.id_produto) === Number(productId)
+      );
+      
+      if (productToEdit) {
+        console.log('✅ Produto encontrado para edição:', productToEdit);
+        setEditingProduct(productToEdit);
+        setActiveSection('produtos');
+        exitSelectionMode();
+      } else {
+        console.error('❌ Produto não encontrado. IDs disponíveis:', 
+          products.map(p => ({ id: p.id, id_produto: p.id_produto }))
+        );
+        alert('Produto não encontrado para edição.');
+      }
+    } else if (selectedProducts.size > 1) {
+      alert('Por favor, selecione apenas um produto para editar.');
+    } else {
+      alert('Por favor, selecione um produto para editar.');
+    }
+  };
 
   const toggleProductSelection = (productId) => {
-    // Converter para número para garantir consistência
     const id = Number(productId);
     const newSelected = new Set(selectedProducts);
     
@@ -241,20 +245,17 @@ const editSelectedProduct = () => {
       newSelected.add(id);
     }
     setSelectedProducts(newSelected);
-    console.log('Produtos selecionados:', Array.from(newSelected));
+    console.log('📋 Produtos selecionados:', Array.from(newSelected));
   };
 
- const toggleSelectAll = () => {
-  if (selectedProducts.size === products.length) {
-    setSelectedProducts(new Set());
-  } else {
-    // CORREÇÃO: Usar id_produto em vez de id
-    const allIds = new Set(products.map(product => Number(product.id_produto)));
-    setSelectedProducts(allIds);
-  }
-};
-
-
+  const toggleSelectAll = () => {
+    if (selectedProducts.size === products.length) {
+      setSelectedProducts(new Set());
+    } else {
+      const allIds = new Set(products.map(product => Number(product.id)));
+      setSelectedProducts(allIds);
+    }
+  };
 
   const enterSelectionMode = () => {
     setIsSelectionMode(true);
@@ -268,153 +269,134 @@ const editSelectedProduct = () => {
     setEditingProduct(null);
   };
 
-
-  
-
-
-
   const cancelEdit = () => {
     setEditingProduct(null);
     setActiveSection(null);
   };
 
-
-
-
-
-
-
-
-  
+  // ✅ ATUALIZADO: Função para recarregar produtos manualmente
+  const handleRefreshProducts = () => {
+    fetchProducts();
+  };
 
   // Componente do Dashboard de Desempenho
   const PerformanceDashboard = () => {
     const maxSales = Math.max(...performanceData.salesData);
     
-// No componente PerformanceDashboard, substitua o return por este:
-return (
-  <div className="performance-dashboard">
-    <div className="topo">
-    <h2>📊 Dashboard de Desempenho</h2>
-     </div>
-
-     <div className="fim">
-
-<div className="utensilios">
-  
-   <div className='quatro4'>
-
-    <div className="metrics-grid">
-      <div className="metric-card">
-        <div className="metric-icon earning">
-          <FaShoppingCart />
+    return (
+      <div className="performance-dashboard">
+        <div className="topo">
+          <h2>📊 Dashboard de Desempenho</h2>
         </div>
-        <div className="metric-info">
-          <h3>Faturamento</h3>
-          <span className="metric-value">R$ {performanceData.earning}</span>
-        </div>
-      </div>
 
-      <div className="metric-card">
-        <div className="metric-icon share">
-          <FaShare />
-        </div>
-        <div className="metric-info">
-          <h3>Compartilhamentos</h3>
-          <span className="metric-value">{performanceData.share}</span>
-        </div>
-      </div>
+        <div className="fim">
+          <div className="utensilios">
+            <div className='quatro4'>
+              <div className="metrics-grid">
+                <div className="metric-card">
+                  <div className="metric-icon earning">
+                    <FaShoppingCart />
+                  </div>
+                  <div className="metric-info">
+                    <h3>Faturamento</h3>
+                    <span className="metric-value">R$ {performanceData.earning}</span>
+                  </div>
+                </div>
 
-      <div className="metric-card">
-        <div className="metric-icon likes">
-          <FaHeart />
-        </div>
-        <div className="metric-info">
-          <h3>Curtidas</h3>
-          <span className="metric-value">{performanceData.likes}</span>
-        </div>
-      </div>
+                <div className="metric-card">
+                  <div className="metric-icon share">
+                    <FaShare />
+                  </div>
+                  <div className="metric-info">
+                    <h3>Compartilhamentos</h3>
+                    <span className="metric-value">{performanceData.share}</span>
+                  </div>
+                </div>
 
-      <div className="metric-card">
-        <div className="metric-icon rating">
-          <FaStar />
-        </div>
-        <div className="metric-info">
-          <h3>Avaliação</h3>
-          <span className="metric-value">{performanceData.rating}/10</span>
-        </div>
-      </div>
-    </div>
+                <div className="metric-card">
+                  <div className="metric-icon likes">
+                    <FaHeart />
+                  </div>
+                  <div className="metric-info">
+                    <h3>Curtidas</h3>
+                    <span className="metric-value">{performanceData.likes}</span>
+                  </div>
+                </div>
 
- 
+                <div className="metric-card">
+                  <div className="metric-icon rating">
+                    <FaStar />
+                  </div>
+                  <div className="metric-info">
+                    <h3>Avaliação</h3>
+                    <span className="metric-value">{performanceData.rating}/10</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-    </div>
+            <div className="performance-summary">
+              <div className="summary-card">
+                <h4>📋 Resumo Mensal</h4>
+                <div className="summary-stats">
+                  <div className="stat-item">
+                    <span className="stat-label">Maior Venda</span>
+                    <span className="stat-number">{maxSales}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Média</span>
+                    <span className="stat-number">
+                      {Math.round(performanceData.salesData.reduce((a, b) => a + b, 0) / performanceData.salesData.length)}
+                    </span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Total</span>
+                    <span className="stat-number">
+                      {performanceData.salesData.reduce((a, b) => a + b, 0)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-
-    <div className="performance-summary">
-      <div className="summary-card">
-        <h4>📋 Resumo Mensal</h4>
-        <div className="summary-stats">
-          <div className="stat-item">
-            <span className="stat-label">Maior Venda</span>
-            <span className="stat-number">{maxSales}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Média</span>
-            <span className="stat-number">
-              {Math.round(performanceData.salesData.reduce((a, b) => a + b, 0) / performanceData.salesData.length)}
-            </span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Total</span>
-            <span className="stat-number">
-              {performanceData.salesData.reduce((a, b) => a + b, 0)}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div className="dashboard-actions">
-      <button className="check-now-btn">
-        📋 Ver Relatório Completo
-      </button>
-    </div>
-</div>
-   
-
-
-
-<div className="grafico">
-  <div className="chart-main-section">
-    <h3>📊 Resultados de Vendas</h3>
-    <div className="horizontal-chart">
-      {performanceData.salesData.map((value, index) => {
-        const widthPercentage = (value / maxSales) * 100;
-        return (
-          <div key={index} className="chart-row">
-            <div className="chart-label">{performanceData.salesLabels[index]}</div>
-            <div className="chart-bar-container">
-              <div
-                className="chart-bar-horizontal"
-                style={{ width: `${widthPercentage}%` }}
-              ></div>
-              <span className="chart-value">{value}</span>
+            <div className="dashboard-actions">
+              <button className="check-now-btn" onClick={handleRefreshProducts}>
+                🔄 Atualizar Dados
+              </button>
+              <button className="check-now-btn">
+                📋 Ver Relatório Completo
+              </button>
             </div>
           </div>
-        );
-      })}
-    </div>
-  </div>
-</div>
 
-
-
-  </div>  
-</div>
-);
+          <div className="grafico">
+            <div className="chart-main-section">
+              <h3>📊 Resultados de Vendas</h3>
+              <div className="horizontal-chart">
+                {performanceData.salesData.map((value, index) => {
+                  const widthPercentage = (value / maxSales) * 100;
+                  return (
+                    <div key={index} className="chart-row">
+                      <div className="chart-label">{performanceData.salesLabels[index]}</div>
+                      <div className="chart-bar-container">
+                        <div
+                          className="chart-bar-horizontal"
+                          style={{ width: `${widthPercentage}%` }}
+                        ></div>
+                        <span className="chart-value">{value}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>  
+      </div>
+    );
   };
- return (
+
+  return (
     <div className='container-loja'>
       <div className='navebar-ok'>
         <Header/>
@@ -455,6 +437,7 @@ return (
               <ProductForm 
                 onAddProduct={handleAddProduct}
                 editingProduct={editingProduct}
+                onCancel={cancelEdit}
               />
             </div>
           ) : (
@@ -504,7 +487,7 @@ return (
           ) : isSelectionMode ? (
             <div className="selection-mode">
               <div className="selection-header">
-             <h2 className='h2'>({selectedProducts.size}) {selectedProducts.size === 1 ? 'Selecionada' : 'Selecionadas'}</h2>
+                <h2 className='h2'>({selectedProducts.size}) {selectedProducts.size === 1 ? 'Selecionada' : 'Selecionadas'}</h2>
                 <div className="selection-actions">
                   <button 
                     className="select-all-btn"
@@ -534,32 +517,61 @@ return (
                   </button>
                 </div>
               </div>
-    <NovoProduct 
-      products={products} 
-      isSelectionMode={isSelectionMode} 
-      selectedProducts={selectedProducts} 
-      toggleProductSelection={toggleProductSelection} 
-    />         
+              <NovoProduct 
+                products={products} 
+                isSelectionMode={isSelectionMode} 
+                selectedProducts={selectedProducts} 
+                toggleProductSelection={toggleProductSelection} 
+              />         
             </div>
           ) : loading ? (
             <div className="loading">Carregando produtos...</div>
-            //oi
-          ) :products.length === 0 ? (
-  <div className="placeholder-image1">
-    <img className='imagg' src="io.png" alt="My Store" />
-  </div>
-) : (
-  <div className="featured-products">
-    <h2 className="section-title">Produtos Cadastrados</h2>
-  <NovoProduct 
-    products={products}
-    isSelectionMode={isSelectionMode}
-    selectedProducts={selectedProducts}
-    toggleProductSelection={toggleProductSelection}
-  />
-
-  </div>
-)}
+          ) : products.length === 0 ? (
+            <div className="placeholder-image1">
+              <img className='imagg' src="io.png" alt="My Store" />
+              <button 
+                onClick={handleRefreshProducts}
+                style={{
+                  marginTop: '20px',
+                  padding: '10px 20px',
+                  backgroundColor: 'var(--accent-color)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer'
+                }}
+              >
+                🔄 Recarregar Produtos
+              </button>
+            </div>
+          ) : (
+            <div className="featured-products">
+              <div className="section-header">
+                <h2 className="section-title">Produtos Cadastrados</h2>
+                <button 
+                  onClick={handleRefreshProducts}
+                  className="refresh-btn"
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: 'var(--accent-color)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  🔄 Atualizar
+                </button>
+              </div>
+              <NovoProduct 
+                products={products}
+                isSelectionMode={isSelectionMode}
+                selectedProducts={selectedProducts}
+                toggleProductSelection={toggleProductSelection}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

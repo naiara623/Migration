@@ -11,9 +11,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 function OfertasContext() {
   ThemeEffect();
   const [openModal, setOpenModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null); // Novo estado para produto selecionado
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [products, setProducts] = useState([]);
   const [openCategoriaModal, setOpenCategoriaModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -22,37 +24,50 @@ function OfertasContext() {
   const queryParams = new URLSearchParams(location.search);
   const categoria = queryParams.get('categoria');
 
+  // ✅ ATUALIZADO: Busca produtos públicos
+  const fetchAllProducts = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      console.log('🌐 Buscando todos os produtos públicos...');
+      const response = await axios.get('http://localhost:3001/api/produtos/public');
+      console.log('✅ Produtos carregados:', response.data.length);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('❌ Erro ao buscar todos os produtos:', error);
+      setError('Erro ao carregar produtos');
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ ATUALIZADO: Busca produtos por categoria pública
+  const fetchProductsByCategoria = async (categoriaNome) => {
+    setLoading(true);
+    setError('');
+    try {
+      console.log(`🌐 Buscando produtos da categoria: ${categoriaNome}`);
+      const response = await axios.get(`http://localhost:3001/api/produtos/public/categoria/${categoriaNome}`);
+      console.log(`✅ ${response.data.length} produtos encontrados na categoria ${categoriaNome}`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error(`❌ Erro ao buscar produtos da categoria ${categoriaNome}:`, error);
+      setError(`Erro ao carregar produtos da categoria ${categoriaNome}`);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Busca produtos ao carregar ou ao mudar categoria
   useEffect(() => {
     if (categoria) {
-     // Em ambos os componentes, garantir que a rota está correta
-const fetchProductsByCategoria = async () => {
-  try {
-    const response = await axios.get('http://localhost:3001/api/produtos', {
-      params: { categoria },
-      withCredentials: true // Importante para enviar a sessão
-    });
-    setProducts(response.data);
-  } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
-    setProducts([]);
-  }
-};
-      fetchProductsByCategoria();
+      fetchProductsByCategoria(categoria);
     } else {
       fetchAllProducts();
     }
   }, [categoria]);
-
-  const fetchAllProducts = async () => {
-    try {
-      const response = await axios.get('http://localhost:3001/api/produtos');
-      setProducts(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar todos os produtos:', error);
-      setProducts([]);
-    }
-  };
 
   // Botão para resetar filtro e mostrar todos os produtos
   const resetarFiltro = () => {
@@ -72,62 +87,76 @@ const fetchProductsByCategoria = async () => {
     setSelectedProduct(null);
   };
 
-  // Função para adicionar ao carrinho
-const handleAddToCart = async (product) => {
-  try {
-    const response = await fetch('http://localhost:3001/api/carrinho', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        id_produto: product.id_produto,
-        quantidade: 1,
-        tamanho: product.tamanho || '',
-        cor: product.cor || ''
-      }),
-    });
+  // ✅ ATUALIZADO: Função para adicionar ao carrinho com verificação de login
+  const handleAddToCart = async (product) => {
+    try {
+      // Primeiro verifica se o usuário está logado
+      const sessionResponse = await fetch('http://localhost:3001/api/check-session', {
+        credentials: 'include'
+      });
+      
+      const sessionData = await sessionResponse.json();
+      
+      if (!sessionData.autenticado) {
+        alert("Você precisa estar logado para adicionar ao carrinho.");
+        // Opcional: redirecionar para login
+        // navigate('/login');
+        return;
+      }
 
-    if (response.status === 401) {
-      alert("Você precisa estar logado para adicionar ao carrinho.");
-      return;
+      // Se estiver logado, adiciona ao carrinho
+      const response = await fetch('http://localhost:3001/api/carrinho', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          id_produto: product.id_produto,
+          quantidade: 1,
+          tamanho: product.tamanho || '',
+          cor: product.cor || ''
+        }),
+      });
+
+      if (response.ok) {
+        alert('✅ Produto adicionado ao carrinho!');
+        handleCloseModal();
+      } else {
+        const errorData = await response.json();
+        alert('❌ ' + (errorData.erro || 'Erro ao adicionar ao carrinho'));
+      }
+    } catch (error) {
+      console.error('❌ Erro ao adicionar ao carrinho:', error);
+      alert('❌ Erro ao adicionar produto ao carrinho');
     }
-
-    if (response.ok) {
-      alert('Produto adicionado ao carrinho!');
-      handleCloseModal();
-    } else {
-      const errorData = await response.json();
-      alert(errorData.erro || 'Erro ao adicionar ao carrinho');
-    }
-  } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao adicionar ao carrinho');
-  }
-};
-
+  };
 
   // Controle do modal de categorias
   const [modalAberto, setModalAberto] = useState(false);
 
   const categoriasValidas = [1, 2, 3, 4, 5, 6, 7, 8];
 
+  // ✅ ATUALIZADO: Handler para categoria selecionada
   const handleCategoriaSelecionada = async (id_categoria, nome_categoria) => {
     if (!categoriasValidas.includes(id_categoria)) {
       console.warn("Categoria inválida:", id_categoria);
       return;
     }
 
+    // Navega para a URL com a categoria
+    navigate(`/ofertas?categoria=${encodeURIComponent(nome_categoria)}`);
+    setModalAberto(false);
+  };
+
+  // ✅ NOVO: Função para buscar categorias
+  const fetchCategorias = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/produtos', {
-        params: { categoria: nome_categoria }
-      });
-      setProducts(response.data);
-      setModalAberto(false);
+      const response = await axios.get('http://localhost:3001/api/categorias/public');
+      return response.data;
     } catch (error) {
-      console.error('Erro ao buscar produtos:', error);
-      setProducts([]);
+      console.error('❌ Erro ao buscar categorias:', error);
+      return [];
     }
   };
 
@@ -138,52 +167,125 @@ const handleAddToCart = async (product) => {
       </div>
 
       <div className='DivGlobal-Ofertas'>
-        <button onClick={() => setModalAberto(true)}>Abrir Categorias</button>
-        <button onClick={resetarFiltro}>Mostrar Todos os Produtos</button>
+        <div className="filters-section">
+          <button 
+            onClick={() => setModalAberto(true)}
+            className="filter-btn"
+          >
+            📂 Filtrar por Categoria
+          </button>
+          
+          {categoria && (
+            <button 
+              onClick={resetarFiltro}
+              className="filter-btn"
+            >
+              🔄 Mostrar Todos os Produtos
+            </button>
+          )}
+          
+          <button 
+            onClick={fetchAllProducts}
+            className="filter-btn"
+          >
+            🔁 Recarregar
+          </button>
+        </div>
 
         <Categorias 
           isOpen={modalAberto} 
           onClose={() => setModalAberto(false)} 
           onCategoriaSelecionada={handleCategoriaSelecionada}
+          fetchCategorias={fetchCategorias}
         />
+
+        {/* Mensagens de status */}
+        {loading && (
+          <div className="loading-message">
+            <p>🔄 Carregando produtos...</p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="error-message">
+            <p>❌ {error}</p>
+          </div>
+        )}
 
         <div className="produtos1-Ofertas">
           <section className="featured-products">
             <div className="container2">
               <h2 className='oiTest'>
-                {categoria ? `Promoções em ${categoria}` : 'Promoções do Dia'}
+                {categoria 
+                  ? `🎯 Promoções em ${categoria}` 
+                  : '🔥 Promoções do Dia'
+                }
+                {products.length > 0 && ` (${products.length} produtos)`}
               </h2>
+              
+              {!loading && products.length === 0 && !error && (
+                <div className="empty-products">
+                  <p>📭 Nenhum produto encontrado</p>
+                  <button onClick={fetchAllProducts} className="retry-btn">
+                    🔄 Tentar Novamente
+                  </button>
+                </div>
+              )}
+
               <div className="products-grid">
-                {products.length === 0 ? (
-                  <p>Nenhum produto encontrado para esta categoria.</p>
-                ) : (
-                  products.map(product => (
-                    <div key={product.id_produto} className="product-card">
-                      <div className="product-image">
-                        <img 
-                          src={product.imagem_url ? `http://localhost:3001${product.imagem_url}` : 'placeholder-image.jpg'} 
-                          alt={product.nome_produto} 
-                        />
-                        <div className="product-badge">Oferta</div>
-                      </div>
-                      <div className="product-info">
-                        <h3>{product.nome_produto}</h3>
-                        <div className="product-rating">
-                          {[...Array(5)].map((_, i) => (
-                            <i key={i} className={`fas fa-star ${i < (product.avaliacao_produto || 3) ? 'filled' : ''}`}></i>
-                          ))}
-                        </div>
-                        <div className="product-price">R$ {parseFloat(product.valor_produto).toFixed(2)}</div>
-                        <button 
-                          onClick={() => handleOpenModal(product)} 
-                          className="btn btn-primary"
-                        >
-                          Adicionar ao Carrinho
-                        </button>
-                      </div>
+                {products.map(product => (
+                  <div key={product.id_produto} className="product-card">
+                    <div className="product-image">
+                      <img 
+                        src={product.imagem_url 
+                          ? `http://localhost:3001${product.imagem_url}` 
+                          : '/placeholder-image.jpg'
+                        } 
+                        alt={product.nome_produto}
+                        onError={(e) => {
+                          e.target.src = '/placeholder-image.jpg';
+                        }}
+                      />
+                      <div className="product-badge">Oferta</div>
+                      {product.estoque <= 0 && (
+                        <div className="out-of-stock-badge">Esgotado</div>
+                      )}
                     </div>
-                  ))
-                )}
+                    <div className="product-info">
+                      <h3>{product.nome_produto}</h3>
+                      <div className="product-category">
+                        <span className="category-tag">{product.nome_categoria}</span>
+                      </div>
+                      <div className="product-rating">
+                        {[...Array(5)].map((_, i) => (
+                          <i 
+                            key={i} 
+                            className={`fas fa-star ${i < (product.avaliacao_produto || 3) ? 'filled' : ''}`}
+                          ></i>
+                        ))}
+                        <span className="rating-text">
+                          ({product.avaliacao_produto || 'Sem avaliação'})
+                        </span>
+                      </div>
+                      <div className="product-price">
+                        R$ {parseFloat(product.valor_produto).toFixed(2)}
+                      </div>
+                      <div className="product-stock">
+                        {product.estoque > 0 
+                          ? `🟢 ${product.estoque} em estoque` 
+                          : '🔴 Esgotado'
+                        }
+                      </div>
+                      <button 
+                        onClick={() => handleOpenModal(product)} 
+                        className="btn btn-primary"
+                        disabled={product.estoque <= 0}
+                      >
+                        {product.estoque > 0 ? '🛒 Adicionar ao Carrinho' : 'Esgotado'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>

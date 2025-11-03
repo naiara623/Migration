@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import "./ModalConfig.css";
 
 export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho }) {
@@ -22,44 +21,73 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
     }));
   };
 
-  const handleAddToCart = async (product) => {
-  try {
-    // Verificar se usuário está logado
-    const userCheck = await fetch('http://localhost:3001/api/usuario-atual', {
-      credentials: 'include'
-    });
-    
-    if (!userCheck.ok) {
-      alert("Você precisa estar logado para adicionar ao carrinho.");
-      return;
-    }
+  // ✅ CORRIGIDO: Função para adicionar ao carrinho
+  const handleAddToCart = async () => {
+    try {
+      console.log('🛒 Tentando adicionar produto ao carrinho:', product);
+      
+      // Verificar se usuário está logado
+      const userCheck = await fetch('http://localhost:3001/api/check-session', {
+        credentials: 'include'
+      });
+      
+      const sessionData = await userCheck.json();
+      
+      if (!sessionData.autenticado) {
+        alert("Você precisa estar logado para adicionar ao carrinho.");
+        return;
+      }
 
-    const response = await fetch('http://localhost:3001/api/carrinho', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        id_produto: product.id_produto,
-        quantidade: 1,
-        tamanho: product.tamanho || '',
-        cor: product.cor || ''
-      }),
-    });
+      console.log('✅ Usuário autenticado, enviando dados...');
+      
+      // Combinar todas as seleções em uma string para o campo 'cor'
+      const corCompleta = [
+        selections.corDentro && `Dentro: ${selections.corDentro}`,
+        selections.corFora && `Fora: ${selections.corFora}`,
+        selections.material && `Material: ${selections.material}`,
+        selections.estampa && `Estampa: ${selections.estampa}`
+      ].filter(Boolean).join(' | ');
 
-    if (response.ok) {
-      alert('Produto adicionado ao carrinho!');
-      if (onClose) onClose();
-    } else {
-      const errorData = await response.json();
-      alert(errorData.erro || 'Erro ao adicionar ao carrinho');
+            const configuracaoProduto = {
+            tamanho: selections.tamanho,
+            corDentro: selections.corDentro,
+            corFora: selections.corFora,
+            material: selections.material,
+            estampa: selections.estampa}
+
+      const carrinhoData = {
+            id_produto: product.id_produto,
+            quantidade: 1,
+            tamanho: selections.tamanho,
+            cor: `Dentro: ${selections.corDentro} | Fora: ${selections.corFora} | Material: ${selections.material} | Estampa: ${selections.estampa}`,
+            configuracao: configuracaoProduto // ✅ Nova propriedade
+        };
+
+       console.log('📦 Dados do carrinho com configuração:', carrinhoData);
+
+        const response = await fetch('http://localhost:3001/api/carrinho', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(carrinhoData),
+        });
+
+
+      const responseData = await response.json();
+      
+      if (response.ok) {
+        console.log('✅ Produto adicionado com sucesso:', responseData);
+        alert('✅ Produto adicionado ao carrinho!');
+        if (onClose) onClose();
+      } else {
+        console.error('❌ Erro na resposta:', responseData);
+        alert('❌ ' + (responseData.erro || 'Erro ao adicionar ao carrinho'));
+      }
+     } catch (error) {
+        console.error('❌ Erro ao adicionar ao carrinho:', error);
+        alert('❌ Erro de conexão. Tente novamente.');
     }
-  } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao adicionar ao carrinho');
-  }
-};
+  };
 
   return (
     <div className="modal-mudar" onClick={onClose}>
@@ -68,12 +96,12 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
           <div className="fotoProduto">
             <img 
               className="ProdutoFot" 
-              src={product.imagem_url || "image 99.png"} 
+              src={product.imagem_url ? `http://localhost:3001${product.imagem_url}` : "image 99.png"} 
               alt={product.nome_produto} 
             />
             
             <div className="preco">
-              <h1 className="preço1">R$ {product.valor_produto}</h1>
+              <h1 className="preço1">R$ {parseFloat(product.valor_produto).toFixed(2)}</h1>
             </div>
 
             <div className="gostei">
@@ -152,6 +180,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corDentro" 
                       value="Azul"
+                      checked={selections.corDentro === 'Azul'}
                       onChange={() => handleSelectionChange('corDentro', 'Azul')}
                     />
                     <input 
@@ -159,6 +188,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corDentro" 
                       value="Vermelho"
+                      checked={selections.corDentro === 'Vermelho'}
                       onChange={() => handleSelectionChange('corDentro', 'Vermelho')}
                     />
                     <input 
@@ -166,6 +196,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corDentro" 
                       value="Verde"
+                      checked={selections.corDentro === 'Verde'}
                       onChange={() => handleSelectionChange('corDentro', 'Verde')}
                     /> 
                     <input 
@@ -173,6 +204,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corDentro" 
                       value="Amarelo"
+                      checked={selections.corDentro === 'Amarelo'}
                       onChange={() => handleSelectionChange('corDentro', 'Amarelo')}
                     />
                     <input 
@@ -180,6 +212,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corDentro" 
                       value="Preto"
+                      checked={selections.corDentro === 'Preto'}
                       onChange={() => handleSelectionChange('corDentro', 'Preto')}
                     />
                     <input 
@@ -187,6 +220,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corDentro" 
                       value="Branco"
+                      checked={selections.corDentro === 'Branco'}
                       onChange={() => handleSelectionChange('corDentro', 'Branco')}
                     />
                   </div>
@@ -202,6 +236,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corFora" 
                       value="Azul"
+                      checked={selections.corFora === 'Azul'}
                       onChange={() => handleSelectionChange('corFora', 'Azul')}
                     />
                     <input 
@@ -209,6 +244,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corFora" 
                       value="Vermelho"
+                      checked={selections.corFora === 'Vermelho'}
                       onChange={() => handleSelectionChange('corFora', 'Vermelho')}
                     />
                     <input 
@@ -216,6 +252,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corFora" 
                       value="Verde"
+                      checked={selections.corFora === 'Verde'}
                       onChange={() => handleSelectionChange('corFora', 'Verde')}
                     /> 
                     <input 
@@ -223,6 +260,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corFora" 
                       value="Amarelo"
+                      checked={selections.corFora === 'Amarelo'}
                       onChange={() => handleSelectionChange('corFora', 'Amarelo')}
                     />
                     <input 
@@ -230,6 +268,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corFora" 
                       value="Preto"
+                      checked={selections.corFora === 'Preto'}
                       onChange={() => handleSelectionChange('corFora', 'Preto')}
                     />
                     <input 
@@ -237,6 +276,7 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
                       type="radio" 
                       name="corFora" 
                       value="Branco"
+                      checked={selections.corFora === 'Branco'}
                       onChange={() => handleSelectionChange('corFora', 'Branco')}
                     />
                   </div>
@@ -348,8 +388,12 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
               </div>
 
               <div className="Buton-carrinho">
-                <button className="buton-carrinho2" onClick={handleAddToCart}>
-                  Adicionar ao carrinho
+                <button 
+                  className="buton-carrinho2" 
+                  onClick={handleAddToCart}
+                  disabled={!product.id_produto}
+                >
+                  🛒 Adicionar ao carrinho
                 </button>
               </div>
             </div>
