@@ -3,6 +3,8 @@ import './Cadastro.css';
 import { useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
+import "../i18n"
+import { useTranslation } from 'react-i18next';
 
 function CadastroContext() {
   const [nome, setNome] = useState(''); 
@@ -103,17 +105,17 @@ function CadastroContext() {
       <div className='ladoDireito-cadastro'>
 
         <div className='Titulo-Cadastro'>
-          <h1 className='BemVindo-cadastro'>{t('welcomeToMigration')}</h1>
+          <h1 className='BemVindo-cadastro'>{t("cadastro.cadstra.title")}</h1>
         </div>
 
         <div className='Inputs-Cadastro'>
           {/* Campo Nome */}
           <div className='inputNome-Cadastro'>
-            <label className='LabelNome-Cadastro'>{t('fullName')}</label>
+            <label className='LabelNome-Cadastro'>{t('cadastro.cadstra.nome')}</label>
             <input
               type="text"
               className='Nome-Cadastro'
-              placeholder={t('namePlaceholder')}
+              placeholder={t('cadastro.inputs.nome')}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
             />
@@ -122,11 +124,11 @@ function CadastroContext() {
 
           {/* Campo Email */}
           <div className='inputemail-Cadastro'>
-            <label className='Labelemail-Cadastro'>E-mail</label>
+            <label className='Labelemail-Cadastro'>{t('cadastro.cadstra.email')}</label>
             <input
               type="email"
               className='Email-Cadastro'
-              placeholder={t('emailPlaceholder')}
+              placeholder={t('cadastro.inputs.nome')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -135,11 +137,11 @@ function CadastroContext() {
 
           {/* Campo Senha */}
           <div className='inputsenha-Cadastro'>
-            <label className='Labelsenha-Cadastro'>{t('password')}</label>
+            <label className='Labelsenha-Cadastro'>{t('cadastro.cadstra.senha')}</label>
             <input
               type="password"
               className='Senha-Cadastro'
-              placeholder={t('passwordPlaceholder')}
+              placeholder={t('cadastro.inputs.senha')}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
             />
@@ -151,13 +153,13 @@ function CadastroContext() {
         <div className='Buttons-Cadastro'>
           <div className='butonLogar-Cadastro'>
             <button className='ButtonLogar-Cadastro' onClick={() => navigate('/login')}>
-              {t('login')}
+              {t('cadastro.button.butonl')}
             </button>
           </div>
 
           <div className='butoncadastrar-Cadastro'>
             <button className='ButtonCadastrar-Cadastro' onClick={handleCadastro} disabled={isLoading}>
-              {isLoading ? t('registering') : t('register')}
+              {isLoading ? t('cadastro.button.buton') : t('cadastro.button.butonc')}
             </button>
           </div>
         </div>
@@ -178,7 +180,7 @@ function CadastroContext() {
                   <polyline points="1.5 6 4.5 9 10.5 1" />
                 </svg>
               </span>
-              <span>{t('acceptTermsText')}</span>
+              <span>{t('cadastro.termos.termo')}</span>
             </label>
           </div>
           <div style={{ marginTop: '8px' }}>

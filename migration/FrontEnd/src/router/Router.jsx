@@ -12,6 +12,7 @@ import Loja from "../pages/Loja.jsx";
 import Produtos from "../pages/Produtos.jsx";
 import Endereco from "../pages/Endereco.jsx";
 import AvaliacaoProduto from "../pages/AvaliacaoProduto.jsx";
+import Testeidioma from "../pages/Testeidioma.jsx";
 
 
 const router = createBrowserRouter([

@@ -1,0 +1,188 @@
+{
+  "footer": {
+    "brand": {
+      "title": "Migrando",
+      "description": "Your complete store for travel products. Quality and comfort for your adventures."
+    },
+    "links": {
+      "title": "Useful Links",
+      "about": "About Us",
+      "stores": "Our Stores",
+      "blog": "Travel Blog",
+      "work": "Work With Us"
+    },
+    "help": {
+      "title": "Help",
+      "faq": "FAQ",
+      "returns": "Returns and Exchanges",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
+    "contact": {
+      "title": "Contact",
+      "address": "Av. das Viagens, 1234",
+      "phone": "(11) 98765-4321",
+      "email": "contato@travelgear.com"
+    },
+    "bottom": "© 2025 Migrando. All rights reserved."
+  },
+
+   "hero": {
+       "oi": { 
+        "title": "Get ready for your next adventure",
+        "infor": "The best gear and accessories for your trips",
+        "button": "Explore Products"
+
+    }
+  },
+
+  "featuredproduct": {
+     "produto": {
+        "title": "Featured Products",
+        "novo": "New",
+        "button": "Add to Cart"
+     }
+
+  },
+
+   "helpsaction": {
+     "ajuda": {
+     "title": "Need help?",
+     "atendi": "Quick service",
+     "via": "Via chat",
+     "fazer": "Order now",
+     "menos": "Less than R$100",
+     "confi": "Check out products with low prices",
+     "mostra": "Show products",
+     "mais": "Best sellers",
+     "encon": "Find the latest trends",
+     "vendi": "For best sellers",
+     "frete": "Products with free shipping",
+     "econo": "Save on your purchases",
+     "categ": "Our categories",
+     "procu": "Recently searched products",
+     "tag": "Steam mask"
+    }
+  },
+
+  "productcategories": {
+    "produtos": {
+      "nossas": "Our Categories",
+      "vermai": "See More"
+    }
+  },
+
+
+  "cadastro": {
+    "cadstra": {
+      "title": "Welcome to Migration!",
+      "nome": "Full Name",
+      "email": "Email",
+      "senha": "Password"
+    },
+    "inputs": {
+      "nome": "E.g.: Julia Santos",
+      "email": "E.g.: juliaSantos@gmail.com",
+      "senha": "At least 6 characters"
+    },
+    "termos": {
+      "termo": "I have read and accept the terms of use"
+    },
+    "button": {
+      "butonl": "Log In",
+      "butonc": "Register",
+      "button": "Registering"
+    }
+  },
+
+  "login": {
+    "logar": {
+      "title": "Welcome back to Migration!"
+    },
+    "input": {
+      "email1": "Email",
+      "senha2": "Password"
+    },
+
+    "place":{
+      "email": "E.g.: juliaSantos@gmail.com",
+      "senha": "At least 6 characters"
+    },
+
+    "button": {
+      "butonl": "Logged in",
+      "butonc": "Register",
+      "button": "Logging in"
+    }
+  },
+
+  "produto": {
+    "categoria":{
+      "buton": "see Categories"
+    },
+
+    "mostrar": {
+      "buton": "Show All Products"
+    },
+
+    "text": {
+      "text1": "Trending products",
+      "text2": "No products were found for this category.",
+      "text3": "Promotions of the Day"
+    }
+  },
+
+  
+  "perfil": {
+    "dadospessoais": {
+      "title": "Personal Information",
+      "nome": "Username:",
+      "email": "Email:",
+      "senha": "Password:",
+      "sexo": "Gender:",
+      "femi": "Female",
+      "masc": "Male",
+      "naoi": "Prefer not to say",
+      "buto": "Edit Profile",
+      "but1": "Delete Account"
+    },
+
+    "endereco": {
+      "ende": "Address",
+      "cep": "ZIP Code:",
+      "estado": "State:",
+      "rua": "Street:",
+      "comple": "Complement:",
+      "refere": "Reference:",
+      "numero": "Number:",
+      "buto": "Edit Fields",
+      "but1": "Clear Fields"
+    }
+  },
+
+ 
+  "fino": {
+    "info": {
+      "usuario": "User_name",
+      "compras": "My Purchases",
+      "favorit": "My Favorites",
+      "enderec": "Address"
+    }
+  },
+
+
+   "navbar": {
+    "nav": {
+      "lar": "Home",
+      "pro": "Products",
+      "ofe": "Offers",
+      "con": "Contact",
+      "min": "My Store"
+    }
+  }
+
+}
+
+
+
+

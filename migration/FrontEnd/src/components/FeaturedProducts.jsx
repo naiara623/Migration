@@ -1,5 +1,8 @@
 import React from 'react';
 import './FeaturedProducts.css';
+import { useTranslation } from 'react-i18next';
+import "../i18n";
+
 
 const products = [
   { id: 1, name: 'Mochila Viagem Pro', price: 299.90, image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', rating: 5 },
@@ -8,7 +11,12 @@ const products = [
   { id: 4, name: 'Tênis Caminhada', price: 249.90, image: 'https://images.unsplash.com/photo-1600269452121-4f2416e55c28?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', rating: 4 },
 ];
 
+
+
 const FeaturedProducts = () => {
+
+ const { t } = useTranslation();
+
   return (
 
   
@@ -16,14 +24,14 @@ const FeaturedProducts = () => {
 
         <div className="container2">
 
-            <h2 className="section-title">Produtos em Destaque</h2>
+            <h2 className="section-title">{t("featuredproduct.produto.title")}</h2>
             <div className="products-grid">
                 
               {products.map(product => (
                 <div key={product.id} className="product-card">
                     <div className="product-image">
                       <img src={product.image} alt={product.name} />
-                      <div className="product-badge">Novo</div>
+                      <div className="product-badge">{t("featuredproduct.produto.novo")}</div>
                     </div>
                   <div className="product-info">
                     <h3>{product.name}</h3>
@@ -33,7 +41,7 @@ const FeaturedProducts = () => {
                       ))}
                     </div>
                     <div className="product-price">R$ {product.price.toFixed(2)}</div>
-                    <button className="btn btn-primary">Adicionar ao Carrinho</button>
+                    <button className="btn btn-primary">{t("featuredproduct.produto.button")}</button>
                   </div>
                 </div>
               ))}

@@ -1,5 +1,7 @@
 import React from 'react';
 import './ProductCategories.css';
+import { useTranslation } from 'react-i18next';
+import "../i18n"
 
 const categories = [
   { id: 1, name: 'Malas e Mochilas', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
@@ -9,17 +11,18 @@ const categories = [
 ];
 
 const ProductCategories = () => {
+  const { t } = useTranslation();
   return (
     <section className="product-categories">
       <div className="container">
-        <h2 className="section-title">Nossas Categorias</h2>
+        <h2 className="section-title">{t("productcategories.produtos.nossas")}</h2>
         <div className="categories-grid">
           {categories.map(category => (
             <div key={category.id} className="category-card">
               <img src={category.image} alt={category.name} />
               <div className="category-overlay">
                 <h3>{category.name}</h3>
-                <button className="btn btn-primary">Ver Mais</button>
+                <button className="btn btn-primary">{t("productcategories.produtos.vermai")}</button>
               </div>
             </div>
           ))}
