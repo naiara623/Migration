@@ -2,9 +2,12 @@ import React from 'react';
 import './HelpSection.css';
 import "../i18n"
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const HelpSection = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
 
   return (
     <section className="help-section">
@@ -17,7 +20,7 @@ const HelpSection = () => {
               <h3>{ t("helpsaction.ajuda.atendi")}</h3>
               <p>{ t("helpsaction.ajuda.via")}</p>
             </div>
-            <button className="action-link">{ t("helpsaction.ajuda.fazer")}</button>
+            <button className="action-link" onClick={() => navigate('/chatbot')}>{ t("helpsaction.ajuda.fazer")}</button>
           </div>
           
           <div className="help-item">

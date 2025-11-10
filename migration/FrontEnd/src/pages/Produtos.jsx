@@ -181,8 +181,8 @@ const handleAddToCarrinho = async (productWithSelections) => {
       <div className='DivGlobal-Ofertas'>
 
         <div className="buttons">
-          <button className='ButtonCategorias' onClick={() => setModalAberto(true)}>{t('produto.categoria.buton')}</button>
-        <button className='ButtonProdutos' onClick={resetarFiltro}>{t('produto.mostrar.buton')}</button>
+          <button className='btn1 btn-primary1' onClick={() => setModalAberto(true)}>{t('produto.categoria.buton')}</button>
+        <button className='btn2 btn-primary2' onClick={resetarFiltro}>{t('produto.mostrar.buton')}</button>
         </div>
 
         

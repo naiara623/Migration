@@ -18,11 +18,11 @@ function ModalIdiomas({ onClose, isOpen }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={stopPropagation}>
-        <h3 className='Selecione-idi'>Selecione o idioma</h3>
+        <h3 className='Selecione-idi'>Selecione o idioma desejado</h3>
         <div className="idiomas-options">
-          <button onClick={() => changeLanguage('pt')}>Português</button>
-          <button onClick={() => changeLanguage('en')}>English</button>
-          <button onClick={() => changeLanguage('es')}>Español</button>
+          <button className='pt' onClick={() => changeLanguage('pt')}>Português</button>
+          <button className='pt' onClick={() => changeLanguage('en')}>English</button>
+          <button className='pt' onClick={() => changeLanguage('es')}>Español</button>
         </div>
       </div>
     </div>

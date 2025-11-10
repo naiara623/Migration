@@ -15,7 +15,7 @@
    background-color: var( --bg-secondary);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
     min-width: 300px;
     position: relative;
 }
@@ -50,7 +50,7 @@
 }
 
 .Selecione-idi{
-    color: black;
+  color: var(--accent-primary);
 }
 
 .BandeiraB{
@@ -58,3 +58,7 @@
     width: 5%;
 }
 
+.pt{
+    /* font-family: 'Courier New', Courier, monospace; */
+    font-size: 1rem;
+}

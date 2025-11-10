@@ -1,0 +1,147 @@
+.Div-Chat{
+    /* border: 2px solid red; */
+    height: 100vh;
+}
+
+.Navbar-Chat{
+    /* border: 2px solid pink; */
+    height: 10%;
+    width: 100%;
+}
+
+.Div-Chatbot{
+    /* border: 2px solid green; */
+     background: linear-gradient(var(--hero-overlay), var(--hero-overlay)), 
+        url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+    width: 100%;
+    height: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-container {
+    width: 50%; /* Largura ajustada para o exemplo */
+    height: 70%; /* Altura ajustada para o exemplo */
+    background-color: #ffffff; /* Fundo branco para o chat */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Adicionado para garantir que o contêiner principal não gere barra horizontal */
+}
+
+/* Área de Histórico de Mensagens */
+.chat-history {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden; /* Adicionado para ocultar a barra de rolagem horizontal no histórico */
+    margin-bottom: 15px;
+    padding-right: 10px; /* Espaço para a barra de rolagem */
+}
+
+/* Estilo para cada linha de mensagem */
+.message-row {
+    display: flex;
+    margin: 10px 0;
+}
+
+/* Mensagens do Usuário (à direita) */
+.message-row.user {
+    justify-content: flex-end;
+}
+
+/* Mensagens do Bot (à esquerda) */
+.message-row.bot {
+    justify-content: flex-start;
+}
+
+/* Estilo do Balão de Mensagem */
+.message-bubble {
+    display: inline-block;
+    padding: 10px 15px;
+    max-width: 60%; /* Largura máxima para o balão */
+    border-radius: 10px;
+    color: white;
+    position: relative;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* Balão do Usuário (Cor Azul Escuro) */
+.message-row.user .message-bubble {
+    background-color: #3b5998; /* Azul escuro similar ao da imagem */
+    border-radius: 10px 10px 0 10px; /* Borda inferior direita reta */
+}
+
+/* Balão do Bot (Cor Azul Acinzentado) */
+.message-row.bot .message-bubble {
+    background-color: #607d8b; /* Azul acinzentado similar ao da imagem */
+    color: white;
+    border-radius: 10px 10px 10px 0; /* Borda inferior esquerda reta */
+}
+
+/* Triângulo/Ponta do Balão (User - Direita) */
+.message-row.user .message-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: -7px; /* Ajuste para a ponta */
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid #3b5998; /* Cor do balão */
+    transform: rotate(45deg);
+}
+
+/* Triângulo/Ponta do Balão (Bot - Esquerda) */
+.message-row.bot .message-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -7px; /* Ajuste para a ponta */
+    width: 0;
+    height: 0;
+    border-right: 8px solid transparent;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid #607d8b; /* Cor do balão */
+    transform: rotate(-45deg);
+}
+
+/* Área de Input e Botão */
+.input-area {
+    display: flex;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+/* Campo de Input de Texto */
+.input-area input[type="text"] {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px 0 0 20px;
+    outline: none;
+    font-size: 14px;
+}
+
+/* Botão Enviar */
+.input-area button[type="submit"] {
+    padding: 10px 20px;
+    background-color: #3b5998; /* Cor do botão similar ao balão do usuário */
+    color: white;
+    border: none;
+    border-radius: 0 20px 20px 0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.input-area button[type="submit"]:hover {
+    background-color: #2d4373;
+}
