@@ -1,4 +1,4 @@
-.englobaTudo-Modal {
+.Modal-overlay1 {
   font-family: 'Arial', sans-serif;
   margin: 0 auto;
   padding: 20px;
@@ -6,7 +6,7 @@
   
 }
 
-.grande-modal {
+.Modal-Content2 {
     /* border: 2px solid ; */
     background-color: #F7F7F7;
   display: flex;

@@ -1,0 +1,113 @@
+.Modal-overlay1 {
+   position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #324973a3;
+  display: flex; align-items: center; justify-content: center;
+   z-index: 1000;
+  cursor: pointer;
+  
+}
+
+.Modal-ContentPre {
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: var(--modal-primary);
+    border-radius: 8px;
+    width: 50%;
+    height: 94%;
+    border: 3px solid rgb(0, 217, 255);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.conteine-titulo-Prepa{
+    border: 3px solid red;
+    width: 100%;
+    height: 15%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;    
+  
+}
+
+.conteine-aviso-Prepa{
+    border: 3px solid rgb(230, 0, 255);
+    width: 100%;
+    height: 12%;
+}
+
+.conteine-produto-Prepa{
+    border: 3px solid rgb(0, 255, 21);
+    width: 100%;
+    height: 32%;
+}
+
+.conteine-detalhes-Prepa{
+    border: 3px solid rgb(13, 0, 255);
+    width: 100%;
+    height: 42%;
+}
+
+.conteine-body{
+ border: 3px solid rgb(10, 1, 1);
+    width: 90%;
+    height: 95%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+
+}
+
+/* conteine do aviso */
+
+.conteine-aviso-Prepa {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  width: 100%; /* Ocupa 100% da largura disponível */
+  
+  
+}
+
+.notification-message {
+  background-color: #1175d95e;
+  border-left: 4px solid #007bff;
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  width: 100%; /* Ocupa toda a largura do container pai */
+  max-width: 100%; /* Não ultrapassa a largura do container */
+  text-align: center;
+  box-sizing: border-box; /* Inclui padding no cálculo do tamanho */
+}
+
+.notification-message p {
+  margin: 0;
+  color: #333;
+  font-size: 85%;
+  line-height: 1.5;
+  font-weight: 50%;
+}
+
+
+/* Estilos para o container do produto */
+.conteine-produto-Prepa {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.conteine-imgDoproduto{
+    border: 4px solid red;
+    width: 30%;
+    height: 100% ;
+}
+
+.div-imgDoproduto{
+    border: 4px solid rgb(0, 255, 51);
+    width: 30%;
+    height: 100% ;
+
+}
