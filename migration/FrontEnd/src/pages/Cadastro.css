@@ -56,6 +56,12 @@
     flex-direction: column;
 }
 
+input::placeholder {
+ position: relative;
+  left: 10px;  /* move horizontalmente */
+  top: 2px;    /* move verticalmente */
+}
+
 
 .butonLogar-Cadastro, 
 .butoncadastrar-Cadastro{
@@ -67,11 +73,13 @@
     align-items: center;
 }
 
+
+
 /*TEXTOS*/
 
 .BemVindo-cadastro{
     /* border: 2px solid yellow; */
-    width: 56%;
+    width: 60%;
     font-size: 40px;
     color: var(--text-primary);
     position: relative;
@@ -85,7 +93,7 @@
     font-size: 20px;
     color: var(--text-primary);
     position: relative;
-    right: 29%;
+    right: 32%;
     top: 1%;
     
 }
@@ -94,7 +102,7 @@
     font-size: 20px;
     color: var(--text-primary);
     position: relative;
-    right: 34%;
+    right: 34.5%;
      top: 1%;
 }
 
@@ -102,7 +110,7 @@
     font-size: 20px;
     color: var(--text-primary);
     position: relative;
-    right: 34%;
+    right: 32%;
      top: 1%;
 }
 
@@ -134,7 +142,7 @@ input:focus {
     height: 40%;
     border-radius: 5px;
     background-color: var(--text-primary);
-    color: #324973;
+    color: #ffffff;
     font-size: 26px;
     border: none;
 }

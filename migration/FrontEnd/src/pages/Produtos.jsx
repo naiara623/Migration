@@ -5,8 +5,10 @@ import ModalConfig from '../components/ModalConfig';
 import Categorias from '../components/Categorias';
 import { ThemeProvider } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
-import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import "../i18n"
+import axios from 'axios';
 
 function ProdutosContext() {
   ThemeEffect();
@@ -18,6 +20,7 @@ function ProdutosContext() {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const {t} = useTranslation();
 
   // Pega parâmetros da URL
   const queryParams = new URLSearchParams(location.search);
@@ -180,30 +183,9 @@ function ProdutosContext() {
       </div>
 
       <div className='DivGlobal-Ofertas'>
-        <div className="filters-section">
-          <button 
-            onClick={() => setModalAberto(true)}
-            className="filter-btn"
-          >
-            📂 Filtrar por Categoria
-          </button>
-          
-          {(categoria || termoBusca) && (
-            <button 
-              onClick={resetarFiltro}
-              className="filter-btn"
-            >
-              🔄 Mostrar Todos os Produtos
-            </button>
-          )}
-          
-          <button 
-            onClick={fetchAllProducts}
-            className="filter-btn"
-          >
-            🔁 Recarregar
-          </button>
-        </div>
+
+        <button onClick={() => setModalAberto(true)}>Abrir Categorias</button>
+        <button onClick={resetarFiltro}>Mostrar Todos os Produtos</button>
 
         <Categorias 
           isOpen={modalAberto} 
@@ -229,13 +211,7 @@ function ProdutosContext() {
           <section className="featured-products">
             <div className="container2">
               <h2 className='oiTest'>
-                {termoBusca
-                  ? `🔍 Resultados para "${termoBusca}"`
-                  : categoria 
-                    ? `🎯 Produtos em ${categoria}` 
-                    : '🔥 Todos os Produtos'
-                }
-                {products.length > 0 && ` (${products.length} produtos)`}
+                {categoria ? `Produtos em ${categoria}` : 'Produtos em alta'}
               </h2>
               
               {!loading && products.length === 0 && !error && (
@@ -248,6 +224,9 @@ function ProdutosContext() {
               )}
 
               <div className="products-grid">
+                {products.length === 0 && (
+                  <p>Nenhum produto encontrado para esta categoria.</p>
+                )}
                 {products.map(product => (
                   <div key={product.id_produto} className="product-card">
                     <div className="product-image">

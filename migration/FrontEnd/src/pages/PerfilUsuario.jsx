@@ -5,9 +5,12 @@ import './PerfilUsuario.css';
 import Header from '../components/Header';
 import { Link } from 'react-router-dom';
 import ConteineFino from '../components/ConteineFino'
+import { useTranslation } from 'react-i18next';
+import "../i18n"
 
 function PerfilUsuariocontext(){
     ThemeEffect()
+    const {t} = useTranslation();
     return(
         <div className='vermelha-PRF'>
             
@@ -25,7 +28,7 @@ function PerfilUsuariocontext(){
                    <div className='conteine-grosso-PRF'>
 
                       <div className='informação-pessoais-PRF' >
-                              <h2>Informações Pessoais</h2>
+                              <h2>{t("perfil.dadospessoais.title")}</h2>
                       </div>
                       
                       <div className="conteine-LINHA2-PRF">
@@ -35,19 +38,19 @@ function PerfilUsuariocontext(){
                       <div className='div-vazia3' ></div>
 
                       <div className='campo-formulario-nome-PRF' >
-                            <label className='funcao-cor-Em-SE-SX'htmlFor="">Nome do usuário:</label>
+                            <label className='funcao-cor-Em-SE-SX'htmlFor="">{t("perfil.dadospessoais.nome")}</label>
                               <input type="text" name="" id="" className='input-nome-PRF' />
                       </div> 
 
                       
                       <div className='campo-formulario-Email-PRF' >
-                            <label className='funcao-cor-Em-SE-SX'  htmlFor="">Email:</label>
+                            <label className='funcao-cor-Em-SE-SX'  htmlFor="">{t("perfil.dadospessoais.email")}</label>
                               <input type="text" name="" id="" className='input-Email-PRF' />
                       </div> 
 
                           
                       <div className='campo-formulario-senha-PRF' >
-                            <label className='funcao-cor-Em-SE-SX' htmlFor="">Senha:</label>
+                            <label className='funcao-cor-Em-SE-SX' htmlFor="">{t("perfil.dadospessoais.senha")}</label>
                               <input type="text" name="" id="" className='input-senha-PRF' />
                       </div>         
  
@@ -55,22 +58,22 @@ function PerfilUsuariocontext(){
 
                                 <div className='div-VAZIA4-PRF' ></div>
 
-                                <label className='label-sexo-PRF' >Sexo:</label>
+                                <label className='label-sexo-PRF' >{t("perfil.dadospessoais.sexo")}</label>
 
                                
 
                                 <div  className='opcoes-sexo' >
 
                                     <label>
-                                        <input type="radio" name="sexo"  /> Feminino
+                                        <input type="radio" name="sexo"  /> {t("perfil.dadospessoais.femi")}
                                     </label>
 
                                     <label>
-                                        <input type="radio" name="sexo"  /> Masculino
+                                        <input type="radio" name="sexo"  />{t("perfil.dadospessoais.masc")}
                                     </label>
 
                                     <label>
-                                       <input type="radio" name="sexo"  /> Não informar 
+                                       <input type="radio" name="sexo"  /> {t("perfil.dadospessoais.naoi")} 
                                     </label>
 
                                 </div>
@@ -83,8 +86,8 @@ function PerfilUsuariocontext(){
 
                         <div  className='conteine-dos-buttons-PRF'>
 
-                               <button className='botao-editar'>Editar Perfil</button>
-                            <button className='botao-deletar'>Deletar Conta</button>
+                               <button className='botao-editar'>{t("perfil.dadospessoais.buto")} </button>
+                            <button className='botao-deletar'>{t("perfil.dadospessoais.but1")} </button>
 
                         </div>
 

@@ -10,11 +10,9 @@ import MeusFavoritos from "../pages/MeusFavoritos.jsx";
 import Categorias from "../components/Categorias.jsx";
 import Loja from "../pages/Loja.jsx";
 import Produtos from "../pages/Produtos.jsx";
-
-
 import Endereco from "../pages/Endereco.jsx";
-
 import AvaliacaoProduto from "../pages/AvaliacaoProduto.jsx";
+import Testeidioma from "../pages/Testeidioma.jsx";
 
 
 const router = createBrowserRouter([
@@ -31,7 +29,8 @@ const router = createBrowserRouter([
     {path: "/loja", element: <Loja/>},
     {path: "/produtos", element: <Produtos/>},
     {path: "/endereco", element: <Endereco/>},
-  {path: "/valiacao", element: <AvaliacaoProduto/>}
+    {path: "/valiacao", element: <AvaliacaoProduto/>},
+    
    
 ])
 

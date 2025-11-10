@@ -134,3 +134,5 @@ class QueueSmartIntegration {
 }
 
 module.exports = QueueSmartIntegration;
+
+ 

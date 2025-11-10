@@ -1,0 +1,182 @@
+{
+  "footer": {
+    "brand": {
+      "title": "Migrando",
+      "description": "Tu tienda completa de productos para viajes. Calidad y comodidad para tus aventuras."
+    },
+    "links": {
+      "title": "Enlaces Útiles",
+      "about": "Sobre Nosotros",
+      "stores": "Nuestras Tiendas",
+      "blog": "Blog de Viajes",
+      "work": "Trabaja con Nosotros"
+    },
+    "help": {
+      "title": "Ayuda",
+      "faq": "Preguntas Frecuentes",
+      "returns": "Cambios y Devoluciones",
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio"
+    },
+    "contact": {
+      "title": "Contacto",
+      "address": "Av. das Viagens, 1234",
+      "phone": "(11) 98765-4321",
+      "email": "contato@travelgear.com"
+    },
+    "bottom": "© 2025 Migrando. Todos los derechos reservados."
+  },
+
+   "hero": {
+      "oi": {
+        "title": "Prepárate para tu próxima aventura",
+        "infor": "Los mejores equipos y accesorios para tus viajes",
+        "button": "Explorar Productos"
+      }
+
+  },
+
+  "featuredproduct": {
+     "produto": {
+        "title": "Productos destacados",
+        "novo": "Nuevo",
+        "button": "añadir a la cesta"
+     }
+
+  },
+
+   "helpsaction": {
+    "ajuda": {
+      "title": "¿Necesitas ayuda?",
+      "atendi": "Servicio rápido",
+      "via": "Por chat",
+      "fazer": "Haz tu pedido ahora",
+      "menos": "Menos de R$100",
+      "confi": "Descubre productos con precios bajos",
+      "mostra": "Ver productos",
+      "mais": "Los más vendidos", 
+      "encon": "Encuentra las últimas tendencias",
+      "vendi": "Para los más vendidos",
+      "frete": "Productos con envío gratis",
+      "econo": "Ahorra en tus compras",
+      "categ": "Nuestras categorías",
+      "procu": "Productos buscados recientemente",
+      "tag": "Mascarilla de vapor"
+    }
+  },
+
+  "productcategories": {
+    "produtos": {
+      "nossas": "Nuestras Categorías",
+      "vermai": "Ver más"
+    }
+  },
+
+   
+  "cadastro": {
+    "cadstra": {
+      "title": "¡Bienvenido a Migration!",
+      "nome": "Nombre completo",
+      "email": "Correo electrónico",
+      "senha": "Contraseña"
+    },
+    "inputs": {
+      "nome": "Ej: Julia Santos",
+      "email": "Ej: juliaSantos@gmail.com",
+      "senha": "Mínimo 6 caracteres"
+    },
+    "termos": {
+      "termo": "He leído y acepto los términos de uso"
+    },
+    "button": {
+      "butonl": "Iniciar sesión",
+      "butonc": "Registrar",
+      "button": "Registrando"
+    }
+  },
+
+  "login": {
+    "logar": {
+      "title": "¡Bienvenido de nuevo a Migration!"
+    },
+    "place": {
+      "email": "Ej: juliaSantos@gmail.com",
+      "senha": "Mínimo 6 caracteres"
+    },
+    "input": {
+      "email1": "Email",
+      "senha2": "Contraseña"
+    },
+    "button": {
+      "butonl": "Iniciar sesión",
+      "butonc": "Registrar",
+      "button": "Registrando"
+    }
+  },
+
+  "produto": {
+    "categoria":{
+      "buton": "Ver categorías"
+    },
+
+    "mostrar": {
+      "buton": "Mostrar todos los productos"
+    },
+
+    "text": {
+      "text1": "Productos de tendencia",
+      "text2": "No se encontraron productos para esta categoría.",
+      "text3": "Promociones del día"
+    }
+  },
+
+  
+  "perfil": {
+    "dadospessoais": {
+      "title": "Información Personal",
+      "nome": "Nombre de usuario:",
+      "email": "Correo electrónico:",
+      "senha": "Contraseña:",
+      "sexo": "Género:",
+      "femi": "Femenino",
+      "masc": "Masculino",
+      "naoi": "Prefiero no decirlo",
+      "buto": "Editar Perfil",
+      "but1": "Eliminar Cuenta"
+    },
+
+    "endereco": {
+      "ende": "Dirección",
+      "cep": "Código Postal:",
+      "estado": "Estado:",
+      "rua": "Calle:",
+      "comple": "Complemento:",
+      "refere": "Referencia:",
+      "numero": "Número:",
+      "buto": "Editar Campos",
+      "but1": "Limpiar Campos"
+    }
+  },
+
+ "fino": {
+    "info": {
+      "usuario": "Nombre_usuario",
+      "compras": "Mis Compras",
+      "favorit": "Mis Favoritos",
+      "enderec": "Dirección"
+    }
+  },
+
+    "navbar": {
+    "nav": {
+      "lar": "Hogar",
+      "pro": "Productos",
+      "ofe": "Ofertas",
+      "con": "Contacto",
+      "min": "Mi Tienda"
+    }
+  }
+}
+
+
+

@@ -4,6 +4,8 @@ import { RouterProvider } from 'react-router-dom';
 import router from './router/Router.jsx';
 import './index.css';
 import { ThemeProvider } from './ThemeContext.jsx';
+import './i18n'; // importa a configuração do i18next
+
 
 // Obtenha o elemento root
 const container = document.getElementById('root');

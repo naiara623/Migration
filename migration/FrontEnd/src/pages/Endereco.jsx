@@ -5,9 +5,11 @@ import Header from '../components/Header'
 import './Endereco.css'
 import { Link } from 'react-router-dom';
 import ConteineFino from '../components/ConteineFino'
+import { useTranslation } from 'react-i18next'
 
 function EnderecoContex(){
    ThemeEffect()
+   const {t} = useTranslation();
 
      return(
         <div className='div-inclobaTudo-Endereco'>
@@ -27,7 +29,7 @@ function EnderecoContex(){
                <div className='conteine-grosso-Endereco' >
 
                          <div className='informação-pessoais-Endereco' >
-                               <h2> Endereço</h2>
+                               <h2>{t("perfil.endereco.ende")}</h2>
                           </div>
 
                           <div className='conteine-LINHA2-Endereco' >
@@ -45,13 +47,13 @@ function EnderecoContex(){
                           <div className='cep-estado'>
 
                              <div className='Oicep'>
-                            <label className='CEP2-Endereco'>CEP:</label>
+                            <label className='CEP2-Endereco'>{t("perfil.endereco.cep")}</label>
                             <input className='cep-Endereco' type="text" id="cep" name="cep" />
                           </div>
                           
 
                              <div className='OiEstado'>
-                            <label htmlFor="cep" className='estado-text-Endereco'>Estado:</label>
+                            <label htmlFor="cep" className='estado-text-Endereco'>{t("perfil.endereco.estado")}</label>
                             <input className='Estado-input-Endereco' type="text" id="cep" name="cep" />
                           </div>
 
@@ -60,7 +62,7 @@ function EnderecoContex(){
  
                           <div className='outros-inputs'>
                             
-                            <label  htmlFor="rua" className='rua-text-Endereco' >Rua:</label>
+                            <label  htmlFor="rua" className='rua-text-Endereco' >{t("perfil.endereco.rua")}</label>
                             <input className='rua-input-Endereco' type="text" />
 
                           </div>
@@ -68,13 +70,13 @@ function EnderecoContex(){
                            <div className='complemento-numero-Estado'>
 
                              <div className='Oicep'>
-                            <label htmlFor="" className='comple-text-Endereco'>Complemento:</label>
+                            <label htmlFor="" className='comple-text-Endereco'>{t("perfil.endereco.comple")}</label>
                             <input className='complemento-Endereco' type="text" id="Complemento" name="Complemento" />
                           </div>
                           
 
                              <div className='OiEstado'>
-                            <label htmlFor="cep" className='numero-text-Endereco'>Numero:</label>
+                            <label htmlFor="cep" className='numero-text-Endereco'>{t("perfil.endereco.refere")}</label>
                             <input className='numero-Endereco' type="text" id="numero" name="numero" />
                           </div>
 
@@ -82,7 +84,7 @@ function EnderecoContex(){
                               
                           <div className='referencia-Endereco'>
                             
-                            <label  htmlFor="rua" className='referencia-text-Endereco' >Referencia:</label>
+                            <label  htmlFor="rua" className='referencia-text-Endereco' >{t("perfil.endereco.numero")}:</label>
                             <input className='referencia-input-Endereco' type="text" />
 
                           </div>
@@ -92,8 +94,8 @@ function EnderecoContex(){
                            
 
                             <div className='butons-Endereco' >
-                              <button className='botao-editar-Endereco'>Editar campos</button>
-                            <button className='botao-deletar-Endereco'>Limpar campos</button>
+                              <button className='botao-editar-Endereco'>{t("perfil.endereco.buto")}</button>
+                            <button className='botao-deletar-Endereco'>{t("perfil.endereco.but1")}</button>
                             </div>
                         </div>
                         
