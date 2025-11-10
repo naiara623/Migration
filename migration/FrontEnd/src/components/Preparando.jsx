@@ -24,6 +24,7 @@ function Preparando({onClose, isOpen}) {
             </div>
 
                 <div className='conteine-produto-Prepa' >
+
                     <div className='conteine-imgDoproduto' >
 
                        <div  className='div-imgDoproduto' >
@@ -32,14 +33,36 @@ function Preparando({onClose, isOpen}) {
 
                     </div>
 
-                    <div></div>
+                    <div className='conteine-informaçãoProduto' >
 
-                    <div></div>
+                      <div className='div-informaçãoProduto'  > 
+
+                        <h4>kit Organizador de mala</h4>
+ 
+                         <p>Tamanho: M</p> 
+                         <p>Cor por fora: preto</p>
+                        <p>Cor por dentro: preto</p>
+                        <p>Material: poliester</p>
+                         <p>Estampa: 🚫</p> 
+                         <h4>Valor: 85,98</h4> 
+
+                      </div>
+
+                    </div>
+
+                    <div className='conteine-de-rastreamento' > 
+                      
+                      
+                       </div>
 
                 
                 </div>
 
-                  <div className='conteine-detalhes-Prepa' ></div>
+                  <div className='conteine-detalhes-Prepa' >
+
+
+
+                  </div>
         </div>
 
 
