@@ -774,6 +774,241 @@ async function atualizarStatusPedido(id_pedido, dadosAtualizacao) {
     }
 }
 
+// server.js - adicione estas rotas após as rotas existentes
+
+// ==========================================
+// 🏭 ROTAS DE PRODUÇÃO E MONITORAMENTO
+// ==========================================
+
+// Rota para criar pedido e enviar para produção
+app.post('/api/pedidos/producao', autenticar, async (req, res) => {
+    console.log('🏭 Criando pedido com monitoramento de produção:', req.body);
+
+    try {
+        const { total, metodo_pagamento, endereco_entrega, itens } = req.body;
+        
+        if (!Array.isArray(itens) || itens.length === 0) {
+            return res.status(400).json({ erro: 'Itens do pedido inválidos' });
+        }
+
+        // 1. Criar pedido no banco
+        const pedido = await createPedidoComRastreamento({ 
+            idusuarios: req.session.user.id, 
+            total, 
+            metodo_pagamento, 
+            endereco_entrega, 
+            itens 
+        });
+
+        // 2. Enviar cada item individualmente para a máquina
+        const resultadosProducao = [];
+        
+        for (let itemIndex = 0; itemIndex < itens.length; itemIndex++) {
+            const item = itens[itemIndex];
+            const product = await getProductById(item.id_produto);
+            
+            if (product && item.configuracao) {
+                try {
+                    // Enviar cada unidade do produto
+                    const itemsMaquina = await queueSmart.enviarItemParaMaquina(
+                        pedido,
+                        product,
+                        item.configuracao,
+                        itemIndex,
+                        item.quantidade
+                    );
+
+                    // Registrar cada item na produção
+                    for (const itemMaquina of itemsMaquina) {
+                        const itemProducao = await registrarItemProducao({
+                            id_pedido: pedido.id_pedido,
+                            id_produto: item.id_produto,
+                            item_index: itemIndex,
+                            item_unit: itemMaquina.item_unit,
+                            item_id_maquina: itemMaquina.item_id_maquina,
+                            order_id: itemMaquina.order_id,
+                            slot_expedicao: `SLOT-${Math.floor(Math.random() * 20) + 1}` // Slot aleatório para exemplo
+                        });
+                        
+                        resultadosProducao.push(itemProducao);
+                    }
+
+                } catch (error) {
+                    console.error(`⚠️ Erro ao enviar item ${itemIndex} para produção:`, error);
+                    // Continua com os outros itens mesmo se um falhar
+                }
+            }
+        }
+
+        console.log(`✅ Pedido ${pedido.id_pedido} criado com ${resultadosProducao.length} itens de produção`);
+
+        res.status(201).json({ 
+            mensagem: 'Pedido criado e enviado para produção!', 
+            pedido,
+            itens_producao: resultadosProducao.length,
+            detalhes: 'Cada item está sendo produzido individualmente e será monitorado'
+        });
+
+    } catch (error) {
+        console.error('❌ Erro ao criar pedido de produção:', error);
+        res.status(500).json({ 
+            erro: 'Erro ao criar pedido', 
+            detalhes: error.message 
+        });
+    }
+});
+
+// Rota para receber callbacks da Queue Smart 4.0 (ATUALIZADA)
+app.post('/api/smart4-callback', async (req, res) => {
+    console.log('🔄 Callback recebido da Queue Smart 4.0:', req.body);
+
+    try {
+        const { itemId, status, stage, progress, payload } = req.body;
+
+        // Encontrar o item de produção correspondente
+        const client = await pool.connect();
+        const itemProducao = await client.query(
+            'SELECT * FROM producao_itens WHERE item_id_maquina = $1',
+            [itemId]
+        );
+
+        if (itemProducao.rows.length === 0) {
+            console.error('❌ Item de produção não encontrado para itemId:', itemId);
+            return res.status(404).json({ error: 'Item não encontrado' });
+        }
+
+        const producaoItem = itemProducao.rows[0];
+
+        // Atualizar status do item de produção
+        await atualizarStatusProducao(producaoItem.id_producao, {
+            status_maquina: status,
+            estagio_maquina: stage,
+            progresso_maquina: progress,
+            slot_expedicao: producaoItem.slot_expedicao
+        });
+
+        console.log(`✅ Item ${itemId} atualizado: ${status} - ${stage} (${progress}%)`);
+
+        // Se o item foi concluído
+        if (status === 'COMPLETED') {
+            console.log(`🎉 Item ${itemId} concluído! Slot: ${producaoItem.slot_expedicao}`);
+            
+            // Verificar se todos os itens do pedido estão prontos
+            const statusPedido = await verificarPedidoCompleto(producaoItem.id_pedido);
+            
+            if (statusPedido.completo) {
+                console.log(`🎊 PEDIDO ${producaoItem.id_pedido} COMPLETO! Todos os itens prontos.`);
+                
+                // TODO: Enviar email para o cliente
+                // TODO: Notificar usuário
+            }
+        }
+
+        res.status(200).json({ received: true, updated: true });
+
+    } catch (error) {
+        console.error('Erro ao processar callback:', error);
+        res.status(500).json({ error: 'Erro interno' });
+    }
+});
+
+// Rota para obter status detalhado do pedido
+app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
+    try {
+        const id_pedido = parseInt(req.params.id);
+        const statusDetalhado = await getStatusDetalhadoPedido(id_pedido);
+        
+        // Verificar se o pedido pertence ao usuário
+        const pedido = statusDetalhado[0];
+        if (!pedido || pedido.idusuarios !== req.session.user.id) {
+            return res.status(404).json({ erro: 'Pedido não encontrado' });
+        }
+
+        // Agrupar por item do pedido
+        const itensAgrupados = {};
+        statusDetalhado.forEach(item => {
+            if (!itensAgrupados[item.id_pedido_item]) {
+                itensAgrupados[item.id_pedido_item] = {
+                    ...item,
+                    unidades: []
+                };
+            }
+            if (item.id_producao) {
+                itensAgrupados[item.id_pedido_item].unidades.push({
+                    id_producao: item.id_producao,
+                    item_unit: item.item_unit,
+                    status_maquina: item.status_maquina,
+                    estagio_maquina: item.estagio_maquina,
+                    progresso_maquina: item.progresso_maquina,
+                    slot_expedicao: item.slot_expedicao,
+                    item_id_maquina: item.item_id_maquina,
+                    order_id: item.order_id
+                });
+            }
+        });
+
+        const resultado = {
+            pedido: {
+                id_pedido: pedido.id_pedido,
+                status_geral: pedido.status_geral,
+                total: pedido.total,
+                data_pedido: pedido.data_pedido
+            },
+            itens: Object.values(itensAgrupados),
+            resumo: await verificarPedidoCompleto(id_pedido)
+        };
+
+        res.json(resultado);
+
+    } catch (error) {
+        console.error('Erro ao buscar status do pedido:', error);
+        res.status(500).json({ erro: 'Erro ao buscar status' });
+    }
+});
+
+// Rota para monitorar produção em tempo real
+app.get('/api/producao/monitoramento', autenticar, async (req, res) => {
+    try {
+        const client = await pool.connect();
+        
+        // Pedidos em produção do usuário
+        const pedidosProducao = await client.query(`
+            SELECT DISTINCT p.*,
+                   (SELECT COUNT(*) FROM producao_itens WHERE id_pedido = p.id_pedido) as total_itens,
+                   (SELECT COUNT(*) FROM producao_itens WHERE id_pedido = p.id_pedido AND status_maquina = 'COMPLETED') as itens_prontos
+            FROM pedidos p
+            INNER JOIN producao_itens pri ON p.id_pedido = pri.id_pedido
+            WHERE p.idusuarios = $1 AND p.status_geral = 'PROCESSANDO'
+            ORDER BY p.data_pedido DESC
+        `, [req.session.user.id]);
+
+        // Itens em produção
+        const itensProducao = await client.query(`
+            SELECT pri.*, p.nome_produto, p.imagem_url, pd.id_pedido
+            FROM producao_itens pri
+            INNER JOIN produtos p ON pri.id_produto = p.id_produto
+            INNER JOIN pedidos pd ON pri.id_pedido = pd.id_pedido
+            WHERE pd.idusuarios = $1 AND pri.status_maquina != 'COMPLETED'
+            ORDER BY pri.criado_em DESC
+        `, [req.session.user.id]);
+
+        client.release();
+
+        res.json({
+            pedidos_em_producao: pedidosProducao.rows,
+            itens_em_producao: itensProducao.rows,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('Erro no monitoramento de produção:', error);
+        res.status(500).json({ erro: 'Erro no monitoramento' });
+    }
+});
+
+
+//testes
+
 // Teste rápido - adicione temporariamente no server.js
 app.get('/api/teste-maquina', async (req, res) => {
     try {
@@ -781,6 +1016,151 @@ app.get('/api/teste-maquina', async (req, res) => {
         res.json({ status: 'Conexão OK', dados: status });
     } catch (error) {
         res.status(500).json({ erro: 'Falha na conexão', detalhes: error.message });
+    }
+});
+
+// server.js - adicione antes do app.listen()
+app.get('/api/teste-conexao-maquina', async (req, res) => {
+    try {
+        console.log('🧪 Testando conexão com Queue Smart 4.0...');
+        
+        // Teste 1: Saúde da aplicação
+        const health = await queueSmart.request('/saude');
+        console.log('✅ Saúde da máquina:', health);
+
+        // Teste 2: Status da fila
+        const status = await queueSmart.statusMaquina();
+        console.log('✅ Status da fila:', status);
+
+        // Teste 3: Listar itens na fila
+        const itens = await queueSmart.request('/fila/itens?limit=5');
+        console.log('✅ Itens na fila:', itens.items.length);
+
+        res.json({
+            sucesso: true,
+            mensagem: 'Conexão com Queue Smart 4.0 estabelecida com sucesso!',
+            dados: {
+                saúde: health,
+                status_fila: status,
+                itens_na_fila: itens.items.length
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Falha no teste de conexão:', error);
+        res.status(500).json({
+            sucesso: false,
+            erro: 'Falha na conexão com Queue Smart 4.0',
+            detalhes: error.message,
+            dica: 'Verifique se a Queue Smart 4.0 está rodando na porta 3000'
+        });
+    }
+});
+
+// server.js - rota para testar envio de pedido
+app.post('/api/teste-envio-pedido', autenticar, async (req, res) => {
+    try {
+        console.log('🧪 Testando envio de pedido para máquina...');
+
+        // Dados de teste
+        const pedidoTeste = {
+            id_pedido: 999,
+            idusuarios: req.session.user.id,
+            total: 150.50
+        };
+
+        const produtoTeste = {
+            id_produto: 1,
+            nome_produto: 'Caixa Personalizada Teste'
+        };
+
+        const configuracaoTeste = {
+            tamanho: 'M',
+            corDentro: 'Azul',
+            corFora: 'Preto',
+            material: 'Nylon',
+            estampa: 'Estrelas'
+        };
+
+        console.log('📤 Enviando pedido de teste...');
+        const resultado = await queueSmart.enviarPedidoParaMaquina(
+            pedidoTeste,
+            produtoTeste,
+            configuracaoTeste
+        );
+
+        res.json({
+            sucesso: true,
+            mensagem: 'Pedido de teste enviado com sucesso!',
+            dados: {
+                item_id_maquina: resultado.id,
+                configuracao_enviada: configuracaoTeste,
+                payload_gerado: {
+                    orderId: `PED-${pedidoTeste.id_pedido}-${Date.now()}`,
+                    andares: 2, // M = 2 andares
+                    materialExterno: 'PLASTICO_PRETO',
+                    materialInterno: 'PLASTICO_AZUL',
+                    tipoMaterial: 'NYLON',
+                    padrao: 'PADRAO_ESTRELAS'
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Falha no envio do pedido teste:', error);
+        res.status(500).json({
+            sucesso: false,
+            erro: 'Falha ao enviar pedido para máquina',
+            detalhes: error.message
+        });
+    }
+});
+
+// server.js - rota para testar callback manualmente
+app.post('/api/teste-callback-manual', async (req, res) => {
+    try {
+        console.log('🧪 Testando callback manual...');
+
+        // Simula um callback da máquina
+        const callbackSimulado = {
+            itemId: '12345-test',
+            status: 'PROCESSING',
+            stage: 'CORTE',
+            progress: 25,
+            payload: {
+                orderId: 'PED-999-123456789',
+                pedidoInfo: {
+                    id_pedido: 999,
+                    id_usuario: 1,
+                    total: 150.50
+                }
+            }
+        };
+
+        console.log('📨 Simulando callback:', callbackSimulado);
+
+        // Chama a rota de callback como se fosse a máquina
+        const response = await fetch('http://localhost:3001/api/smart4-callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(callbackSimulado)
+        });
+
+        const resultado = await response.json();
+
+        res.json({
+            sucesso: true,
+            mensagem: 'Callback simulado enviado!',
+            resposta: resultado
+        });
+
+    } catch (error) {
+        console.error('❌ Falha no teste de callback:', error);
+        res.status(500).json({
+            sucesso: false,
+            erro: 'Falha no teste de callback',
+            detalhes: error.message
+        });
     }
 });
 

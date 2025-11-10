@@ -1,5 +1,4 @@
 const { Pool } = require("pg");
-// const bcrypt = require("bcrypt"); // removido porque não vamos usar
 require("dotenv").config();
 
 // Cria um pool de conexões com o PostgreSQL usando variáveis de ambiente (.env)
@@ -11,44 +10,44 @@ const pool = new Pool({
   port: process.env.PORT_NUMBER,
 });
 
-// Insere um usuário no banco (sem criptografar a senha)
+// ==========================================
+// 👤 FUNÇÕES DE USUÁRIO
+// ==========================================
+
 async function insertUser(user) {
   const client = await pool.connect();
 
-const sql = `
-  INSERT INTO usuarios 
-  (nome_usuario, email_user, senhauser, cep, estado_cidade, nome_rua, complemento, numero, referencia) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-  RETURNING *
-`;
-const values = [
-  user.nome_usuario,
-  user.email_user,
-  user.senhauser,
-  user.cep, 
-  user.estado_cidade,
-  user.nome_rua,
-  user.complemento,
-  user.numero,
-  user.referencia
-];
-
+  const sql = `
+    INSERT INTO usuarios 
+    (nome_usuario, email_user, senhauser, cep, estado_cidade, nome_rua, complemento, numero, referencia) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    RETURNING *
+  `;
+  const values = [
+    user.nome_usuario,
+    user.email_user,
+    user.senhauser,
+    user.cep, 
+    user.estado_cidade,
+    user.nome_rua,
+    user.complemento,
+    user.numero,
+    user.referencia
+  ];
 
   try {
     const result = await client.query(sql, values);
-    return result.rows[0]; // retorna o usuário recém-criado
+    return result.rows[0];
   } catch (error) {
-    if (error.code === "23505") { // erro de chave duplicada (email já existe)
+    if (error.code === "23505") {
       throw new Error("Email já cadastrado");
     }
     throw error;
   } finally {
-    client.release(); // libera a conexão
+    client.release();
   }
 }
 
-
-// Busca usuário por e-mail e compara a senha (login) sem bcrypt
 async function selectUser(email_user, senhauser) {
   const sql = "SELECT * FROM usuarios WHERE email_user = $1 AND senhauser = $2";
   const client = await pool.connect();
@@ -58,7 +57,6 @@ async function selectUser(email_user, senhauser) {
     if (result.rows.length > 0) {
       const { senhauser, ...userWithoutPassword } = result.rows[0];
       console.log("Usuário encontrado=====>>>>>>> ", userWithoutPassword);
-      
       return userWithoutPassword;
     }
     return null;
@@ -100,14 +98,11 @@ async function updateUser(email, user) {
   }
 }
 
-
-
-
 async function getUserByEmail(email_user) {
   const client = await pool.connect();
   try {
     const result = await client.query(
-      'SELECT idusuarios, nome_usuario, email_user FROM usuarios WHERE email_user = $1', // ✅ idusuarios (sem o 's' extra)
+      'SELECT idusuarios, nome_usuario, email_user FROM usuarios WHERE email_user = $1',
       [email_user]
     );
     if (result.rows.length > 0) {
@@ -119,11 +114,10 @@ async function getUserByEmail(email_user) {
   }
 }
 
+// ==========================================
+// 📦 FUNÇÕES DE CATEGORIAS
+// ==========================================
 
-
-
-
-// Função para buscar todas as categorias
 async function selectAllCategories() {
   const client = await pool.connect();
   try {
@@ -137,7 +131,6 @@ async function selectAllCategories() {
   }
 }
 
-// Função para buscar categoria por nome
 async function selectCategoryByName(nome_categoria) {
   const client = await pool.connect();
   try {
@@ -151,18 +144,10 @@ async function selectCategoryByName(nome_categoria) {
   }
 }
 
+// ==========================================
+// 🛍️ FUNÇÕES DE PRODUTOS
+// ==========================================
 
-
-
-
-
-
-
-
-
-// db.js - Corrigir TODAS as funções para usar id_produto
-
-// Função para inserir produto (já está correta)
 async function insertProduct(produto) {
   console.log("🛠️ Inserindo produto no banco:", produto);
   try {
@@ -190,8 +175,6 @@ async function insertProduct(produto) {
   }
 }
 
-
-// Função para buscar todos os produtos
 async function selectAllProducts() {
   const client = await pool.connect();
   try {
@@ -210,7 +193,6 @@ async function selectAllProducts() {
   }
 }
 
-// Função para buscar produto por ID
 async function selectProductById(id) {
   const client = await pool.connect();
   try {
@@ -229,7 +211,6 @@ async function selectProductById(id) {
   }
 }
 
-// Função para atualizar produto
 async function updateProduct(id, product) {
   const client = await pool.connect();
   
@@ -282,7 +263,6 @@ async function updateProduct(id, product) {
   }
 }
 
-// Função para deletar produto (NOVA - corrigida)
 async function deleteProduct(id) {
   const client = await pool.connect();
   try {
@@ -304,236 +284,6 @@ async function deleteProduct(id) {
   }
 }
 
-// REMOVER as funções duplicadas do frontend que estavam no db.js
-// (manter apenas as funções de banco de dados)
-
-
-// Funções para o carrinho
-async function getCarrinhoByUserId(idusuarios) {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(`
-      SELECT c.*, p.nome_produto, p.descricao, p.valor_produto, p.imagem_url, p.estoque
-      FROM carrinho c
-      INNER JOIN produtos p ON c.id_produto = p.id_produto
-      WHERE c.idusuarios = $1
-      ORDER BY c.data_adicionado DESC
-    `, [idusuarios]);
-    return result.rows;
-  } catch (error) {
-    console.error('Erro ao buscar carrinho:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-// ✅ CORRIGIDA: Função para adicionar item ao carrinho
-async function addToCarrinho(carrinhoItem) {
-  const client = await pool.connect();
-  try {
-    console.log('🛒 Adicionando item ao carrinho:', carrinhoItem);
-    
-    // Verificar se o produto existe
-    const produtoCheck = await client.query(
-      'SELECT * FROM produtos WHERE id_produto = $1',
-      [carrinhoItem.id_produto]
-    );
-    
-    if (produtoCheck.rowCount === 0) {
-      throw new Error('Produto não encontrado');
-    }
-
-    // Verificar se o item já existe no carrinho
-    const existingItem = await client.query(
-      `SELECT * FROM carrinho 
-       WHERE idusuarios = $1 AND id_produto = $2 AND tamanho = $3 AND cor = $4`,
-      [carrinhoItem.idusuarios, carrinhoItem.id_produto, carrinhoItem.tamanho, carrinhoItem.cor]
-    );
-
-    if (existingItem.rows.length > 0) {
-      // Atualiza a quantidade se já existir
-      console.log('📦 Item já existe no carrinho, atualizando quantidade...');
-      const result = await client.query(
-        `UPDATE carrinho SET quantidade = quantidade + $1 
-         WHERE idusuarios = $2 AND id_produto = $3 AND tamanho = $4 AND cor = $5
-         RETURNING *`,
-        [carrinhoItem.quantidade, carrinhoItem.idusuarios, carrinhoItem.id_produto, carrinhoItem.tamanho, carrinhoItem.cor]
-      );
-      return result.rows[0];
-    } else {
-      // Insere novo item
-      console.log('🆕 Inserindo novo item no carrinho...');
-      const result = await client.query(
-        `INSERT INTO carrinho (idusuarios, id_produto, quantidade, tamanho, cor) 
-         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-        [carrinhoItem.idusuarios, carrinhoItem.id_produto, carrinhoItem.quantidade, carrinhoItem.tamanho, carrinhoItem.cor]
-      );
-      return result.rows[0];
-    }
-  } catch (error) {
-    console.error('❌ Erro ao adicionar ao carrinho:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-async function updateCarrinhoItem(id_carrinho, quantidade) {
-  const client = await pool.connect();
-  try {
-    if (quantidade <= 0) {
-      // Remove o item se a quantidade for 0 ou menos
-      await client.query('DELETE FROM carrinho WHERE id_carrinho = $1', [id_carrinho]);
-      return { mensagem: 'Item removido do carrinho' };
-    } else {
-      // Atualiza a quantidade
-      const result = await client.query(
-        'UPDATE carrinho SET quantidade = $1 WHERE id_carrinho = $2 RETURNING *',
-        [quantidade, id_carrinho]
-      );
-      return result.rows[0];
-    }
-  } catch (error) {
-    console.error('Erro ao atualizar carrinho:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-async function removeFromCarrinho(id_carrinho) {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(
-      'DELETE FROM carrinho WHERE id_carrinho = $1 RETURNING *',
-      [id_carrinho]
-    );
-    return result.rows[0];
-  } catch (error) {
-    console.error('Erro ao remover do carrinho:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
- async function clearCarrinho(idusuarios) {
-  const query = 'DELETE FROM carrinho WHERE idusuarios = $1';
-  await pool.query(query, [idusuarios]);
-}
-
-
-
-
-
-// Funções para pedidos
-async function createPedido(pedidoData) {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
-    // Cria o pedido
-    const pedidoResult = await client.query(
-      `INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [pedidoData.idusuarios, pedidoData.total, pedidoData.metodo_pagamento, pedidoData.endereco_entrega]
-    );
-
-    const pedido = pedidoResult.rows[0];
-
-    // Adiciona os itens do pedido
-    for (const item of pedidoData.itens) {
-      await client.query(
-        `INSERT INTO pedido_itens (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor) 
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [pedido.id_pedido, item.id_produto, item.quantidade, item.preco_unitario, item.tamanho, item.cor]
-      );
-
-      // Atualiza o estoque do produto
-      await client.query(
-        'UPDATE produtos SET estoque = estoque - $1 WHERE id_produto = $2',
-        [item.quantidade, item.id_produto]
-      );
-    }
-
-    // Limpa o carrinho após criar o pedido
-    await client.query('DELETE FROM carrinho WHERE idusuarios = $1', [pedidoData.idusuarios]);
-
-    await client.query('COMMIT');
-    return pedido;
-
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Erro ao criar pedido:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-async function getPedidosByUserId(idusuarios) {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(`
-      SELECT p.*, 
-             JSON_AGG(
-               JSON_BUILD_OBJECT(
-                 'nome_produto', prod.nome_produto,
-                 'quantidade', pi.quantidade,
-                 'preco_unitario', pi.preco_unitario,
-                 'tamanho', pi.tamanho,
-                 'cor', pi.cor,
-                 'imagem_url', prod.imagem_url
-               )
-             ) as itens
-      FROM pedidos p
-      LEFT JOIN pedido_itens pi ON p.id_pedido = pi.id_pedido
-      LEFT JOIN produtos prod ON pi.id_produto = prod.id_produto
-      WHERE p.idusuarios = $1
-      GROUP BY p.id_pedido
-      ORDER BY p.data_pedido DESC
-    `, [idusuarios]);
-    return result.rows;
-  } catch (error) {
-    console.error('Erro ao buscar pedidos:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-
-async function selectAllCategories() {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM categorias ORDER BY nome_categoria');
-    return result.rows;
-  } catch (error) {
-    console.error('Erro ao buscar categorias:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-async function selectCategoryByName(nome_categoria) {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM categorias WHERE nome_categoria = $1', [nome_categoria]);
-    return result.rows[0];
-  } catch (error) {
-    console.error('Erro ao buscar categoria:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-
-//-----------------coisa nova que provavelmente vai dar merda-----------------//
-
-// Busca todos os produtos
 async function getAllProducts() {
   const client = await pool.connect();
   try {
@@ -553,7 +303,6 @@ async function getAllProducts() {
   }
 }
 
-// Busca produto por ID
 async function getProductById(id_produto) {
   const client = await pool.connect();
   try {
@@ -573,7 +322,6 @@ async function getProductById(id_produto) {
   }
 }
 
-// Atualiza produto
 async function updateProductById(id_produto, product) {
   const client = await pool.connect();
   try {
@@ -630,7 +378,6 @@ async function updateProductById(id_produto, product) {
   }
 }
 
-// Deleta produto por ID
 async function deleteProductById(id_produto) {
   const client = await pool.connect();
   try {
@@ -652,10 +399,115 @@ async function deleteProductById(id_produto) {
   }
 }
 
+// ==========================================
+// 🛒 FUNÇÕES DO CARRINHO
+// ==========================================
 
-//-----------------coisa nova que provavelmente vai dar merda-----------------//
+async function getCarrinhoByUserId(idusuarios) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT c.*, p.nome_produto, p.descricao, p.valor_produto, p.imagem_url, p.estoque
+      FROM carrinho c
+      INNER JOIN produtos p ON c.id_produto = p.id_produto
+      WHERE c.idusuarios = $1
+      ORDER BY c.data_adicionado DESC
+    `, [idusuarios]);
+    return result.rows;
+  } catch (error) {
+    console.error('Erro ao buscar carrinho:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
 
-// Recupera itens do carrinho de um usuário
+async function addToCarrinho(carrinhoItem) {
+  const client = await pool.connect();
+  try {
+    console.log('🛒 Adicionando item ao carrinho:', carrinhoItem);
+    
+    const produtoCheck = await client.query(
+      'SELECT * FROM produtos WHERE id_produto = $1',
+      [carrinhoItem.id_produto]
+    );
+    
+    if (produtoCheck.rowCount === 0) {
+      throw new Error('Produto não encontrado');
+    }
+
+    const existingItem = await client.query(
+      `SELECT * FROM carrinho 
+       WHERE idusuarios = $1 AND id_produto = $2 AND tamanho = $3 AND cor = $4`,
+      [carrinhoItem.idusuarios, carrinhoItem.id_produto, carrinhoItem.tamanho, carrinhoItem.cor]
+    );
+
+    if (existingItem.rows.length > 0) {
+      const result = await client.query(
+        `UPDATE carrinho SET quantidade = quantidade + $1 
+         WHERE idusuarios = $2 AND id_produto = $3 AND tamanho = $4 AND cor = $5
+         RETURNING *`,
+        [carrinhoItem.quantidade, carrinhoItem.idusuarios, carrinhoItem.id_produto, carrinhoItem.tamanho, carrinhoItem.cor]
+      );
+      return result.rows[0];
+    } else {
+      const result = await client.query(
+        `INSERT INTO carrinho (idusuarios, id_produto, quantidade, tamanho, cor, configuracao) 
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+        [carrinhoItem.idusuarios, carrinhoItem.id_produto, carrinhoItem.quantidade, carrinhoItem.tamanho, carrinhoItem.cor, carrinhoItem.configuracao || {}]
+      );
+      return result.rows[0];
+    }
+  } catch (error) {
+    console.error('❌ Erro ao adicionar ao carrinho:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function updateCarrinhoItem(id_carrinho, quantidade) {
+  const client = await pool.connect();
+  try {
+    if (quantidade <= 0) {
+      await client.query('DELETE FROM carrinho WHERE id_carrinho = $1', [id_carrinho]);
+      return { mensagem: 'Item removido do carrinho' };
+    } else {
+      const result = await client.query(
+        'UPDATE carrinho SET quantidade = $1 WHERE id_carrinho = $2 RETURNING *',
+        [quantidade, id_carrinho]
+      );
+      return result.rows[0];
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar carrinho:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function removeFromCarrinho(id_carrinho) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'DELETE FROM carrinho WHERE id_carrinho = $1 RETURNING *',
+      [id_carrinho]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error('Erro ao remover do carrinho:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function clearCarrinho(idusuarios) {
+  const query = 'DELETE FROM carrinho WHERE idusuarios = $1';
+  await pool.query(query, [idusuarios]);
+}
+
 async function getCarrinhoItemsByUserId(idusuarios) {
   const client = await pool.connect();
   try {
@@ -676,8 +528,7 @@ async function getCarrinhoItemsByUserId(idusuarios) {
   }
 }
 
-// Adiciona ou incrementa item no carrinho
-async function addOrUpdateCarrinhoItem({ idusuarios, id_produto, quantidade, tamanho, cor }) {
+async function addOrUpdateCarrinhoItem({ idusuarios, id_produto, quantidade, tamanho, cor, configuracao = {} }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -694,23 +545,24 @@ async function addOrUpdateCarrinhoItem({ idusuarios, id_produto, quantidade, tam
     if (existing.rows.length > 0) {
       const updateSql = `
         UPDATE carrinho
-        SET quantidade = quantidade + $1
-        WHERE idusuarios = $2
-          AND id_produto = $3
-          AND tamanho    = $4
-          AND cor        = $5
+        SET quantidade = quantidade + $1,
+            configuracao = $2
+        WHERE idusuarios = $3
+          AND id_produto = $4
+          AND tamanho    = $5
+          AND cor        = $6
         RETURNING *
       `;
-      const updateResult = await client.query(updateSql, [quantidade, idusuarios, id_produto, tamanho, cor]);
+      const updateResult = await client.query(updateSql, [quantidade, configuracao, idusuarios, id_produto, tamanho, cor]);
       await client.query('COMMIT');
       return updateResult.rows[0];
     } else {
       const insertSql = `
-        INSERT INTO carrinho (idusuarios, id_produto, quantidade, tamanho, cor)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO carrinho (idusuarios, id_produto, quantidade, tamanho, cor, configuracao)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
       `;
-      const insertResult = await client.query(insertSql, [idusuarios, id_produto, quantidade, tamanho, cor]);
+      const insertResult = await client.query(insertSql, [idusuarios, id_produto, quantidade, tamanho, cor, configuracao]);
       await client.query('COMMIT');
       return insertResult.rows[0];
     }
@@ -723,7 +575,6 @@ async function addOrUpdateCarrinhoItem({ idusuarios, id_produto, quantidade, tam
   }
 }
 
-// Atualiza item de carrinho (quantidade) ou remove se quantidade <=0
 async function updateCarrinhoItemQuantity(id_carrinho, quantidade) {
   const client = await pool.connect();
   try {
@@ -759,7 +610,6 @@ async function updateCarrinhoItemQuantity(id_carrinho, quantidade) {
   }
 }
 
-// Remove item especificado do carrinho
 async function removeCarrinhoItem(id_carrinho) {
   const client = await pool.connect();
   try {
@@ -781,7 +631,6 @@ async function removeCarrinhoItem(id_carrinho) {
   }
 }
 
-// Limpa todo o carrinho de um usuário
 async function clearCarrinhoByUserId(idusuarios) {
   const client = await pool.connect();
   try {
@@ -791,7 +640,7 @@ async function clearCarrinhoByUserId(idusuarios) {
       RETURNING *
     `;
     const result = await client.query(sql, [idusuarios]);
-    return result.rows; // pode retornar array vazio se não tinha itens
+    return result.rows;
   } catch (error) {
     console.error("Erro ao limpar carrinho:", error);
     throw error;
@@ -800,27 +649,98 @@ async function clearCarrinhoByUserId(idusuarios) {
   }
 }
 
-//------------------coisa nova que provavelmente vai dar merda-----------------//
+// ==========================================
+// 📋 FUNÇÕES DE PEDIDOS
+// ==========================================
 
-// Cria um pedido (checkout) para o usuário, com itens e atualiza estoque
+async function createPedido(pedidoData) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const pedidoResult = await client.query(
+      `INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega) 
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [pedidoData.idusuarios, pedidoData.total, pedidoData.metodo_pagamento, pedidoData.endereco_entrega]
+    );
+
+    const pedido = pedidoResult.rows[0];
+
+    for (const item of pedidoData.itens) {
+      await client.query(
+        `INSERT INTO pedido_itens (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor, configuracao) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [pedido.id_pedido, item.id_produto, item.quantidade, item.preco_unitario, item.tamanho, item.cor, item.configuracao || {}]
+      );
+
+      await client.query(
+        'UPDATE produtos SET estoque = estoque - $1 WHERE id_produto = $2',
+        [item.quantidade, item.id_produto]
+      );
+    }
+
+    await client.query('DELETE FROM carrinho WHERE idusuarios = $1', [pedidoData.idusuarios]);
+
+    await client.query('COMMIT');
+    return pedido;
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao criar pedido:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function getPedidosByUserId(idusuarios) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT p.*, 
+             JSON_AGG(
+               JSON_BUILD_OBJECT(
+                 'nome_produto', prod.nome_produto,
+                 'quantidade', pi.quantidade,
+                 'preco_unitario', pi.preco_unitario,
+                 'tamanho', pi.tamanho,
+                 'cor', pi.cor,
+                 'imagem_url', prod.imagem_url,
+                 'configuracao', pi.configuracao
+               )
+             ) as itens
+      FROM pedidos p
+      LEFT JOIN pedido_itens pi ON p.id_pedido = pi.id_pedido
+      LEFT JOIN produtos prod ON pi.id_produto = prod.id_produto
+      WHERE p.idusuarios = $1
+      GROUP BY p.id_pedido
+      ORDER BY p.data_pedido DESC
+    `, [idusuarios]);
+    return result.rows;
+  } catch (error) {
+    console.error('Erro ao buscar pedidos:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 async function createPedidoWithItems({ idusuarios, total, metodo_pagamento, endereco_entrega, itens }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // 1) Inserir o pedido
     const pedidoSql = `
-      INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega, status_geral)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    const pedidoRes = await client.query(pedidoSql, [idusuarios, total, metodo_pagamento, endereco_entrega]);
+    const pedidoRes = await client.query(pedidoSql, [idusuarios, total, metodo_pagamento, endereco_entrega, 'PROCESSANDO']);
     const pedido = pedidoRes.rows[0];
 
-    // 2) Inserir cada item e atualizar estoque
     const itemInsertSql = `
-      INSERT INTO pedido_itens (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO pedido_itens (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor, configuracao, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `;
     const estoqueUpdateSql = `
       UPDATE produtos
@@ -835,12 +755,13 @@ async function createPedidoWithItems({ idusuarios, total, metodo_pagamento, ende
         item.quantidade,
         item.preco_unitario,
         item.tamanho,
-        item.cor
+        item.cor,
+        item.configuracao || {},
+        'PENDENTE'
       ]);
       await client.query(estoqueUpdateSql, [item.quantidade, item.id_produto]);
     }
 
-    // 3) Limpar carrinho do usuário
     const clearCarrinhoSql = `
       DELETE FROM carrinho
       WHERE idusuarios = $1
@@ -858,42 +779,6 @@ async function createPedidoWithItems({ idusuarios, total, metodo_pagamento, ende
   }
 }
 
-// Lista pedidos de um usuário, já agregando itens
-async function getPedidosByUserId(idusuarios) {
-  const client = await pool.connect();
-  try {
-    const sql = `
-      SELECT p.*,
-             JSON_AGG(
-               JSON_BUILD_OBJECT(
-                 'nome_produto', prod.nome_produto,
-                 'quantidade',   pi.quantidade,
-                 'preco_unitario', pi.preco_unitario,
-                 'tamanho',      pi.tamanho,
-                 'cor',          pi.cor,
-                 'imagem_url',   prod.imagem_url
-               )
-             ) AS itens
-      FROM pedidos p
-      LEFT JOIN pedido_itens pi ON p.id_pedido = pi.id_pedido
-      LEFT JOIN produtos prod ON pi.id_produto = prod.id_produto
-      WHERE p.idusuarios = $1
-      GROUP BY p.id_pedido
-      ORDER BY p.data_pedido DESC
-    `;
-    const result = await client.query(sql, [idusuarios]);
-    return result.rows;
-  } catch (error) {
-    console.error("Erro ao buscar pedidos do usuário:", error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
-//-------------------coisa nova que provavelmente vai dar merda-----------------//
-
-// (Opcional) Atualiza o endereço de entrega de um pedido (ou de perfil do usuário)
 async function updateEnderecoEntrega(id_pedido, endereco_entrega) {
   const client = await pool.connect();
   try {
@@ -913,43 +798,220 @@ async function updateEnderecoEntrega(id_pedido, endereco_entrega) {
   }
 }
 
+// ==========================================
+// 🏭 FUNÇÕES DE PRODUÇÃO (NOVAS)
+// ==========================================
 
+async function createPedidoComRastreamento(pedidoData) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const pedidoResult = await client.query(
+      `INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega, status_geral) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [pedidoData.idusuarios, pedidoData.total, pedidoData.metodo_pagamento, pedidoData.endereco_entrega, 'PROCESSANDO']
+    );
+
+    const pedido = pedidoResult.rows[0];
+
+    for (const item of pedidoData.itens) {
+      await client.query(
+        `INSERT INTO pedido_itens (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor, configuracao, status) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [pedido.id_pedido, item.id_produto, item.quantidade, item.preco_unitario, item.tamanho, item.cor, item.configuracao || {}, 'PENDENTE']
+      );
+
+      await client.query(
+        'UPDATE produtos SET estoque = estoque - $1 WHERE id_produto = $2',
+        [item.quantidade, item.id_produto]
+      );
+    }
+
+    await client.query('DELETE FROM carrinho WHERE idusuarios = $1', [pedidoData.idusuarios]);
+
+    await client.query('COMMIT');
+    return pedido;
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao criar pedido com rastreamento:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function registrarItemProducao(dadosItem) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `INSERT INTO producao_itens 
+       (id_pedido, id_produto, item_index, item_unit, item_id_maquina, order_id, status_maquina, slot_expedicao) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+       RETURNING *`,
+      [
+        dadosItem.id_pedido,
+        dadosItem.id_produto,
+        dadosItem.item_index,
+        dadosItem.item_unit,
+        dadosItem.item_id_maquina,
+        dadosItem.order_id,
+        'PENDENTE',
+        dadosItem.slot_expedicao || `SLOT-${Math.floor(Math.random() * 20) + 1}`
+      ]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error('Erro ao registrar item de produção:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function atualizarStatusProducao(id_producao, novosDados) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `UPDATE producao_itens 
+       SET status_maquina = $1, estagio_maquina = $2, progresso_maquina = $3, 
+           slot_expedicao = $4, atualizado_em = NOW()
+       WHERE id_producao = $5 
+       RETURNING *`,
+      [
+        novosDados.status_maquina,
+        novosDados.estagio_maquina,
+        novosDados.progresso_maquina,
+        novosDados.slot_expedicao,
+        id_producao
+      ]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error('Erro ao atualizar status de produção:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function getStatusDetalhadoPedido(id_pedido) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT 
+        p.*,
+        pi.*,
+        prod.nome_produto,
+        prod.imagem_url,
+        pri.id_producao,
+        pri.item_index,
+        pri.item_unit,
+        pri.item_id_maquina,
+        pri.order_id,
+        pri.status_maquina,
+        pri.estagio_maquina,
+        pri.progresso_maquina,
+        pri.slot_expedicao,
+        pri.criado_em as producao_criado_em,
+        pri.atualizado_em as producao_atualizado_em
+      FROM pedidos p
+      LEFT JOIN pedido_itens pi ON p.id_pedido = pi.id_pedido
+      LEFT JOIN produtos prod ON pi.id_produto = prod.id_produto
+      LEFT JOIN producao_itens pri ON p.id_pedido = pri.id_pedido AND pi.id_produto = pri.id_produto AND pi.id_pedido_item = pri.item_index
+      WHERE p.id_pedido = $1
+      ORDER BY pi.id_pedido_item, pri.item_index, pri.item_unit
+    `, [id_pedido]);
+    
+    return result.rows;
+  } catch (error) {
+    console.error('Erro ao buscar status detalhado do pedido:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function verificarPedidoCompleto(id_pedido) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT 
+        COUNT(*) as total_itens,
+        SUM(CASE WHEN status_maquina = 'COMPLETED' THEN 1 ELSE 0 END) as itens_prontos
+      FROM producao_itens 
+      WHERE id_pedido = $1
+    `, [id_pedido]);
+    
+    const { total_itens, itens_prontos } = result.rows[0];
+    const completo = total_itens > 0 && total_itens === itens_prontos;
+    
+    if (completo) {
+      await client.query(
+        'UPDATE pedidos SET status_geral = $1, atualizado_em = NOW() WHERE id_pedido = $2',
+        ['COMPLETO', id_pedido]
+      );
+    }
+    
+    return { completo, total_itens: parseInt(total_itens), itens_prontos: parseInt(itens_prontos) };
+  } catch (error) {
+    console.error('Erro ao verificar pedido completo:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// ==========================================
+// 📦 EXPORTAÇÕES
+// ==========================================
 
 module.exports = {
   pool,
-  selectCategoryByName,
-  selectAllCategories,
-  insertProduct,
-  selectAllProducts,
-updateProductById,
-  updateProduct,
-  deleteProduct, // Adicionar a função corrigida
-  selectAllCategories,
-  selectCategoryByName,
+  // Usuários
   insertUser,
   selectUser,
   updateUser,
   getUserByEmail,
-    getCarrinhoByUserId,
+  
+  // Categorias
+  selectAllCategories,
+  selectCategoryByName,
+  
+  // Produtos
+  insertProduct,
+  selectAllProducts,
+  selectProductById,
+  updateProduct,
+  updateProductById,
+  deleteProduct,
+  deleteProductById,
+  getAllProducts,
+  getProductById,
+  
+  // Carrinho
+  getCarrinhoByUserId,
   addToCarrinho,
   updateCarrinhoItem,
   removeFromCarrinho,
   clearCarrinho,
-  createPedido,
-  selectProductById,
-  getPedidosByUserId,
-  getAllProducts,
-  deleteProductById,
-  getProductById,
-
-  clearCarrinhoByUserId,
   getCarrinhoItemsByUserId,
   addOrUpdateCarrinhoItem,
   updateCarrinhoItemQuantity,
   removeCarrinhoItem,
-  createPedidoWithItems,
+  clearCarrinhoByUserId,
+  
+  // Pedidos
+  createPedido,
   getPedidosByUserId,
- updateEnderecoEntrega
-
-  // REMOVER: editSelectedProduct, deleteSelectedProducts (são do frontend)
+  createPedidoWithItems,
+  updateEnderecoEntrega,
+  
+  // Produção (Novas)
+  createPedidoComRastreamento,
+  registrarItemProducao,
+  atualizarStatusProducao,
+  getStatusDetalhadoPedido,
+  verificarPedidoCompleto
 };
