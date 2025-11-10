@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import './Header.css';
 import { useTheme } from '../ThemeContext';
-import { Link } from 'react-router-dom';
 import Categorias from "./Categorias";
+import { useNavigate, Link } from 'react-router-dom';
 import ModalIdiomas from './ModalIdiomas';
 import { useTranslation } from 'react-i18next';
 import "../i18n"
@@ -23,6 +23,16 @@ const Header = () => {
       setSearchValue('');
     }
   };
+
+const navigate = useNavigate();
+
+const handleSearch = (e) => {
+  e.preventDefault();
+  if (searchValue.trim() !== "") {
+    navigate(`/produtos?search=${encodeURIComponent(searchValue.trim())}`);
+    setIsCollapsed(true);
+  }
+};
 
   const SearchIcon = () => (
     <svg viewBox="0 0 512 512" height="1em" xmlns="http://www.w3.org/2000/svg">
@@ -84,18 +94,18 @@ const Header = () => {
                 className="search-checkbox" 
                 type="checkbox" 
               /> 
-              <div className={`search-box ${isCollapsed ? 'collapsed' : ''}`}>
-                <div className="search-icon-container">
-                  <SearchIcon className="search-icon" />
-                </div>
-                <input 
-                  className="search-input" 
-                  placeholder="Pesquisar produtos..." 
-                  type="text"
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                />
-              </div>
+             <form onSubmit={handleSearch} className={`search-box ${isCollapsed ? 'collapsed' : ''}`}>
+  <div className="search-icon-container">
+    <SearchIcon className="search-icon" />
+  </div>
+  <input 
+    className="search-input" 
+    placeholder="Pesquisar produtos..." 
+    type="text"
+    value={searchValue}
+    onChange={(e) => setSearchValue(e.target.value)}
+  />
+</form>
             </div>
             <button className="cart-btn">
               <Link to={"/car"} className="cart-link">

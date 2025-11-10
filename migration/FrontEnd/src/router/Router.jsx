@@ -12,6 +12,7 @@ import Loja from "../pages/Loja.jsx";
 import Produtos from "../pages/Produtos.jsx";
 import Endereco from "../pages/Endereco.jsx";
 import AvaliacaoProduto from "../pages/AvaliacaoProduto.jsx";
+// import AvaliacaoProduto from "../pages/AvaliacaoProduto.jsx";
 import Testeidioma from "../pages/Testeidioma.jsx";
 import ChatBot from "../pages/ChatBot.jsx";
 
@@ -32,9 +33,12 @@ const router = createBrowserRouter([
     {path: "/endereco", element: <Endereco/>},
     {path: "/valiacao", element: <AvaliacaoProduto/>},
     {path: "/test", element: <Testeidioma/>},
-    {path: "/chatbot", element: <ChatBot />}
+    {path: "/chatbot", element: <ChatBot />},
     
 
+    {path: "/teste", element: <Testeidioma/>}
+    
+    
    
 ])
 
