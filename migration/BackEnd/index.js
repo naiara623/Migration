@@ -35,7 +35,13 @@ const {
   removeCarrinhoItem,
   createPedidoWithItems,
   updateEnderecoEntrega,
-  getUserByEmail // ADICIONAR ESTA FUNÇÃO QUE ESTÁ FALTANDO
+  getUserByEmail, // ADICIONAR ESTA FUNÇÃO QUE ESTÁ FALTANDO
+    // Produção (Novas)
+  createPedidoComRastreamento,
+  registrarItemProducao,
+  atualizarStatusProducao,
+  getStatusDetalhadoPedido,
+  verificarPedidoCompleto
 } = require("./db");
 // server.js - adicione no topo com os outros imports
 const QueueSmartIntegration = require('./queue-smart-integration');
@@ -914,27 +920,62 @@ app.post('/api/smart4-callback', async (req, res) => {
 
 // Rota para obter status detalhado do pedido
 app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
+    console.log(`🔍 [DEBUG] Iniciando busca de status para pedido: ${req.params.id}`);
+    console.log(`🔍 [DEBUG] Usuário autenticado:`, req.session.user);
+    
     try {
         const id_pedido = parseInt(req.params.id);
+        
+        if (isNaN(id_pedido)) {
+            console.log(`❌ [DEBUG] ID do pedido inválido: ${req.params.id}`);
+            return res.status(400).json({ erro: 'ID do pedido inválido' });
+        }
+
+        console.log(`🔍 [DEBUG] Buscando status detalhado para pedido: ${id_pedido}`);
+        
         const statusDetalhado = await getStatusDetalhadoPedido(id_pedido);
+        console.log(`✅ [DEBUG] Dados brutos retornados:`, statusDetalhado);
         
         // Verificar se o pedido pertence ao usuário
         const pedido = statusDetalhado[0];
-        if (!pedido || pedido.idusuarios !== req.session.user.id) {
+        if (!pedido) {
+            console.log(`❌ [DEBUG] Pedido ${id_pedido} não encontrado`);
             return res.status(404).json({ erro: 'Pedido não encontrado' });
+        }
+
+        console.log(`🔍 [DEBUG] Pedido encontrado - ID Usuário: ${pedido.idusuarios}, Sessão Usuário: ${req.session.user.id}`);
+        
+        if (pedido.idusuarios !== req.session.user.id) {
+            console.log(`❌ [DEBUG] Acesso não autorizado - Pedido pertence a outro usuário`);
+            return res.status(403).json({ erro: 'Acesso não autorizado a este pedido' });
         }
 
         // Agrupar por item do pedido
         const itensAgrupados = {};
-        statusDetalhado.forEach(item => {
-            if (!itensAgrupados[item.id_pedido_item]) {
-                itensAgrupados[item.id_pedido_item] = {
-                    ...item,
+        statusDetalhado.forEach((item, index) => {
+            console.log(`🔍 [DEBUG] Processando item ${index}:`, item);
+            
+            const itemKey = item.id_pedido_item || `item-${item.id_produto}-${index}`;
+            
+            if (!itensAgrupados[itemKey]) {
+                itensAgrupados[itemKey] = {
+                    id_pedido_item: item.id_pedido_item,
+                    id_produto: item.id_produto,
+                    nome_produto: item.nome_produto,
+                    descricao: item.descricao,
+                    imagem_url: item.imagem_url,
+                    quantidade: item.quantidade,
+                    preco_unitario: item.preco_unitario,
+                    tamanho: item.tamanho,
+                    cor: item.cor,
+                    configuracao: item.configuracao,
+                    item_status: item.item_status,
                     unidades: []
                 };
             }
+            
             if (item.id_producao) {
-                itensAgrupados[item.id_pedido_item].unidades.push({
+                itensAgrupados[itemKey].unidades.push({
                     id_producao: item.id_producao,
                     item_unit: item.item_unit,
                     status_maquina: item.status_maquina,
@@ -942,27 +983,42 @@ app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
                     progresso_maquina: item.progresso_maquina,
                     slot_expedicao: item.slot_expedicao,
                     item_id_maquina: item.item_id_maquina,
-                    order_id: item.order_id
+                    order_id: item.order_id,
+                    producao_criado_em: item.producao_criado_em,
+                    producao_atualizado_em: item.producao_atualizado_em
                 });
             }
         });
 
+        const resumo = await verificarPedidoCompleto(id_pedido);
+        console.log(`✅ [DEBUG] Resumo do pedido:`, resumo);
+
         const resultado = {
             pedido: {
                 id_pedido: pedido.id_pedido,
+                idusuarios: pedido.idusuarios,
                 status_geral: pedido.status_geral,
                 total: pedido.total,
-                data_pedido: pedido.data_pedido
+                metodo_pagamento: pedido.metodo_pagamento,
+                data_pedido: pedido.data_pedido,
+                atualizado_em: pedido.atualizado_em
             },
             itens: Object.values(itensAgrupados),
-            resumo: await verificarPedidoCompleto(id_pedido)
+            resumo: resumo
         };
 
+        console.log(`✅ [DEBUG] Status final retornado para pedido ${id_pedido}:`, resultado);
         res.json(resultado);
 
     } catch (error) {
-        console.error('Erro ao buscar status do pedido:', error);
-        res.status(500).json({ erro: 'Erro ao buscar status' });
+        console.error(`❌ [DEBUG] ERRO CRÍTICO ao buscar status do pedido ${req.params.id}:`, error);
+        console.error(`❌ [DEBUG] Stack trace:`, error.stack);
+        
+        res.status(500).json({ 
+            erro: 'Erro ao buscar status do pedido',
+            detalhes: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
@@ -1162,6 +1218,39 @@ app.post('/api/teste-callback-manual', async (req, res) => {
             detalhes: error.message
         });
     }
+});
+
+// Rota de teste para verificar pedido
+app.get('/api/debug/pedido/:id', autenticar, async (req, res) => {
+  try {
+    const id_pedido = parseInt(req.params.id);
+    
+    const client = await pool.connect();
+    
+    // Verificar pedido básico
+    const pedido = await client.query(
+      'SELECT * FROM pedidos WHERE id_pedido = $1',
+      [id_pedido]
+    );
+    
+    // Verificar itens do pedido
+    const itens = await client.query(
+      'SELECT * FROM pedido_itens WHERE id_pedido = $1',
+      [id_pedido]
+    );
+    
+    client.release();
+    
+    res.json({
+      pedido: pedido.rows[0] || null,
+      itens: itens.rows,
+      existe: pedido.rows.length > 0
+    });
+    
+  } catch (error) {
+    console.error('Erro no debug do pedido:', error);
+    res.status(500).json({ erro: error.message });
+  }
 });
 
 app.listen(port, () => {

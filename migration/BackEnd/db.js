@@ -899,34 +899,49 @@ async function atualizarStatusProducao(id_producao, novosDados) {
 async function getStatusDetalhadoPedido(id_pedido) {
   const client = await pool.connect();
   try {
+    console.log(`🔍 [DB] Buscando status detalhado para pedido: ${id_pedido}`);
+    
+    // Primeiro, verificar se o pedido existe
+    const pedidoCheck = await client.query(
+      'SELECT * FROM pedidos WHERE id_pedido = $1',
+      [id_pedido]
+    );
+    
+    if (pedidoCheck.rows.length === 0) {
+      throw new Error('Pedido não encontrado');
+    }
+
+    // Query simplificada para evitar problemas de JOIN
     const result = await client.query(`
       SELECT 
-        p.*,
-        pi.*,
+        p.id_pedido,
+        p.idusuarios,
+        p.total,
+        p.status_geral,
+        p.data_pedido,
+        
+        pi.id_item,
+        pi.id_produto,
+        pi.quantidade,
+        pi.preco_unitario,
+        pi.tamanho,
+        pi.cor,
+        
         prod.nome_produto,
-        prod.imagem_url,
-        pri.id_producao,
-        pri.item_index,
-        pri.item_unit,
-        pri.item_id_maquina,
-        pri.order_id,
-        pri.status_maquina,
-        pri.estagio_maquina,
-        pri.progresso_maquina,
-        pri.slot_expedicao,
-        pri.criado_em as producao_criado_em,
-        pri.atualizado_em as producao_atualizado_em
+        prod.imagem_url
+      
       FROM pedidos p
       LEFT JOIN pedido_itens pi ON p.id_pedido = pi.id_pedido
       LEFT JOIN produtos prod ON pi.id_produto = prod.id_produto
-      LEFT JOIN producao_itens pri ON p.id_pedido = pri.id_pedido AND pi.id_produto = pri.id_produto AND pi.id_pedido_item = pri.item_index
       WHERE p.id_pedido = $1
-      ORDER BY pi.id_pedido_item, pri.item_index, pri.item_unit
+      ORDER BY pi.id_item
     `, [id_pedido]);
+    
+    console.log(`✅ [DB] ${result.rows.length} registros encontrados para pedido ${id_pedido}`);
     
     return result.rows;
   } catch (error) {
-    console.error('Erro ao buscar status detalhado do pedido:', error);
+    console.error('❌ [DB] Erro ao buscar status detalhado do pedido:', error);
     throw error;
   } finally {
     client.release();
@@ -936,28 +951,59 @@ async function getStatusDetalhadoPedido(id_pedido) {
 async function verificarPedidoCompleto(id_pedido) {
   const client = await pool.connect();
   try {
-    const result = await client.query(`
-      SELECT 
-        COUNT(*) as total_itens,
-        SUM(CASE WHEN status_maquina = 'COMPLETED' THEN 1 ELSE 0 END) as itens_prontos
-      FROM producao_itens 
-      WHERE id_pedido = $1
-    `, [id_pedido]);
+    console.log(`🔍 [DB] Verificando se pedido ${id_pedido} está completo`);
     
-    const { total_itens, itens_prontos } = result.rows[0];
-    const completo = total_itens > 0 && total_itens === itens_prontos;
+    // Verificar itens de produção se a tabela existir
+    const producaoCheck = await client.query(`
+      SELECT COUNT(*) as total_itens
+      FROM information_schema.tables 
+      WHERE table_name = 'producao_itens'
+    `);
     
-    if (completo) {
-      await client.query(
-        'UPDATE pedidos SET status_geral = $1, atualizado_em = NOW() WHERE id_pedido = $2',
-        ['COMPLETO', id_pedido]
-      );
+    let total_itens = 0;
+    let itens_prontos = 0;
+    
+    if (producaoCheck.rows[0].total_itens > 0) {
+      // Tabela existe, contar itens de produção
+      const result = await client.query(`
+        SELECT 
+          COUNT(*) as total_itens,
+          SUM(CASE WHEN status_maquina = 'COMPLETED' THEN 1 ELSE 0 END) as itens_prontos
+        FROM producao_itens 
+        WHERE id_pedido = $1
+      `, [id_pedido]);
+      
+      total_itens = parseInt(result.rows[0].total_itens) || 0;
+      itens_prontos = parseInt(result.rows[0].itens_prontos) || 0;
+    } else {
+      // Tabela não existe, usar itens do pedido como base
+      const result = await client.query(`
+        SELECT COUNT(*) as total_itens
+        FROM pedido_itens 
+        WHERE id_pedido = $1
+      `, [id_pedido]);
+      
+      total_itens = parseInt(result.rows[0].total_itens) || 0;
+      itens_prontos = 0; // Sem produção, considerar nenhum pronto
     }
     
-    return { completo, total_itens: parseInt(total_itens), itens_prontos: parseInt(itens_prontos) };
+    const completo = total_itens > 0 && total_itens === itens_prontos;
+    
+    console.log(`✅ [DB] Pedido ${id_pedido}: ${itens_prontos}/${total_itens} itens prontos, completo: ${completo}`);
+    
+    return { 
+      completo, 
+      total_itens, 
+      itens_prontos 
+    };
   } catch (error) {
-    console.error('Erro ao verificar pedido completo:', error);
-    throw error;
+    console.error('❌ [DB] Erro ao verificar pedido completo:', error);
+    // Em caso de erro, retornar valores padrão
+    return { 
+      completo: false, 
+      total_itens: 0, 
+      itens_prontos: 0 
+    };
   } finally {
     client.release();
   }
