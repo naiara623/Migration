@@ -177,21 +177,16 @@ function ProdutosContext() {
   };
 
   return (
-    <div className='amarela-Ofertas'>
-      <div className='Navbar-global'>
+    <div className='Amarela-Produtos'>
+      <div className='NavBar-Produtos'>
         <Header />
       </div>
 
-      <div className='DivGlobal-Ofertas'>
-
-        <div className="buttons">
+      <div className='DivEngloba-Produtos'>
+        <div className="buttons-produtos">
           <button className='btn1 btn-primary1' onClick={() => setModalAberto(true)}>{t('produto.categoria.buton')}</button>
         <button className='btn2 btn-primary2' onClick={resetarFiltro}>{t('produto.mostrar.buton')}</button>
         </div>
-
-        
-        <button onClick={() => setModalAberto(true)}>Abrir Categorias</button>
-        <button onClick={resetarFiltro}>Mostrar Todos os Produtos</button>
 
         <Categorias 
           isOpen={modalAberto} 
@@ -200,25 +195,28 @@ function ProdutosContext() {
           fetchCategorias={fetchCategorias}
         />
 
-        {/* Mensagens de status */}
-        {loading && (
+          {loading && (
           <div className="loading-message">
-            <p>🔄 Carregando produtos...</p>
+          <p>🔄 Carregando produtos...</p>
           </div>
-        )}
+         )}
         
-        {error && (
+         {error && (
           <div className="error-message">
             <p>❌ {error}</p>
-          </div>
-        )}
+         </div>
+         )}
 
-        <div className="produtos1-Ofertas">
-          <section className="featured-products">
-            <div className="container2">
+         <div className="produtos-Produtos">
+          <div className="text-Produtos">
               <h2 className='oiTest'>
-                {categoria ? `Produtos em ${categoria}` : 'Produtos em alta'}
+                {/* {categoria ? `Produtos em ${categoria}` : 'Produtos em alta'} */}
               </h2>
+            </div>
+          <section className="featured-products">
+            
+            <div className="container2">
+              
               
               {!loading && products.length === 0 && !error && (
                 <div className="empty-products">
@@ -252,7 +250,10 @@ function ProdutosContext() {
                       )}
                     </div>
                     <div className="product-info">
-                      <h3>{product.nome_produto}</h3>
+                      <div className='div-nome'>
+                         <h3 className='nome_produto'>{product.nome_produto}</h3>
+                      </div>
+                     
                       <div className="product-category">
                         <span className="category-tag">{product.nome_categoria}</span>
                       </div>
@@ -289,16 +290,12 @@ function ProdutosContext() {
               </div>
             </div>
           </section>
-        </div>
-      </div>
 
-      {/* Modal com produto selecionado */}
-      <ModalConfig
-        isOpen={openModal}
-        onClose={handleCloseModal}
-        product={selectedProduct}
-        onAddCarrinho={handleAddToCart}
-      />
+         </div>
+
+
+
+      </div>
     </div>
   );
 }

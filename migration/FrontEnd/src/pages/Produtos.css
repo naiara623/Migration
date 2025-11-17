@@ -1,17 +1,71 @@
-.amarela-Produtos{
-    border: 2px solid yellow;
+.Amarela-Produtos{
+    border: 2px solid rgb(0, 255, 17);
     height: 100vh;
 }
 
-.RoxoNav-Produtos{
-    /* border: 2px solid purple; */
+.NavBar-Produtos{
+    border: 2px solid purple;
     height: 10%;
 }
 
-.Produtos{
+.DivEngloba-Produtos{
     border: 2px solid red;
     height: 90%;
-     background-color: var(--bg-secondary);
+    width: 100%;
+}
+
+.buttons-produtos{
+    border: 2px solid blue;
+    height: 6%;
+    width: 100%;
+    background-color: var(--bg-secondary);
+}
+
+
+
+.produtos-Produtos{
+    border: 2px solid rgb(255, 0, 208);
+    height: 94%;
+    width: 100%;
+    background-color: var(--bg-secondary);
+}
+
+.featured-products{
+    border: 2px solid orange;
+    height: 90%;
+    width: 100%;
+}
+
+.produtos1-Ofertas{
+    /* border: 2px solid rgb(0, 255, 149); */
+    height: 95%;
+}
+
+.products-grid{
+    /* border: 2px solid blue; */
+    height: 100%;
+}
+
+.text-Produtos{
+    border: 2px solid blue;
+    height: 10%;
+
+}
+
+.container2{
+    border: 2px solid green;
+    display: flex;
+    height: 100%;
+    /* display: grid; */
+    /* grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); */
+    gap: 20px;
+    /* padding: 20px; */
+    /* overflow-y: auto; */
+}
+
+.oiTest{
+    /* border: 2px solid orange; */
+    height: 5%;
 }
 
 
@@ -19,9 +73,67 @@
     /* border: 2px solid; */
     background-color: var(--cadastro-bg);
     width: 100%;
-    height: 95%;
+    height: 100%;
 }
 
+.product-image{
+    /* border: 2px solid red; */
+}
+
+.product-badge{
+    /* border: 2px solid blue; */
+}
+
+.product-info{
+    /* border: 2px solid green; */
+    height: 75%;
+}
+
+.product-category{
+    /* border: 2px solid orange; */
+    width: 25%;
+    position: relative;
+    left: 80%;
+    top: -8%;
+}
+
+.category-tag{
+    /* border: 2px solid rgb(255, 90, 117); */
+}
+
+.product-rating{
+    /* border: 2px solid brown; */
+    height: 15%;
+}
+
+.rating-text{
+    /* border: 2px solid black; */
+    height: 100%;
+}
+
+.product-price{
+    /* border: 2px solid gray; */
+}
+
+.product-stock{
+    /* border: 2px solid cyan; */
+}
+
+.nome_produto{
+    /* border: 2px solid magenta; */
+    width: 80%;
+    height: 100%;
+   
+}
+
+.div-nome{
+    /* border: 2px solid yellow; */
+    width: 75%;
+    height: 20%;
+    position: relative;
+    top: 5%;
+
+}
 /* No Categorias.css */
 .loading {
   text-align: center;

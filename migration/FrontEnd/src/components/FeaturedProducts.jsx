@@ -33,7 +33,7 @@ const FeaturedProducts = () => {
                       <img src={product.image} alt={product.name} />
                       <div className="product-badge">{t("featuredproduct.produto.novo")}</div>
                     </div>
-                  <div className="product-info">
+                  <div className="product-info1">
                     <h3>{product.name}</h3>
                     <div className="product-rating">
                       {[...Array(5)].map((_, i) => (

@@ -86,12 +86,12 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.product-info {
+.product-info1 {
   padding: 24px;
   position: relative;
 }
 
-.product-info h3 {
+.product-info1 h3 {
   margin-bottom: 12px;
   color: var(--cadastro-text);
   font-size: 1.1rem;
