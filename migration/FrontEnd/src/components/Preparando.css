@@ -44,11 +44,12 @@
 }
 
 .conteine-detalhes-Prepa{
-    border: 3px solid rgb(13, 0, 255);
+    border: 1px solid rgba(9, 9, 9, 0.437);
     width: 100%;
     height: 37%;
     background-color: #F9F9F9;
-    conteine-detalhes-Prepa;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .conteine-body{
@@ -135,3 +136,60 @@
    
 }
 
+.div-titulo-detalhes{
+    /* border: 2px solid  lch(46.12% 104.5 321.38); */
+    width: 100%;
+    height: 13%;
+}
+
+.conteine-dasLabel-prepa{
+
+     border: 2px solid  lch(77.52% 90.13 143.3);
+    width: 100%;
+    height: 87%;
+    display: flex;
+    gap: 3%;
+    flex-direction: column  ;
+}
+
+.div-numeroPedido{
+     /* border: 2px solid  lch(46.12% 104.5 321.38); */
+    width: 100%;
+    height: 17%;
+}
+
+.div-numeroPedido{
+      /* border: 2px solid  lch(46.12% 104.5 321.38); */
+    width: 100%;
+    height: 17%;
+}
+
+.div-TempoEstimado{
+      /* border: 2px solid  lch(46.12% 104.5 321.38); */
+    width: 100%;
+    height: 17%;
+}
+
+.div-StatusAtual{
+      /* border: 2px solid  lch(46.12% 104.5 321.38); */
+    width: 100%;
+    height: 17%;
+}
+
+.div-vazia-prepa1{
+    border: 1px solid  lch(3.97% 0 296.81);     width: 100%;
+    width: 100% ;
+    height: 0%;
+}
+
+.div-vazia-prepa2{
+    border: 1px solid  lch(3.97% 0 296.81);     width: 100%;
+    width: 100% ;
+    height: 0%;
+}
+
+.div-vazia-prepa3{
+    border: 1px solid  lch(3.97% 0 296.81);     width: 100%;
+    width: 100% ;
+    height: 0%;
+}

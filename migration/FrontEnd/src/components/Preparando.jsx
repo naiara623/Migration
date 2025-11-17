@@ -60,6 +60,36 @@ function Preparando({onClose, isOpen}) {
 
                   <div className='conteine-detalhes-Prepa' >
 
+                    <div className='div-titulo-detalhes' >
+                        <h3>Detalhes do produto</h3>
+                    </div>
+
+
+                 <div className='conteine-dasLabel-prepa' > 
+
+                     <div className='div-numeroPedido' >
+                      <label htmlFor="">Número do Pedido:</label> <input type="text" />
+                     </div>
+
+                      <div className='div-vazia-prepa1' ></div>
+
+                       <div  className='div-numeroPedido' >
+                           <label htmlFor="">Data do Pedido:</label> <input type="text" />
+                       </div>
+
+                        <div className='div-vazia-prepa2' ></div>
+
+                         <div className='div-TempoEstimado' >
+                           <label htmlFor="">Tempo Estimado:</label> <input type="text" />
+                         </div>
+
+                          <div className='div-vazia-prepa3' ></div>
+
+                           <div className='div-StatusAtual' >
+                             <label htmlFor="">Status Atual:</label> <input type="text" />
+                           </div>
+                  </div>
+
 
 
                   </div>
