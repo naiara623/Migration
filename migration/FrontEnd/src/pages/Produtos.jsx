@@ -210,7 +210,7 @@ function ProdutosContext() {
          <div className="produtos-Produtos">
           <div className="text-Produtos">
               <h2 className='oiTest'>
-                {/* {categoria ? `Produtos em ${categoria}` : 'Produtos em alta'} */}
+                {categoria ? `Produtos em ${categoria}` : 'Produtos em alta'}
               </h2>
             </div>
           <section className="featured-products">
@@ -232,7 +232,7 @@ function ProdutosContext() {
                   <p>Nenhum produto encontrado para esta categoria.</p>
                 )}
                 {products.map(product => (
-                  <div key={product.id_produto} className="product-card">
+                  <div key={product.id_produto} className="product-card1">
                     <div className="product-image">
                       <img 
                         src={product.imagem_url 
@@ -268,15 +268,17 @@ function ProdutosContext() {
                           ({product.avaliacao_produto || 'Sem avaliação'})
                         </span>
                       </div>
-                      <div className="product-price">
-                        R$ {parseFloat(product.valor_produto).toFixed(2)}
-                      </div>
-                      <div className="product-stock">
+
+                       <div className="product-stock">
                         {product.estoque > 0 
                           ? `🟢 ${product.estoque} em estoque` 
                           : '🔴 Esgotado'
                         }
                       </div>
+                      <div className="product-price">
+                        R$ {parseFloat(product.valor_produto).toFixed(2)}
+                      </div>
+                     
                       <button 
                         onClick={() => handleOpenModal(product)} 
                         className="btn btn-primary"
@@ -289,6 +291,8 @@ function ProdutosContext() {
                 ))}
               </div>
             </div>
+
+            <div className='sla3'></div>
           </section>
 
          </div>
