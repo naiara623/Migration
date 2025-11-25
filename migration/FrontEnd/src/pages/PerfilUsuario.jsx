@@ -54,31 +54,16 @@ function PerfilUsuariocontext(){
                               <input type="text" name="" id="" className='input-senha-PRF' />
                       </div>         
  
-                      <div className='campo-de-opção-sexo-PRF'>
+                      <div className='Numero-para-contato-PRF'>
 
-                                <div className='div-VAZIA4-PRF' ></div>
+                              
+                          <div className='div-vazia-PRE' ></div>
 
-                                <label className='label-sexo-PRF' >{t("perfil.dadospessoais.sexo")}</label>
-
-                               
-
-                                <div  className='opcoes-sexo' >
-
-                                    <label>
-                                        <input type="radio" name="sexo"  /> {t("perfil.dadospessoais.femi")}
-                                    </label>
-
-                                    <label>
-                                        <input type="radio" name="sexo"  />{t("perfil.dadospessoais.masc")}
-                                    </label>
-
-                                    <label>
-                                       <input type="radio" name="sexo"  /> {t("perfil.dadospessoais.naoi")} 
-                                    </label>
-
+                                <div className='algumacoisa-PRE' >
+                                    <label className='funcao-cor-Em-SE-SX1' htmlFor="">{t("perfil.dadospessoais.nume")}</label>
+                                    <input className='input-numero' name='' id='' type="number" />
+                                    {/* <input className='input-numero' name='' id='' type="number" /> */}
                                 </div>
-
-                           <div className='div-vazia-1-PRF' ></div>
 
                       </div>
 

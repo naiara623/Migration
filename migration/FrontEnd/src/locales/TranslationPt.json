@@ -141,22 +141,19 @@
       "nome": "Nome de usuário:",
       "email": "Email:",
       "senha": "Senha:",
-      "sexo": "Sexo:",
-      "femi": "Feminino",
-      "masc": "Masculino",
-      "naoi": "Não Informar",
       "buto": "Editar Perfil",
-      "but1": "Deletar Conta"
+      "but1": "Deletar Conta",
+      "nume": "Número para contato:"
     },
 
     "endereco": {
-      "ende": "endereço",
-      "cep": "CEP:",
-      "estado": "Estado:",
-      "rua": "Rua:",
-      "comple": "Complemento:",
-      "refere": "Referencia:",
-      "numero": "Numero :",
+      "ende": "Endereço",
+      "cep": "Estado:",
+      "estado": "Cidade:",
+      "rua": "Bairro:",
+      "comple": "CEP:",
+      "refere": "Número:",
+      "numero": "Complemento:",
       "buto": "Editar Campos",
       "but1": "Limpar Campos"
     }
