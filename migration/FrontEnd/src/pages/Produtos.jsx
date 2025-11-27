@@ -189,10 +189,6 @@ function ProdutosContext() {
         <button className='btn2 btn-primary2' onClick={resetarFiltro}>{t('produto.mostrar.buton')}</button>
         </div>
 
-        
-        <button onClick={() => setModalAberto(true)}>Abrir Categorias</button>
-        <button onClick={resetarFiltro}>Mostrar Todos os Produtos</button>
-
         <Categorias 
           isOpen={modalAberto} 
           onClose={() => setModalAberto(false)} 

@@ -15,6 +15,7 @@ import AvaliacaoProduto from "../pages/AvaliacaoProduto.jsx";
 // import AvaliacaoProduto from "../pages/AvaliacaoProduto.jsx";
 import Testeidioma from "../pages/Testeidioma.jsx";
 import ChatBot from "../pages/ChatBot.jsx";
+import SobreNos from "../pages/SobreNos.jsx";
 
 
 const router = createBrowserRouter([
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
     {path: "/valiacao", element: <AvaliacaoProduto/>},
     {path: "/test", element: <Testeidioma/>},
     {path: "/chatbot", element: <ChatBot />},
-    
+    {path: "/sobreNos", element: <SobreNos />},
 
     {path: "/teste", element: <Testeidioma/>}
     

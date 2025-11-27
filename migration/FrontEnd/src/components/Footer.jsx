@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 import "../i18n"; // importa a inicialização do i18n
 import './Footer.css';
@@ -33,7 +34,7 @@ const Footer = () => {
               <h4>{t("footer.links.title")}</h4>
               <ul>
                 <li>
-                  <a href="#">{t("footer.links.about")}</a>
+                  <Link to="/sobreNos">{t("footer.links.about")}</Link>
                 </li>
                 <li>
                   <a href="#">{t("footer.links.stores")}</a>

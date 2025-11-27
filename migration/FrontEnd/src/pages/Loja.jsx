@@ -363,7 +363,7 @@ function Lojacontext() {
               <button className="check-now-btn" onClick={handleRefreshProducts}>
                 🔄 Atualizar Dados
               </button>
-              <button className="check-now-btn">
+              <button className="check-now-btn2">
                 📋 Ver Relatório Completo
               </button>
             </div>
@@ -531,15 +531,7 @@ function Lojacontext() {
               <img className='imagg' src="io.png" alt="My Store" />
               <button 
                 onClick={handleRefreshProducts}
-                style={{
-                  marginTop: '20px',
-                  padding: '10px 20px',
-                  backgroundColor: 'var(--accent-color)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer'
-                }}
+                className='recarregarButon'
               >
                 🔄 Recarregar Produtos
               </button>

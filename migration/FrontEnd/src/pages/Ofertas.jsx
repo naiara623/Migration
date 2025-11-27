@@ -176,8 +176,6 @@ function OfertasContext() {
           <button className='btn1 btn-primary1' onClick={() => setModalAberto(true)}>{t('produto.categoria.buton')}</button>
         <button className='btn2 btn-primary2' onClick={resetarFiltro}>{t('produto.mostrar.buton')}</button>
         </div>
-        <button onClick={() => setModalAberto(true)}>Abrir Categorias</button>
-        <button onClick={resetarFiltro}>Mostrar Todos os Produtos</button>
 
         <Categorias 
           isOpen={modalAberto} 

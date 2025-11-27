@@ -82,7 +82,9 @@ function LoginContext() {
 
   return (
      <div className='Login-1'>
-    <div className='LadoEsquerdo-Login'></div>
+    <div className='LadoEsquerdo-Login'>
+      <img className='ilus-png' src="ilustracaoL.png" alt="Ilustração de viagem" />
+    </div>
 
     <div className='ladoDireito-Login'>
 

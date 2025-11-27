@@ -114,17 +114,17 @@
 }
 
 .campo-formulario-senha-PRF{
-      /* border: 4px solid rgb(197, 22, 142); */
+    /* border: 4px solid rgb(197, 22, 142); */
     width: 100%;
     height: 15%;
     display: flex;
     flex-direction: column;
-     font-weight: bold;
-     color: #554;
-     padding-left: 9%;
+    font-weight: bold;
+    color: #554;
+    padding-left: 9%;
 }
 
-.input-senha-PRF{
+.input-senha-PRF{324973
     width: 90%;
     padding: 10px;
     border: 1px solid #ccc;
