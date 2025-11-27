@@ -47,7 +47,7 @@ function NovoProduct({ products, isSelectionMode, selectedProducts, toggleProduc
   return (
     <div className="products-grid">
       {products.map((product, index) => (
-        <div key={product.id_produto ?? `fallback-${index}`} className="product-card">
+        <div key={product.id_produto ?? `fallback-${index}`} className="product-card1">
           {isSelectionMode && (
             <div className="selection-checkbox">
               <input
