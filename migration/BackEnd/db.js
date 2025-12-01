@@ -19,7 +19,7 @@ async function insertUser(user) {
 
   const sql = `
     INSERT INTO usuarios 
-    (nome_usuario, email_user, senhauser, cep, estado_cidade, nome_rua, complemento, numero, referencia) 
+    (nome_usuario, email_user, senhauser, numero) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING *
   `;
@@ -27,12 +27,7 @@ async function insertUser(user) {
     user.nome_usuario,
     user.email_user,
     user.senhauser,
-    user.cep, 
-    user.estado_cidade,
-    user.nome_rua,
-    user.complemento,
-    user.numero,
-    user.referencia
+    user.numero
   ];
 
   try {
@@ -71,22 +66,14 @@ async function updateUser(email, user) {
     UPDATE usuarios
     SET nome_usuario = $1,
         email_user = $2,
-        estado_cidade = $3,
-        nome_rua = $4,
-        complemento = $5,
-        numero = $6,
-        referencia = $7
-    WHERE email_user = $8
+        numero = $3
+    WHERE email_user = $4
     RETURNING *;
   `;
   const values = [
     user.nome_usuario,
     user.email_user,
-    user.estado_cidade,
-    user.nome_rua,
-    user.complemento,
     user.numero,
-    user.referencia,
     email
   ];
 
@@ -725,55 +712,72 @@ async function getPedidosByUserId(idusuarios) {
   }
 }
 
+// Adicione estas funções no arquivo db.js
+
+// Função para criar pedido com itens
 async function createPedidoWithItems({ idusuarios, total, metodo_pagamento, endereco_entrega, itens }) {
   const client = await pool.connect();
+  
   try {
     await client.query('BEGIN');
 
-    const pedidoSql = `
-      INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega, status_geral)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
-    `;
-    const pedidoRes = await client.query(pedidoSql, [idusuarios, total, metodo_pagamento, endereco_entrega, 'PROCESSANDO']);
-    const pedido = pedidoRes.rows[0];
+    // 1. Criar o pedido
+    const pedidoResult = await client.query(
+      `INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega, status_geral) 
+       VALUES ($1, $2, $3, $4, 'PROCESSANDO') 
+       RETURNING *`,
+      [idusuarios, total, metodo_pagamento, JSON.stringify(endereco_entrega)]
+    );
 
-    const itemInsertSql = `
-      INSERT INTO pedido_itens (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor, configuracao, status)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    `;
-    const estoqueUpdateSql = `
-      UPDATE produtos
-      SET estoque = estoque - $1
-      WHERE id_produto = $2
-    `;
+    const pedido = pedidoResult.rows[0];
 
+    // 2. Inserir itens do pedido
     for (const item of itens) {
-      await client.query(itemInsertSql, [
-        pedido.id_pedido,
-        item.id_produto,
-        item.quantidade,
-        item.preco_unitario,
-        item.tamanho,
-        item.cor,
-        item.configuracao || {},
-        'PENDENTE'
-      ]);
-      await client.query(estoqueUpdateSql, [item.quantidade, item.id_produto]);
+      await client.query(
+        `INSERT INTO pedido_itens (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor, configuracao) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [
+          pedido.id_pedido,
+          item.id_produto,
+          item.quantidade,
+          item.preco_unitario,
+          item.tamanho || '',
+          item.cor || '',
+          JSON.stringify(item.configuracao || {})
+        ]
+      );
+
+      // 3. Atualizar estoque do produto
+      await client.query(
+        'UPDATE produtos SET estoque = estoque - $1 WHERE id_produto = $2',
+        [item.quantidade, item.id_produto]
+      );
     }
 
-    const clearCarrinhoSql = `
-      DELETE FROM carrinho
-      WHERE idusuarios = $1
-    `;
-    await client.query(clearCarrinhoSql, [idusuarios]);
+    // 4. Limpar carrinho do usuário
+    await client.query('DELETE FROM carrinho WHERE idusuarios = $1', [idusuarios]);
 
     await client.query('COMMIT');
     return pedido;
+
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error("Erro ao criar pedido:", error);
+    console.error('Erro ao criar pedido com itens:', error);
     throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Função para obter endereço do usuário
+async function getEnderecoByUserId(idusuarios) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'SELECT nome_usuario, email_user, numero FROM usuarios WHERE idusuarios = $1',
+      [idusuarios]
+    );
+    return result.rows[0];
   } finally {
     client.release();
   }
@@ -1008,6 +1012,8 @@ async function verificarPedidoCompleto(id_pedido) {
     client.release();
   }
 }
+
+
 
 // ==========================================
 // 📦 EXPORTAÇÕES

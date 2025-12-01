@@ -25,7 +25,7 @@ function ProdutosContext() {
   // Pega parâmetros da URL
   const queryParams = new URLSearchParams(location.search);
   const categoria = queryParams.get('categoria');
-  const termoBusca = queryParams.get('search'); // 🔍 termo de busca
+  const termoBusca = queryParams.get('search');
 
   // ✅ Busca produtos públicos
   const fetchAllProducts = async () => {
@@ -184,8 +184,12 @@ function ProdutosContext() {
 
       <div className='DivEngloba-Produtos'>
         <div className="buttons-produtos">
-          <button className='btn1 btn-primary1' onClick={() => setModalAberto(true)}>{t('produto.categoria.buton')}</button>
-        <button className='btn2 btn-primary2' onClick={resetarFiltro}>{t('produto.mostrar.buton')}</button>
+          <button className='btn1 btn-primary1' onClick={() => setModalAberto(true)}>
+            {t('produto.categoria.buton')}
+          </button>
+          <button className='btn2 btn-primary2' onClick={resetarFiltro}>
+            {t('produto.mostrar.buton')}
+          </button>
         </div>
 
         <Categorias 
@@ -195,29 +199,33 @@ function ProdutosContext() {
           fetchCategorias={fetchCategorias}
         />
 
-          {loading && (
+        {/* Mensagens de status - mantendo a estrutura visual */}
+        {loading && (
           <div className="loading-message">
-          <p>🔄 Carregando produtos...</p>
+            <p>🔄 Carregando produtos...</p>
           </div>
-         )}
+        )}
         
-         {error && (
+        {error && (
           <div className="error-message">
             <p>❌ {error}</p>
-         </div>
-         )}
+          </div>
+        )}
 
-         <div className="produtos-Produtos">
+        <div className="produtos-Produtos">
           <div className="text-Produtos">
-              <h2 className='oiTest'>
-                {categoria ? `Produtos em ${categoria}` : 'Produtos em alta'}
-              </h2>
-            </div>
+            <h2 className='oiTest'>
+              {categoria 
+                ? `Produtos em ${categoria}` 
+                : termoBusca
+                  ? `Resultados para "${termoBusca}"`
+                  : 'Produtos em alta'
+              }
+            </h2>
+          </div>
+
           <section className="featured-products">
-            
             <div className="container2">
-              
-              
               {!loading && products.length === 0 && !error && (
                 <div className="empty-products">
                   <p>📭 Nenhum produto encontrado</p>
@@ -228,78 +236,83 @@ function ProdutosContext() {
               )}
 
               <div className="products-grid">
-                {products.length === 0 && (
-                  <p>Nenhum produto encontrado para esta categoria.</p>
-                )}
-                {products.map(product => (
-                  <div key={product.id_produto} className="product-card1">
-                    <div className="product-image">
-                      <img 
-                        src={product.imagem_url 
-                          ? `http://localhost:3001${product.imagem_url}` 
-                          : '/placeholder-image.jpg'
-                        } 
-                        alt={product.nome_produto}
-                        onError={(e) => {
-                          e.target.src = '/placeholder-image.jpg';
-                        }}
-                      />
-                      <div className="product-badge">Produto</div>
-                      {product.estoque <= 0 && (
-                        <div className="out-of-stock-badge">Esgotado</div>
-                      )}
-                    </div>
-                    <div className="product-info">
-                      <div className='div-nome'>
-                         <h3 className='nome_produto'>{product.nome_produto}</h3>
+                {products.length === 0 && !loading ? (
+                  <p>Nenhum produto encontrado.</p>
+                ) : (
+                  products.map(product => (
+                    <div key={product.id_produto} className="product-card1">
+                      <div className="product-image">
+                        <img 
+                          src={product.imagem_url 
+                            ? `http://localhost:3001${product.imagem_url}` 
+                            : '/placeholder-image.jpg'
+                          } 
+                          alt={product.nome_produto}
+                          onError={(e) => {
+                            e.target.src = '/placeholder-image.jpg';
+                          }}
+                        />
+                        <div className="product-badge">Produto</div>
+                        {product.estoque <= 0 && (
+                          <div className="out-of-stock-badge">Esgotado</div>
+                        )}
                       </div>
-                     
-                      <div className="product-category">
-                        <span className="category-tag">{product.nome_categoria}</span>
-                      </div>
-                      <div className="product-rating">
-                        {[...Array(5)].map((_, i) => (
-                          <i 
-                            key={i} 
-                            className={`fas fa-star ${i < (product.avaliacao_produto || 3) ? 'filled' : ''}`}
-                          ></i>
-                        ))}
-                        <span className="rating-text">
-                          ({product.avaliacao_produto || 'Sem avaliação'})
-                        </span>
-                      </div>
+                      <div className="product-info">
+                        <div className='div-nome'>
+                          <h3 className='nome_produto'>{product.nome_produto}</h3>
+                        </div>
+                      
+                        <div className="product-category">
+                          <span className="category-tag">{product.nome_categoria}</span>
+                        </div>
+                        <div className="product-rating">
+                          {[...Array(5)].map((_, i) => (
+                            <i 
+                              key={i} 
+                              className={`fas fa-star ${i < (product.avaliacao_produto || 3) ? 'filled' : ''}`}
+                            ></i>
+                          ))}
+                          <span className="rating-text">
+                            ({product.avaliacao_produto || 'Sem avaliação'})
+                          </span>
+                        </div>
 
-                       <div className="product-stock">
-                        {product.estoque > 0 
-                          ? `🟢 ${product.estoque} em estoque` 
-                          : '🔴 Esgotado'
-                        }
+                        <div className="product-stock">
+                          {product.estoque > 0 
+                            ? `🟢 ${product.estoque} em estoque` 
+                            : '🔴 Esgotado'
+                          }
+                        </div>
+                        <div className="product-price">
+                          R$ {parseFloat(product.valor_produto).toFixed(2)}
+                        </div>
+                      
+                        <button 
+                          onClick={() => handleOpenModal(product)} 
+                          className="btn btn-primary"
+                          disabled={product.estoque <= 0}
+                        >
+                          {product.estoque > 0 ? '🛒 Adicionar ao Carrinho' : 'Esgotado'}
+                        </button>
                       </div>
-                      <div className="product-price">
-                        R$ {parseFloat(product.valor_produto).toFixed(2)}
-                      </div>
-                     
-                      <button 
-                        onClick={() => handleOpenModal(product)} 
-                        className="btn btn-primary"
-                        disabled={product.estoque <= 0}
-                      >
-                        {product.estoque > 0 ? '🛒 Adicionar ao Carrinho' : 'Esgotado'}
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 
             <div className='sla3'></div>
           </section>
-
-         </div>
-
-
-
+        </div>
       </div>
+
+      {/* Modal com produto selecionado */}
+      <ModalConfig
+        isOpen={openModal}
+        onClose={handleCloseModal}
+        product={selectedProduct}
+        onAddCarrinho={handleAddToCart}
+      />
     </div>
   );
 }
