@@ -41,6 +41,13 @@
   --success-color: #2E7D32;
   --success-bg: #E8F5E9;
 
+  --migration-bg: #ebe4e0;
+  --migration-text1: #89A9C7;
+  --migration-text: #324973;
+  --migration-inputs: #E6D8CD;
+  --migration-borda: #C5B2A4;
+  --migration-botao: #324973;
+
 }
 
 [data-theme="dark"] {
@@ -98,6 +105,13 @@
   --error-bg: #4A1F1D;       /* Vermelho escuro para fundo */
   --success-color: #4CAF50;  /* Verde mais vibrante para contraste no escuro */
   --success-bg: #1F2F1F;     /* Verde escuro para fundo */
+
+    --migration-bg: #C5B2A4;
+  --migration-text1: #324973;
+  --migration-text: #324973;
+  --migration-inputs: #E6D8CD;
+  --migration-borda: #ebe4e0;
+  --migration-botao: #89A9C7;
 
 }
 /* Estilos globais */

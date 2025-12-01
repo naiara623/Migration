@@ -17,13 +17,22 @@ function ModalIdiomas({ onClose, isOpen }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={stopPropagation}>
-        <h3 className='Selecione-idi'>Selecione o idioma desejado</h3>
+      <div className="modal-content1" onClick={stopPropagation}>
+        <div className="titulo">
+          <h3 className='Selecione-idi'>Selecione o idioma desejado</h3>
+        </div>
+
+        <div className='butons-idi'>
+           <button className='pt' onClick={() => changeLanguage('pt')}>Português</button>
+          <button className='en' onClick={() => changeLanguage('en')}>English</button>
+          <button className='es' onClick={() => changeLanguage('es')}>Español</button>
+        </div>
+        {/* <h3 className='Selecione-idi'>Selecione o idioma desejado</h3>
         <div className="idiomas-options">
           <button className='pt' onClick={() => changeLanguage('pt')}>Português</button>
-          <button className='pt' onClick={() => changeLanguage('en')}>English</button>
-          <button className='pt' onClick={() => changeLanguage('es')}>Español</button>
-        </div>
+          <button className='en' onClick={() => changeLanguage('en')}>English</button>
+          <button className='es' onClick={() => changeLanguage('es')}>Español</button>
+        </div> */}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 .container-loja {
+  /* border: 2px solid red; */
    height: 100vh;
   overflow-y: auto; /* 🔹 só mostra quando precisar */
   width: 100%;
@@ -29,12 +30,14 @@ body {
 }
 
 .lojaa-ok {
+  /* border: 2px solid rgb(250, 109, 132); */
   flex: 1;
   display: flex;
   overflow: hidden; /* 🔹 não cria barra geral */
 }
 
 .opções-ok {
+  /* border: 2px solid rgb(60, 255, 0); */
   width: 400px;                /* largura fixa */
   background-color: #ffff;
   padding: 30px 20px;
@@ -48,15 +51,18 @@ body {
 }
 
 .opções-ok form {
+  /* border: 2px solid rgb(0, 68, 255); */
   width: 100%;
   max-width: 320px;            /* 🔹 limita a largura do form */
 }
 
 .produtos-ok {
-  flex: 1; /* ocupa o resto da tela */
+  /* border: 2px solid yellow; */
+  /* flex: 1; */
+  height: 100%;
   background-color: var(--bg-secondary);
   padding: 20px;
-  overflow-y: auto; /* 🔹 scroll só aqui quando houver muitos produtos */
+  /* overflow-y: auto; 🔹 scroll só aqui quando houver muitos produtos */
 }
 
 
@@ -336,7 +342,9 @@ body {
 
 /* Estilos para edição */
 .form-container {
+  /* border: 2px solid rgb(255, 0, 255); */
   width: 100%;
+  overflow-y: auto;
 }
 
 .form-header {
@@ -679,9 +687,31 @@ justify-content: center;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px var(--shadow-color);
   width: 100%;
+  position: relative;
+  top: -5%;
 }
 
 .check-now-btn:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.check-now-btn2 {
+  padding: 12px 24px;
+  background: var(--accent-primary);
+  color: var(--text-tertiary);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  width: 100%;
+}
+
+.check-now-btn2:hover {
   background: var(--accent-secondary);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px var(--shadow-color);
@@ -748,3 +778,18 @@ justify-content: center;
     font-size: 0.75rem;
   }
 }
+
+.recarregarButon{
+  /* border: 2px solid red; */
+  border: none;
+  position: relative;
+  top: 20px;
+  padding: 10px 20px;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  
+}
+
+               

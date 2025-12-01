@@ -1,6 +1,6 @@
 /*DIVS*/
 .cadastro-1{
-    /* border: 4px solid red; */
+    /* border: 1px solid red; */
     height: 100vh;
     display: flex;
     background-color: var(  --bg-primary);
@@ -8,14 +8,14 @@
 }
 
 .LadoEsquerdo-cadastro{
-    /* border: 2px solid blue; */
+    /* border: 1px solid blue; */
     width: 50%;
     height: 100%;
-    background-color: var(--accent-secondary);
+    background-color: #729eba;
 }
 
 .ladoDireito-cadastro{
-    /* border: 2px solid green; */
+    /* border: 1px solid green; */
     width: 50%;
     height: 100%;
 
@@ -307,4 +307,10 @@ input:focus {
   /* height: 20%; */
   position: relative;
   top: -2%;
+}
+
+.ilus-png{
+  /* border: 2px solid red; */
+  width: 100%;
+  height: 99%;
 }

@@ -100,7 +100,10 @@ function CadastroContext() {
 
   return (
     <div className='cadastro-1'>
-      <div className='LadoEsquerdo-cadastro'></div>
+      <div className='LadoEsquerdo-cadastro'>
+
+        <img className='ilus-png' src="ilustracao.png" alt="Ilustração minimalista sobre viagem" />
+      </div>
 
       <div className='ladoDireito-cadastro'>
 

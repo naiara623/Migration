@@ -354,7 +354,7 @@ const total = subtotal - desconto;
               
               {products.length === 0 && (
                 <div className="empty-cart">
-                  <p>🛒 Seu carrinho está vazio</p>
+                  <p className='CarrinhoVazio'>🛒 Seu carrinho está vazio</p>
                   <button 
                     onClick={fetchCarrinho}
                     className="refresh-cart-btn"
