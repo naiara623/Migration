@@ -17,13 +17,15 @@ import Testeidioma from "../pages/Testeidioma.jsx";
 import ChatBot from "../pages/ChatBot.jsx";
 import SobreNos from "../pages/SobreNos.jsx";
 import PerfilAdm from "../pages/pages adm/PerfilAdm.jsx";
+import ProdutosAlta from "../pages/ProdutosAlta.jsx";
+import OfertasAlta from "../pages/OfertasAlta.jsx";
 
 
 const router = createBrowserRouter([
     {path: "/", element: <BoasVindas />},
     {path: "/cadastro", element: <Cadastro />},
     {path: "/login", element: <Login />},
-    {path: "/ofertas", element: <Ofertas />},
+    {path: "/ofertas", element: <OfertasAlta />},
     {path: "/categorias", element: <Categorias />}, // Assuming Categorias is similar to Ofertas for now
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
     {path: "/minhasCompras", element: <MinhasCompras/>},
@@ -31,7 +33,7 @@ const router = createBrowserRouter([
     {path: "/car", element: <Carrinho/>},
     {path: "/Perfil-usuario", element: <PerfilUsuario/>},
     {path: "/loja", element: <Loja/>},
-    {path: "/produtos", element: <Produtos/>},
+    {path: "/produtos", element: <ProdutosAlta />},
     {path: "/endereco", element: <Endereco/>},
     {path: "/valiacao", element: <AvaliacaoProduto/>},
     {path: "/test", element: <Testeidioma/>},

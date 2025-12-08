@@ -40,10 +40,10 @@
 }
 
 .product-cardmun{
-    border: 1px solid var(--accent-tertiary);
+    /* border: 1px solid var(--accent-tertiary); */
     background-color: var(--bg-secondary);
     width: 16%;
-    height: 85%;
+    height: 82%;
     border-radius: 5px;
 }
 
@@ -52,40 +52,49 @@
 }
 
 .product-badge{
-    border: 2px solid orange;
+    /* border: 2px solid orange; */
 }
 
 .product-info1{
-    border: 2px solid palevioletred;
+    /* border: 2px solid palevioletred; */
     gap: 5px;
     /* height: 45%; */
     
 }
 
 .name-product{
-    border: 2px solid ;
+    /* border: 2px solid ; */
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .product-rating{
-    border: 2px solid rgb(143, 64, 0);
+    /* border: 2px solid rgb(143, 64, 0); */
     position: relative;
-    left: 3%;
-}
-
-.fa-star{
-    border: 2px solid salmon;
+    left: 9%;
 }
 
 .product-price{
-    border: 2px solid skyblue;
+    /* border: 2px solid skyblue; */
+    position: relative;
+    left: 15%;
 }
 
 .button-carrinho{
-border: 2px solid seagreen;
+/* border: 2px solid seagreen; */
+border: none;
 width: 70%;
-height: 30px;
+height: 40px;
 border-radius: 5px;
+position: relative;
+left: 15%;
+background-color: var(--accent-primary);
+color: var(--text-tertiary);
+font-size: 90%;
+}
+
+.button-carrinho:hover {
+  background-color: var(--accent-secondary);
+  color: var(--text-primary);
 }

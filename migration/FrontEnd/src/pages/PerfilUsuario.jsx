@@ -178,7 +178,7 @@ const carregarDadosUsuario = async () => {
                         </div>
                     )}
 
-                    <form onSubmit={handleEditarPerfil}>
+                    <form className='form-perfil' onSubmit={handleEditarPerfil}>
                         <div className='campo-formulario-nome-PRF' >
                             <label className='funcao-cor-Em-SE-SX' htmlFor="nome">
                                 {t("perfil.dadospessoais.nome")}
