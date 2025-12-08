@@ -9,6 +9,7 @@ function ConteineFino() {
   return (
     <div>
         <div className='conteine-fino-MC2' >
+
                     <div className='conteine-icon-nomeUsu-MC2'>
                         <div className='icone-user-MC2' >
                             <img src="User1.png" alt="" className='img-USER-MC2' />
@@ -17,6 +18,7 @@ function ConteineFino() {
                             <Link className='nomeUsuario-MC2' to='/Perfil-usuario'> <h3>{t("fino.info.usuario")}</h3></Link>
                         </div>
                     </div>
+                    
                     <div className='div-LINHA1-MC2' >
                         <div className='conteine-LINHA1-MC2'></div>
                     </div>
