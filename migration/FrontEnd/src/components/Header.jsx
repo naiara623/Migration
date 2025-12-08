@@ -54,7 +54,7 @@ const handleSearch = (e) => {
               {/* <li><Link  onClick={() => setOpenCategorias(true)}>Categorias</Link></li> */}
               <li><Link to="/ofertas">{t("navbar.nav.ofe")}</Link></li>
               <li><Link>{t("navbar.nav.con")}</Link></li>
-                <li><Link to="/loja">{t("navbar.nav.min")}</Link></li>
+                
             </ul>
 
              {/* Modal de Categorias */}

@@ -6,13 +6,13 @@
 }
 
 .navbar-PRF{
-    /* border: 4px solid rgb(200, 255, 0); */
+    border: 4px solid rgb(200, 255, 0);
     width: 100%;
     height:11%;
 }
 
 .conteine-preto-PRF{
-    /* border: 4px solid rgb(0, 0, 0); */
+    border: 4px solid rgb(0, 0, 0);
     width: 100%;
     height:89%;
     display: flex;
@@ -22,7 +22,7 @@
 }
 
 .conteine-fino-PRF{
-    /* border: 4px solid rgb(9, 190, 28); */
+    border: 4px solid rgb(9, 190, 28);
     width: 17%;
     height:80%;
     background-color: #ffffff;
@@ -33,14 +33,14 @@
 }
 
 .conteine-grosso-PRF{
-    /* border: 4px solid rgb(11, 166, 233); */
+    border: 4px solid rgb(11, 166, 233);
     width: 35%;
     height:80%;
     background-color: #ffffff;
 }
 
 .informação-pessoais-PRF{
-     /* border: 4px solid rgb(197, 165, 22); */
+     border: 4px solid rgb(197, 165, 22);
     width: 100%;
     height: 15%;
     text-align: center;
@@ -52,7 +52,7 @@
 }
 
 .conteine-LINHA2-PRF{
-     /* border: 1px solid rgb(80, 80, 84); */
+     border: 1px solid rgb(80, 80, 84);
     width: 100%;
     height: 0%;
     display: flex;
@@ -69,13 +69,13 @@
 }
 
 .div-vazia3{
-     /* border: 4px solid rgb(95, 5, 5); */
+     border: 4px solid rgb(95, 5, 5);
     width: 100%;
     height: 5%;
 }
 
 .campo-formulario-nome-PRF{
-    /* border: 4px solid rgb(95, 5, 5); */
+    border: 4px solid rgb(95, 5, 5);
     width: 100%;
     height: 15%;
     display: flex;
@@ -96,7 +96,7 @@
 } */
 
 .campo-formulario-Email-PRF{
-    /* border: 4px solid rgb(48, 22, 197); */
+    border: 4px solid rgb(48, 22, 197);
     width: 100%;
     height: 15%;
     display: flex;
@@ -115,7 +115,7 @@
 } */
 
 .campo-formulario-senha-PRF{
-    /* border: 4px solid rgb(197, 22, 142); */
+    border: 4px solid rgb(197, 22, 142);
     width: 100%;
     height: 15%;
     display: flex;
@@ -135,7 +135,7 @@
 } */
 
 .Numero-para-contato-PRF{
-     /* border: 4px solid rgb(59, 237, 68); */
+     border: 4px solid rgb(59, 237, 68);
     display: flex;
     width: 100%;
     height: 15%;
@@ -145,7 +145,7 @@
 
 
 .div-vazia-PRE{
-     /* border: 2px solid rgb(59, 237, 68); */
+     border: 2px solid rgb(59, 237, 68);
     width: 9%;
 
 
@@ -162,7 +162,7 @@
 
 .algumacoisa-PRE{
 
-     /* border: 2px solid rgb(59, 237, 68); */
+     border: 2px solid rgb(59, 237, 68);
     width: 82%;
 
 }
