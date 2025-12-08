@@ -1,0 +1,91 @@
+.Vermelho-Produtcs{
+    /* border: 2px solid red; */
+    height: 600px;
+}
+
+.test-produtis{
+    /* border: 2px solid purple; */
+    height: 25%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.produtos-featured{
+    /* border: 2px solid rgb(25, 0, 255); */
+    height: 75%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2%;
+}
+
+
+
+.Textc {
+  text-align: center;
+  margin-bottom: 40px;
+  color: var(--text-primary);
+  font-size: 2rem;
+  position: relative;
+}
+
+.Textc::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  background-color: var(--accent-tertiary);
+  margin: 10px auto 0;
+}
+
+.product-cardmun{
+    border: 1px solid var(--accent-tertiary);
+    background-color: var(--bg-secondary);
+    width: 16%;
+    height: 85%;
+    border-radius: 5px;
+}
+
+.product-image{
+  border: 2px solid ;
+}
+
+.product-badge{
+    border: 2px solid orange;
+}
+
+.product-info1{
+    border: 2px solid palevioletred;
+    gap: 5px;
+    /* height: 45%; */
+    
+}
+
+.name-product{
+    border: 2px solid ;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.product-rating{
+    border: 2px solid rgb(143, 64, 0);
+    position: relative;
+    left: 3%;
+}
+
+.fa-star{
+    border: 2px solid salmon;
+}
+
+.product-price{
+    border: 2px solid skyblue;
+}
+
+.button-carrinho{
+border: 2px solid seagreen;
+width: 70%;
+height: 30px;
+border-radius: 5px;
+}

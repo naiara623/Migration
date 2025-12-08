@@ -21,6 +21,7 @@ const {
   selectUser,
   updateUser,
   getCarrinhoByUserId,
+  
   addToCarrinho,
   updateCarrinhoItem,
   removeFromCarrinho,
@@ -35,17 +36,23 @@ const {
   removeCarrinhoItem,
   createPedidoWithItems,
   updateEnderecoEntrega,
-  getUserByEmail, // ADICIONAR ESTA FUNÇÃO QUE ESTÁ FALTANDO
-    // Produção (Novas)
+  getUserByEmail,
+  // Produção (CORRIGIDAS)
   createPedidoComRastreamento,
   registrarItemProducao,
   atualizarStatusProducao,
   getStatusDetalhadoPedido,
-  verificarPedidoCompleto
+  verificarPedidoCompleto,
+  getStatusProducaoByPedido,
+  // Endereços (NOVAS)
+  insertEndereco,
+  getEnderecoByUserId
 } = require("./db");
+
 // server.js - adicione no topo com os outros imports
 const QueueSmartIntegration = require('./queue-smart-integration');
-const queueSmart = new QueueSmartIntegration();
+const queueSmart = new QueueSmartIntegration('http://52.72.137.244:3000');
+
 // ==========================================
 // 🛠️ CONFIGURAÇÕES DO SERVIDOR
 // ==========================================
@@ -93,7 +100,6 @@ const storage = multer.diskStorage({
 // Servir arquivos estáticos da pasta uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
@@ -126,7 +132,7 @@ function autenticar(req, res, next) {
     });
   }
   
-  if (!req.session.user.id) {
+  if (!req.session.user.idusuarios) {
     console.log('❌ AUTENTICAÇÃO FALHOU: Sem ID de usuário na sessão');
     return res.status(401).json({ 
       erro: 'Sessão inválida',
@@ -134,14 +140,13 @@ function autenticar(req, res, next) {
     });
   }
   
-  console.log('✅ Autenticação bem-sucedida para usuário:', req.session.user.id);
+  console.log('✅ Autenticação bem-sucedida para usuário:', req.session.user.idusuarios);
   next();
 }
 
 // ==========================================
 // 🌐 ROTAS PÚBLICAS (NÃO PRECISAM DE AUTENTICAÇÃO)
 // ==========================================
-
 
 // Rota pública para obter produtos por categoria
 app.get('/api/produtos/public/categoria/:nome_categoria', async (req, res) => {
@@ -174,7 +179,6 @@ app.get('/api/produtos/public/categoria/:nome_categoria', async (req, res) => {
   }
 });
 
-
 // ✅ Nova rota: buscar produtos por nome ou descrição
 app.get('/api/produtos/public/search', async (req, res) => {
   const termo = req.query.q?.trim().toLowerCase();
@@ -205,7 +209,6 @@ app.get('/api/produtos/public/search', async (req, res) => {
   }
 });
 
-
 // Rota pública para obter categorias
 app.get('/api/categorias/public', async (req, res) => {
   try {
@@ -218,15 +221,25 @@ app.get('/api/categorias/public', async (req, res) => {
   }
 });
 
-// Rota pública para cadastro de usuário
+// Rota pública para cadastro de usuário (CORRIGIDA)
 app.post('/api/cadastro', async (req, res) => {
-  console.log('req.body:', req.body);
-  const { nome_usuario, email_user, senhauser, cep, estado_cidade, nome_rua, complemento, numero, referencia } = req.body;
+  console.log('📝 req.body:', req.body);
+  const { nome_usuario, email_user, senhauser, numero } = req.body; // CORRIGIDO: email_user
+  
   try {
-    await insertUser({ nome_usuario, email_user, senhauser, cep, estado_cidade, nome_rua, complemento, numero, referencia });
-    res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso!' });
+    const usuario = await insertUser({ 
+      nome_usuario, 
+      email_user, // CORRIGIDO
+      senhauser, 
+      numero 
+    });
+    
+    res.status(201).json({ 
+      mensagem: 'Usuário cadastrado com sucesso!',
+      usuario 
+    });
   } catch (error) {
-    console.error('Erro ao cadastrar usuário:', error);
+    console.error('❌ Erro ao cadastrar usuário:', error);
     if (error.message === 'Email já cadastrado') {
       res.status(409).json({ erro: 'Email já cadastrado' });
     } else {
@@ -235,32 +248,169 @@ app.post('/api/cadastro', async (req, res) => {
   }
 });
 
-// Rota pública para login
+// Rota pública para login (CORRIGIDA)
 app.post('/api/login', async (req, res) => {
-  const { email_user, senhauser } = req.body;
+  const { email_user, senhauser } = req.body; // CORRIGIDO: email_user
+  
   try {
-    const usuario = await selectUser(email_user, senhauser);
+    const usuario = await selectUser(email_user, senhauser); // CORRIGIDO
+    
     if (usuario) {
       req.session.user = {
-        id: usuario.idusuarios,
-        email_user: usuario.email_user
+        idusuarios: usuario.idusuarios,
+        email_user: usuario.email_user // CORRIGIDO
       };
       
       req.session.save((err) => {
         if (err) {
-          console.error('Erro ao salvar sessão:', err);
+          console.error('❌ Erro ao salvar sessão:', err);
           return res.status(500).json({ erro: 'Erro interno do servidor' });
         }
-        console.log("Sessão salva - User ID:", req.session.user.id);
-        res.json({ sucesso: true, usuario });
+        console.log("✅ Sessão salva - User ID:", req.session.user.idusuarios);
+        res.json({ 
+          sucesso: true, 
+          usuario: {
+            idusuarios: usuario.idusuarios,
+            nome_usuario: usuario.nome_usuario,
+            email_user: usuario.email_user,
+            numero: usuario.numero
+          }
+        });
       });
     } else {
       res.status(401).json({ erro: 'Email ou senha incorretos' });
     }
   } catch (error) {
-    console.error('Erro ao fazer login:', error);
+    console.error('❌ Erro ao fazer login:', error);
     res.status(500).json({ erro: 'Erro ao fazer login' });
   }
+});
+
+// Rota para obter dados completos do usuário (CORRIGIDA)
+app.get('/api/usuario-completo', autenticar, async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const result = await client.query(
+            'SELECT idusuarios, nome_usuario, email_user, senhauser, numero FROM usuarios WHERE idusuarios = $1', // CORRIGIDO
+            [req.session.user.idusuarios]
+        );
+        client.release();
+
+        if (result.rows.length > 0) {
+            const usuario = result.rows[0];
+            res.json({
+                idusuarios: usuario.idusuarios,
+                nome: usuario.nome_usuario,
+                email: usuario.email_user, // CORRIGIDO
+                senha: usuario.senhauser,
+                numero: usuario.numero
+            });
+        } else {
+            res.status(404).json({ erro: 'Usuário não encontrado' });
+        }
+    } catch (error) {
+        console.error('❌ Erro ao buscar usuário completo:', error);
+        res.status(500).json({ erro: 'Erro ao buscar dados do usuário' });
+    }
+});
+
+// Rota para atualizar usuário (CORRIGIDA)
+app.put('/api/usuarios/:email', autenticar, async (req, res) => {
+    const { email } = req.params;
+    const { nome_usuario, email_user, numero, senhauser } = req.body; // CORRIGIDO
+    
+    try {
+        const client = await pool.connect();
+        
+        let sql;
+        let values;
+        
+        if (senhauser) {
+            // Se senha foi fornecida, atualizar com senha
+            sql = `
+                UPDATE usuarios
+                SET nome_usuario = $1,
+                    email_user = $2, -- CORRIGIDO
+                    numero = $3,
+                    senhauser = $4
+                WHERE email_user = $5 -- CORRIGIDO
+                RETURNING *;
+            `;
+            values = [
+                nome_usuario,
+                email_user, // CORRIGIDO
+                numero,
+                senhauser,
+                email
+            ];
+        } else {
+            // Se senha não foi fornecida, manter senha atual
+            sql = `
+                UPDATE usuarios
+                SET nome_usuario = $1,
+                    email_user = $2, -- CORRIGIDO
+                    numero = $3
+                WHERE email_user = $4 -- CORRIGIDO
+                RETURNING *;
+            `;
+            values = [
+                nome_usuario,
+                email_user, // CORRIGIDO
+                numero,
+                email
+            ];
+        }
+
+        const result = await client.query(sql, values);
+        client.release();
+
+        if (result.rows.length > 0) {
+            const { senhauser, ...userWithoutPassword } = result.rows[0];
+            res.json(userWithoutPassword);
+        } else {
+            res.status(404).json({ erro: 'Usuário não encontrado' });
+        }
+    } catch (error) {
+        console.error('❌ Erro ao atualizar usuário:', error);
+        res.status(500).json({ erro: 'Erro ao atualizar usuário' });
+    }
+});
+
+// Rota para deletar usuário (CORRIGIDA)
+app.delete('/api/usuarios/:email', autenticar, async (req, res) => {
+    const { email } = req.params;
+    
+    try {
+        const client = await pool.connect();
+        
+        // Verificar se o usuário existe e pertence à sessão
+        const userCheck = await client.query(
+            'SELECT idusuarios FROM usuarios WHERE email_user = $1', // CORRIGIDO
+            [email]
+        );
+        
+        if (userCheck.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ erro: 'Usuário não encontrado' });
+        }
+        
+        if (userCheck.rows[0].idusuarios !== req.session.user.idusuarios) {
+            client.release();
+            return res.status(403).json({ erro: 'Não autorizado' });
+        }
+        
+        // Deletar usuário
+        await client.query('DELETE FROM usuarios WHERE email_user = $1', [email]); // CORRIGIDO
+        client.release();
+        
+        // Destruir sessão
+        req.session.destroy();
+        
+        res.json({ mensagem: 'Usuário deletado com sucesso' });
+    } catch (error) {
+        console.error('❌ Erro ao deletar usuário:', error);
+        res.status(500).json({ erro: 'Erro ao deletar usuário' });
+    }
 });
 
 // Rota pública para verificar sessão
@@ -289,20 +439,15 @@ app.get('/api/check-session-detailed', (req, res) => {
 
 // Rota pública para categorias (mantida para compatibilidade)
 app.get('/api/categorias', async (req, res) => {
-  console.log('Requisição recebida em /api/categorias');
+  console.log('🌐 Requisição recebida em /api/categorias');
   try {
     const categorias = await selectAllCategories();
     res.json(categorias);
   } catch (error) {
-    console.error('Erro ao buscar categorias:', error);
+    console.error('❌ Erro ao buscar categorias:', error);
     res.status(500).json({ erro: 'Erro ao buscar categorias' });
   }
 });
-
-// ==========================================
-// 🔐 ROTAS PROTEGIDAS (PRECISAM DE AUTENTICAÇÃO)
-// ==========================================
-
 
 // 🆕 Rota pública para listar todos os produtos disponíveis
 app.get('/api/produtos/public', async (req, res) => {
@@ -324,17 +469,62 @@ app.get('/api/produtos/public', async (req, res) => {
   }
 });
 
+// ==========================================
+// 🏠 ROTAS DE ENDEREÇO (NOVAS)
+// ==========================================
 
+// Rota para cadastrar endereço
+app.post('/api/enderecos', autenticar, async (req, res) => {
+  try {
+    const { cep, estado, complemento, numero, cidade, bairro } = req.body;
+    
+    const endereco = await insertEndereco({
+      cep,
+      estado,
+      complemento,
+      numero,
+      cidade,
+      bairro
+    });
+    
+    res.status(201).json({
+      mensagem: 'Endereço cadastrado com sucesso!',
+      endereco
+    });
+  } catch (error) {
+    console.error('❌ Erro ao cadastrar endereço:', error);
+    res.status(500).json({ erro: 'Erro ao cadastrar endereço' });
+  }
+});
 
+// Rota para obter endereço do usuário
+app.get('/api/enderecos', autenticar, async (req, res) => {
+  try {
+    const endereco = await getEnderecoByUserId(req.session.user.idusuarios);
+    
+    if (endereco) {
+      res.json(endereco);
+    } else {
+      res.status(404).json({ erro: 'Endereço não encontrado' });
+    }
+  } catch (error) {
+    console.error('❌ Erro ao buscar endereço:', error);
+    res.status(500).json({ erro: 'Erro ao buscar endereço' });
+  }
+});
+
+// ==========================================
+// 🔐 ROTAS PROTEGIDAS (PRECISAM DE AUTENTICAÇÃO)
+// ==========================================
 
 // Rota protegida para obter produtos (apenas para usuários logados)
 app.get('/api/produtos', autenticar, async (req, res) => {
   try {
-    console.log('🔐 Buscando produtos protegidos para usuário:', req.session.user.id);
+    console.log('🔐 Buscando produtos protegidos para usuário:', req.session.user.idusuarios);
     const products = await selectAllProducts();
     res.json(products);
   } catch (err) {
-    console.error('Erro ao buscar produtos:', err.message || err);
+    console.error('❌ Erro ao buscar produtos:', err.message || err);
     res.status(500).json({ message: 'Erro ao buscar produtos' });
   }
 });
@@ -343,7 +533,7 @@ app.get('/api/produtos', autenticar, async (req, res) => {
 app.get('/api/meus-produtos', autenticar, async (req, res) => {
   console.log('🔍 INICIANDO /api/meus-produtos');
   console.log('👤 Sessão completa:', req.session);
-  console.log('🆔 User ID na sessão:', req.session.user?.id);
+  console.log('🆔 User ID na sessão:', req.session.user?.idusuarios);
   
   try {
     const client = await pool.connect();
@@ -353,11 +543,11 @@ app.get('/api/meus-produtos', autenticar, async (req, res) => {
       INNER JOIN categorias c ON p.id_categoria = c.id_categoria 
       WHERE p.idusuarios = $1
       ORDER BY p.data_criacao DESC
-    `, [req.session.user.id]);
+    `, [req.session.user.idusuarios]);
     
     client.release();
     
-    console.log(`✅ Busca concluída: ${result.rows.length} produtos para usuário ${req.session.user.id}`);
+    console.log(`✅ Busca concluída: ${result.rows.length} produtos para usuário ${req.session.user.idusuarios}`);
     res.json(result.rows);
     
   } catch (error) {
@@ -393,7 +583,7 @@ app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, r
       id_categoria: categoriaObj.id_categoria,
       estoque: parseInt(estoque) || 0,
       imagem_url,
-      idusuarios: req.session.user.id
+      idusuarios: req.session.user.idusuarios
     });
 
     res.status(201).json({ 
@@ -401,7 +591,7 @@ app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, r
       product 
     });
   } catch (error) {
-    console.error('Erro ao cadastrar produto:', error);
+    console.error('❌ Erro ao cadastrar produto:', error);
     res.status(500).json({ erro: 'Erro ao cadastrar produto' });
   }
 });
@@ -434,7 +624,7 @@ app.put('/api/produtos/:id', autenticar, upload.single('imagem_url'), async (req
     }
     res.json({ mensagem: 'Produto atualizado com sucesso!', product: updatedProduct });
   } catch (error) {
-    console.error('Erro ao atualizar produto:', error);
+    console.error('❌ Erro ao atualizar produto:', error);
     res.status(500).json({ erro: 'Erro ao atualizar produto' });
   }
 });
@@ -450,13 +640,13 @@ app.delete('/api/produtos/:id', autenticar, async (req, res) => {
     if (!existing) {
       return res.status(404).json({ erro: 'Produto não encontrado' });
     }
-    if (existing.idusuarios !== req.session.user.id) {
+    if (existing.idusuarios !== req.session.user.idusuarios) {
       return res.status(403).json({ erro: 'Você não tem permissão para deletar este produto' });
     }
     const deletedProduct = await deleteProductById(id_produto);
     res.json({ mensagem: 'Produto deletado com sucesso!', product: deletedProduct });
   } catch (error) {
-    console.error('Erro ao deletar produto:', error);
+    console.error('❌ Erro ao deletar produto:', error);
     res.status(500).json({ erro: 'Erro ao deletar produto' });
   }
 });
@@ -471,7 +661,7 @@ app.get('/api/produtos/:id', autenticar, async (req, res) => {
     }
     res.json(product);
   } catch (error) {
-    console.error('Erro ao buscar produto:', error);
+    console.error('❌ Erro ao buscar produto:', error);
     res.status(500).json({ erro: 'Erro ao buscar produto' });
   }
 });
@@ -482,20 +672,20 @@ app.get('/api/produtos/:id', autenticar, async (req, res) => {
 
 app.get('/api/carrinho', autenticar, async (req, res) => {
   try {
-    const carrinhoItens = await getCarrinhoByUserId(req.session.user.id);
+    const carrinhoItens = await getCarrinhoByUserId(req.session.user.idusuarios);
     res.json(carrinhoItens);
   } catch (error) {
-    console.error('Erro ao buscar carrinho:', error);
+    console.error('❌ Erro ao buscar carrinho:', error);
     res.status(500).json({ erro: 'Erro ao buscar carrinho' });
   }
 });
-// Atualize a rota POST /api/carrinho para salvar a configuração:
 
+// Atualize a rota POST /api/carrinho para salvar a configuração:
 app.post('/api/carrinho', autenticar, async (req, res) => {
     const { id_produto, quantidade = 1, tamanho = '', cor = '', configuracao = {} } = req.body;
     
     console.log('🛒 Recebendo requisição para adicionar ao carrinho:', {
-        usuario: req.session.user.id,
+        usuario: req.session.user.idusuarios,
         id_produto,
         quantidade,
         tamanho,
@@ -510,7 +700,7 @@ app.post('/api/carrinho', autenticar, async (req, res) => {
         const existingItem = await client.query(
             `SELECT * FROM carrinho 
              WHERE idusuarios = $1 AND id_produto = $2 AND tamanho = $3 AND cor = $4`,
-            [req.session.user.id, id_produto, tamanho, cor]
+            [req.session.user.idusuarios, id_produto, tamanho, cor]
         );
 
         if (existingItem.rows.length > 0) {
@@ -520,7 +710,7 @@ app.post('/api/carrinho', autenticar, async (req, res) => {
                  configuracao = $2
                  WHERE idusuarios = $3 AND id_produto = $4 AND tamanho = $5 AND cor = $6
                  RETURNING *`,
-                [quantidade, configuracao, req.session.user.id, id_produto, tamanho, cor]
+                [quantidade, configuracao, req.session.user.idusuarios, id_produto, tamanho, cor]
             );
             client.release();
             return res.json({ mensagem: 'Item atualizado no carrinho', item: result.rows[0] });
@@ -529,7 +719,7 @@ app.post('/api/carrinho', autenticar, async (req, res) => {
             const result = await client.query(
                 `INSERT INTO carrinho (idusuarios, id_produto, quantidade, tamanho, cor, configuracao) 
                  VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-                [req.session.user.id, id_produto, quantidade, tamanho, cor, configuracao]
+                [req.session.user.idusuarios, id_produto, quantidade, tamanho, cor, configuracao]
             );
             client.release();
             return res.status(201).json({ 
@@ -552,7 +742,7 @@ app.put('/api/carrinho/:id', autenticar, async (req, res) => {
     const updatedItem = await updateCarrinhoItem(req.params.id, quantidade);
     res.json({ mensagem: 'Carrinho atualizado', item: updatedItem });
   } catch (error) {
-    console.error('Erro ao atualizar carrinho:', error);
+    console.error('❌ Erro ao atualizar carrinho:', error);
     res.status(500).json({ erro: 'Erro ao atualizar carrinho' });
   }
 });
@@ -560,14 +750,14 @@ app.put('/api/carrinho/:id', autenticar, async (req, res) => {
 // 🧹 LIMPAR TODO O CARRINHO
 app.delete('/api/carrinho/limpar', autenticar, async (req, res) => {
   try {
-    const userId = req.session.user.id;
+    const userId = req.session.user.idusuarios;
 
     // Chama a função que deleta tudo desse usuário
     await clearCarrinho(userId);
 
     res.json({ mensagem: 'Carrinho limpo com sucesso!' });
   } catch (error) {
-    console.error('Erro ao limpar carrinho:', error);
+    console.error('❌ Erro ao limpar carrinho:', error);
     res.status(500).json({ erro: 'Erro ao limpar carrinho' });
   }
 });
@@ -578,108 +768,192 @@ app.delete('/api/carrinho/:id', autenticar, async (req, res) => {
     const removedItem = await removeFromCarrinho(req.params.id);
     res.json({ mensagem: 'Item removido do carrinho', item: removedItem });
   } catch (error) {
-    console.error('Erro ao remover do carrinho:', error);
+    console.error('❌ Erro ao remover do carrinho:', error);
     res.status(500).json({ erro: 'Erro ao remover do carrinho' });
   }
 });
 
-
 app.get('/api/carrinho/quantidade', autenticar, async (req, res) => {
   try {
-    const result = await pool.query('SELECT COUNT(*) as quantidade FROM carrinho WHERE idusuarios = $1', [req.session.user.id]);
+    const result = await pool.query('SELECT COUNT(*) as quantidade FROM carrinho WHERE idusuarios = $1', [req.session.user.idusuarios]);
     res.json({ quantidade: parseInt(result.rows[0].quantidade) });
   } catch (error) {
-    console.error('Erro ao buscar quantidade do carrinho:', error);
+    console.error('❌ Erro ao buscar quantidade do carrinho:', error);
     res.status(500).json({ erro: 'Erro interno do servidor' });
   }
 });
 
 // ==========================================
-// 📦 ROTAS DE PEDIDOS (PROTEGIDAS)
+// 👤 ROTAS DO USUÁRIO (PROTEGIDAS - CORRIGIDAS)
 // ==========================================
-
-app.post('/api/pedidos', autenticar, async (req, res) => {
-  console.log('📦 Requisição recebida:', req.body);
-  console.log('👤 Usuário da sessão:', req.session.user);
-
-  try {
-    const { total, metodo_pagamento, endereco_entrega, itens } = req.body;
-    if (!Array.isArray(itens) || itens.length === 0) {
-      return res.status(400).json({ erro: 'Itens do pedido inválidos' });
-    }
-
-    const pedido = await createPedidoWithItems({ 
-      idusuarios: req.session.user?.id, 
-      total, 
-      metodo_pagamento, 
-      endereco_entrega, 
-      itens 
-    });
-
-    res.status(201).json({ mensagem: 'Pedido criado com sucesso!', pedido });
-  } catch (error) {
-    console.error('❌ Erro ao criar pedido:', error);
-    res.status(500).json({ erro: 'Erro ao criar pedido', detalhes: error.message });
-  }
-});
-
-
-app.get('/api/pedidos', autenticar, async (req, res) => {
-  try {
-    const pedidos = await getPedidosByUserId(req.session.user.id);
-    res.json(pedidos);
-  } catch (error) {
-    console.error('Erro ao buscar pedidos:', error);
-    res.status(500).json({ erro: 'Erro ao buscar pedidos' });
-  }
-});
-
-// ==========================================
-// 👤 ROTAS DO USUÁRIO (PROTEGIDAS)
-// ==========================================
-
 app.get('/api/usuario-atual', autenticar, async (req, res) => {
   try {
-    const usuario = await getUserByEmail(req.session.user.email_user);
-    if (usuario) {
+    console.log('🔍 Sessão atual:', req.session.user);
+
+    if (!req.session.user || !req.session.user.idusuarios) {
+      return res.status(401).json({ erro: 'Usuário não autenticado' });
+    }
+
+    const client = await pool.connect();
+    const result = await client.query(
+      `SELECT idusuarios, nome_usuario, email_user, numero
+       FROM usuarios 
+       WHERE idusuarios = $1`,
+      [req.session.user.idusuarios]
+    );
+    client.release();
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ erro: 'Usuário não encontrado' });
+    }
+
+    const usuario = result.rows[0];
+
+    const userData = {
+      idusuarios: usuario.idusuarios,
+      nome: usuario.nome_usuario,
+      email: usuario.email_user,
+      numero: usuario.numero
+      // senha removida por segurança
+    };
+
+    console.log('✅ Dados enviados ao front:', userData);
+    res.json(userData);
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar usuário atual:', error);
+    res.status(500).json({
+      erro: 'Erro interno ao buscar usuário',
+      detalhes: error.message
+    });
+  }
+});
+
+
+
+// Rota para atualizar usuário por ID
+app.put('/api/usuarios/:id', autenticar, async (req, res) => {
+  const userId = parseInt(req.params.idusuarios);
+  const { nome, email, numero, senha } = req.body;
+  
+  console.log('📝 Atualizando usuário:', { userId, nome, email, numero });
+  
+  // Verificar se o usuário da sessão é o mesmo que está sendo atualizado
+  if (userId !== req.session.user.idusuarios) {
+    return res.status(403).json({ erro: 'Não autorizado' });
+  }
+
+  try {
+    const client = await pool.connect();
+    
+    let sql;
+    let values;
+    
+    if (senha && senha.trim() !== '') {
+      // Atualizar com senha
+      sql = `
+        UPDATE usuarios 
+        SET nome_usuario = $1, email_user = $2, numero = $3, senhauser = $4
+        WHERE idusuarios = $5 
+        RETURNING idusuarios, nome_usuario, email_user, numero
+      `;
+      values = [nome, email, numero, senha, userId];
+    } else {
+      // Atualizar sem senha
+      sql = `
+        UPDATE usuarios 
+        SET nome_usuario = $1, email_user = $2, numero = $3
+        WHERE idusuarios = $5 
+        RETURNING idusuarios, nome_usuario, email_user, numero
+      `;
+      values = [nome, email, numero, userId];
+    }
+
+    const result = await client.query(sql, values);
+    client.release();
+
+    if (result.rows.length > 0) {
+      const usuarioAtualizado = result.rows[0];
+      console.log('✅ Usuário atualizado com sucesso:', usuarioAtualizado);
+      
       res.json({
-        id: usuario.idusuarios,
-        nome: usuario.nome_usuario,
-        email: usuario.email_user,
-        senha: usuario.senhauser,
-        estado: usuario.estado_cidade,
-        rua: usuario.nome_rua,
-        complemento: usuario.complemento,
-        numero: usuario.numero,
-        referencia: usuario.referencia,
-        followers: 245,
-        following: 178
+        mensagem: 'Perfil atualizado com sucesso!',
+        usuario: usuarioAtualizado
       });
     } else {
+      console.log('❌ Usuário não encontrado para atualização');
       res.status(404).json({ erro: 'Usuário não encontrado' });
     }
   } catch (error) {
-    console.error('Erro ao buscar usuário:', error);
-    res.status(500).json({ erro: 'Erro ao buscar usuário' });
+    console.error('❌ Erro ao atualizar usuário:', error);
+    
+    // Verificar se é erro de email duplicado
+    if (error.code === '23505') {
+      res.status(409).json({ erro: 'Email já está em uso' });
+    } else {
+      res.status(500).json({ 
+        erro: 'Erro ao atualizar perfil',
+        detalhes: error.message 
+      });
+    }
   }
 });
 
-app.put('/api/usuarios/:email', autenticar, async (req, res) => {
-  const { email } = req.params;
-  const { nome_usuario, email_user, estado_cidade, nome_rua, complemento, numero, referencia } = req.body;
+// Rota para deletar usuário por ID
+app.delete('/api/usuarios/:id', autenticar, async (req, res) => {
+  const userId = parseInt(req.params.idusuarios);
+  
+  console.log('🗑️ Deletando usuário:', userId);
+  
+  // Verificar se o usuário da sessão é o mesmo que está sendo deletado
+  if (userId !== req.session.user.idusuarios) {
+    return res.status(403).json({ erro: 'Não autorizado' });
+  }
+
   try {
-    const updatedUser = await updateUser(email_user, { nome_usuario, email_user, estado_cidade, nome_rua, complemento, numero, referencia });
-    res.json(updatedUser);
+    const client = await pool.connect();
+    
+    // Verificar se o usuário existe
+    const userCheck = await client.query(
+      'SELECT idusuarios FROM usuarios WHERE idusuarios = $1',
+      [userId]
+    );
+    
+    if (userCheck.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ erro: 'Usuário não encontrado' });
+    }
+
+    // Deletar usuário (isso deve acionar CASCADE para pedidos, carrinho, etc.)
+    await client.query('DELETE FROM usuarios WHERE idusuarios = $1', [userId]);
+    client.release();
+    
+    // Destruir sessão
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('❌ Erro ao destruir sessão:', err);
+      }
+      console.log('✅ Sessão destruída após deletar usuário');
+    });
+    
+    res.json({ 
+      mensagem: 'Conta deletada com sucesso!',
+      redirecionar: '/'
+    });
+    
   } catch (error) {
-    console.error('Erro ao atualizar usuário:', error);
-    res.status(500).json({ erro: 'Erro ao atualizar usuário' });
+    console.error('❌ Erro ao deletar usuário:', error);
+    res.status(500).json({ 
+      erro: 'Erro ao deletar conta',
+      detalhes: error.message 
+    });
   }
 });
 
 app.post('/api/logout', autenticar, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      console.error('Erro ao fazer logout:', err);
+      console.error('❌ Erro ao fazer logout:', err);
       return res.status(500).json({ erro: 'Erro ao fazer logout' });
     }
     res.json({ sucesso: true, mensagem: 'Logout realizado com sucesso' });
@@ -687,106 +961,10 @@ app.post('/api/logout', autenticar, (req, res) => {
 });
 
 // ==========================================
-// 🐛 ROTAS DE DEBUG
+// 🏭 ROTAS DE PRODUÇÃO E MONITORAMENTO (CORRIGIDAS)
 // ==========================================
 
-app.get('/api/debug/produtos', async (req, res) => {
-  try {
-    const client = await pool.connect();
-    const result = await client.query(`
-      SELECT p.*, u.email_user, u.nome_usuario 
-      FROM produtos p 
-      LEFT JOIN usuarios u ON p.idusuarios = u.idusuarios 
-      ORDER BY p.data_criacao DESC
-    `);
-    client.release();
-    console.log('🐛 DEBUG - Todos os produtos no banco:', result.rows);
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Erro no debug:', error);
-    res.status(500).json({ erro: error.message });
-  }
-});
-
-// ==========================================
-// 🚀 INICIALIZAÇÃO DO SERVIDOR
-// ==========================================
-
-
-
-
-// E adicione a rota de callback
-app.post('/api/smart4-callback', async (req, res) => {
-    console.log('🔄 Callback recebido da Queue Smart 4.0:', req.body);
-
-    try {
-        const { itemId, status, stage, progress, payload } = req.body;
-
-        // Atualizar status do pedido no banco
-        await atualizarStatusPedido(payload.pedidoInfo.id_pedido, {
-            status_maquina: status,
-            estagio_maquina: stage,
-            progresso_maquina: progress,
-            item_id_maquina: itemId
-        });
-
-        // Se o pedido foi concluído
-        if (status === 'COMPLETED') {
-            console.log(`✅ Pedido ${payload.pedidoInfo.id_pedido} concluído pela máquina`);
-            // Aqui você pode enviar email, notificar usuário, etc.
-        }
-
-        // Se houve falha
-        if (status === 'FAILED') {
-            console.error(`❌ Pedido ${payload.pedidoInfo.id_pedido} falhou na máquina`);
-            // Notificar administrador
-        }
-
-        res.status(200).json({ received: true });
-
-    } catch (error) {
-        console.error('Erro ao processar callback:', error);
-        res.status(500).json({ error: 'Erro interno' });
-    }
-});
-
-// Função para atualizar status do pedido
-async function atualizarStatusPedido(id_pedido, dadosAtualizacao) {
-    const client = await pool.connect();
-    try {
-        const result = await client.query(`
-            UPDATE pedidos 
-            SET status_maquina = $1, 
-                estagio_maquina = $2, 
-                progresso_maquina = $3,
-                item_id_maquina = $4,
-                atualizado_em = NOW()
-            WHERE id_pedido = $5
-            RETURNING *
-        `, [
-            dadosAtualizacao.status_maquina,
-            dadosAtualizacao.estagio_maquina,
-            dadosAtualizacao.progresso_maquina,
-            dadosAtualizacao.item_id_maquina,
-            id_pedido
-        ]);
-        
-        return result.rows[0];
-    } catch (error) {
-        console.error('Erro ao atualizar status do pedido:', error);
-        throw error;
-    } finally {
-        client.release();
-    }
-}
-
-// server.js - adicione estas rotas após as rotas existentes
-
-// ==========================================
-// 🏭 ROTAS DE PRODUÇÃO E MONITORAMENTO
-// ==========================================
-
-// Rota para criar pedido e enviar para produção
+// Rota para criar pedido e enviar para produção (CORRIGIDA)
 app.post('/api/pedidos/producao', autenticar, async (req, res) => {
     console.log('🏭 Criando pedido com monitoramento de produção:', req.body);
 
@@ -799,7 +977,7 @@ app.post('/api/pedidos/producao', autenticar, async (req, res) => {
 
         // 1. Criar pedido no banco
         const pedido = await createPedidoComRastreamento({ 
-            idusuarios: req.session.user.id, 
+            idusuarios: req.session.user.idusuarios, 
             total, 
             metodo_pagamento, 
             endereco_entrega, 
@@ -824,7 +1002,7 @@ app.post('/api/pedidos/producao', autenticar, async (req, res) => {
                         item.quantidade
                     );
 
-                    // Registrar cada item na produção
+                    // Registrar cada item na produção (CORRIGIDO - usando producao)
                     for (const itemMaquina of itemsMaquina) {
                         const itemProducao = await registrarItemProducao({
                             id_pedido: pedido.id_pedido,
@@ -833,7 +1011,10 @@ app.post('/api/pedidos/producao', autenticar, async (req, res) => {
                             item_unit: itemMaquina.item_unit,
                             item_id_maquina: itemMaquina.item_id_maquina,
                             order_id: itemMaquina.order_id,
-                            slot_expedicao: `SLOT-${Math.floor(Math.random() * 20) + 1}` // Slot aleatório para exemplo
+                            status_maquina: 'PENDENTE',
+                            estagio_maquina: 'AGUARDANDO',
+                            progresso_maquina: '0%',
+                            slot_expedicao: `SLOT-${Math.floor(Math.random() * 20) + 1}`
                         });
                         
                         resultadosProducao.push(itemProducao);
@@ -864,17 +1045,17 @@ app.post('/api/pedidos/producao', autenticar, async (req, res) => {
     }
 });
 
-// Rota para receber callbacks da Queue Smart 4.0 (ATUALIZADA)
+// Rota para receber callbacks da Queue Smart 4.0 (CORRIGIDA)
 app.post('/api/smart4-callback', async (req, res) => {
     console.log('🔄 Callback recebido da Queue Smart 4.0:', req.body);
 
     try {
         const { itemId, status, stage, progress, payload } = req.body;
 
-        // Encontrar o item de produção correspondente
+        // Encontrar o item de produção correspondente (CORRIGIDO - usando producao)
         const client = await pool.connect();
         const itemProducao = await client.query(
-            'SELECT * FROM producao_itens WHERE item_id_maquina = $1',
+            'SELECT * FROM producao WHERE item_id_maquina = $1', // CORRIGIDO
             [itemId]
         );
 
@@ -885,7 +1066,7 @@ app.post('/api/smart4-callback', async (req, res) => {
 
         const producaoItem = itemProducao.rows[0];
 
-        // Atualizar status do item de produção
+        // Atualizar status do item de produção (CORRIGIDO)
         await atualizarStatusProducao(producaoItem.id_producao, {
             status_maquina: status,
             estagio_maquina: stage,
@@ -913,12 +1094,12 @@ app.post('/api/smart4-callback', async (req, res) => {
         res.status(200).json({ received: true, updated: true });
 
     } catch (error) {
-        console.error('Erro ao processar callback:', error);
+        console.error('❌ Erro ao processar callback:', error);
         res.status(500).json({ error: 'Erro interno' });
     }
 });
 
-// Rota para obter status detalhado do pedido
+// Rota para obter status detalhado do pedido (CORRIGIDA)
 app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
     console.log(`🔍 [DEBUG] Iniciando busca de status para pedido: ${req.params.id}`);
     console.log(`🔍 [DEBUG] Usuário autenticado:`, req.session.user);
@@ -934,32 +1115,48 @@ app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
         console.log(`🔍 [DEBUG] Buscando status detalhado para pedido: ${id_pedido}`);
         
         const statusDetalhado = await getStatusDetalhadoPedido(id_pedido);
-        console.log(`✅ [DEBUG] Dados brutos retornados:`, statusDetalhado);
+        console.log(`✅ [DEBUG] Dados retornados:`, statusDetalhado);
         
-        // Verificar se o pedido pertence ao usuário
-        const pedido = statusDetalhado[0];
-        if (!pedido) {
-            console.log(`❌ [DEBUG] Pedido ${id_pedido} não encontrado`);
-            return res.status(404).json({ erro: 'Pedido não encontrado' });
-        }
+        // Se for um objeto (nova estrutura)
+        if (statusDetalhado.pedido) {
+            // Verificar se o pedido pertence ao usuário
+            if (statusDetalhado.pedido.idusuarios !== req.session.user.idusuarios) {
+                console.log(`❌ [DEBUG] Acesso não autorizado - Pedido pertence a outro usuário`);
+                return res.status(403).json({ erro: 'Acesso não autorizado a este pedido' });
+            }
 
-        console.log(`🔍 [DEBUG] Pedido encontrado - ID Usuário: ${pedido.idusuarios}, Sessão Usuário: ${req.session.user.id}`);
-        
-        if (pedido.idusuarios !== req.session.user.id) {
-            console.log(`❌ [DEBUG] Acesso não autorizado - Pedido pertence a outro usuário`);
-            return res.status(403).json({ erro: 'Acesso não autorizado a este pedido' });
-        }
+            console.log(`✅ [DEBUG] Status final retornado para pedido ${id_pedido}`);
+            res.json(statusDetalhado);
+        } else {
+            // Estrutura antiga (array) - manter compatibilidade
+            const pedido = statusDetalhado[0];
+            if (!pedido) {
+                console.log(`❌ [DEBUG] Pedido ${id_pedido} não encontrado`);
+                return res.status(404).json({ erro: 'Pedido não encontrado' });
+            }
 
-        // Agrupar por item do pedido
-        const itensAgrupados = {};
-        statusDetalhado.forEach((item, index) => {
-            console.log(`🔍 [DEBUG] Processando item ${index}:`, item);
+            console.log(`🔍 [DEBUG] Pedido encontrado - ID Usuário: ${pedido.idusuarios}, Sessão Usuário: ${req.session.user.idusuarios}`);
             
-            const itemKey = item.id_pedido_item || `item-${item.id_produto}-${index}`;
+            if (pedido.idusuarios !== req.session.user.idusuarios) {
+                console.log(`❌ [DEBUG] Acesso não autorizado - Pedido pertence a outro usuário`);
+                return res.status(403).json({ erro: 'Acesso não autorizado a este pedido' });
+            }
+
+            // Buscar dados de produção separadamente
+            const producaoItens = await getStatusProducaoByPedido(id_pedido);
             
-            if (!itensAgrupados[itemKey]) {
-                itensAgrupados[itemKey] = {
-                    id_pedido_item: item.id_pedido_item,
+            const resultado = {
+                pedido: {
+                    id_pedido: pedido.id_pedido,
+                    idusuarios: pedido.idusuarios,
+                    status_geral: pedido.status_geral,
+                    total: pedido.total,
+                    metodo_pagamento: pedido.metodo_pagamento,
+                    data_pedido: pedido.data_pedido,
+                    atualizado_em: pedido.atualizado_em
+                },
+                itens: statusDetalhado.map(item => ({
+                    id_pedido_item: item.id_item,
                     id_produto: item.id_produto,
                     nome_produto: item.nome_produto,
                     descricao: item.descricao,
@@ -968,47 +1165,15 @@ app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
                     preco_unitario: item.preco_unitario,
                     tamanho: item.tamanho,
                     cor: item.cor,
-                    configuracao: item.configuracao,
-                    item_status: item.item_status,
-                    unidades: []
-                };
-            }
-            
-            if (item.id_producao) {
-                itensAgrupados[itemKey].unidades.push({
-                    id_producao: item.id_producao,
-                    item_unit: item.item_unit,
-                    status_maquina: item.status_maquina,
-                    estagio_maquina: item.estagio_maquina,
-                    progresso_maquina: item.progresso_maquina,
-                    slot_expedicao: item.slot_expedicao,
-                    item_id_maquina: item.item_id_maquina,
-                    order_id: item.order_id,
-                    producao_criado_em: item.producao_criado_em,
-                    producao_atualizado_em: item.producao_atualizado_em
-                });
-            }
-        });
+                    configuracao: item.configuracao
+                })),
+                producao: producaoItens,
+                resumo: await verificarPedidoCompleto(id_pedido)
+            };
 
-        const resumo = await verificarPedidoCompleto(id_pedido);
-        console.log(`✅ [DEBUG] Resumo do pedido:`, resumo);
-
-        const resultado = {
-            pedido: {
-                id_pedido: pedido.id_pedido,
-                idusuarios: pedido.idusuarios,
-                status_geral: pedido.status_geral,
-                total: pedido.total,
-                metodo_pagamento: pedido.metodo_pagamento,
-                data_pedido: pedido.data_pedido,
-                atualizado_em: pedido.atualizado_em
-            },
-            itens: Object.values(itensAgrupados),
-            resumo: resumo
-        };
-
-        console.log(`✅ [DEBUG] Status final retornado para pedido ${id_pedido}:`, resultado);
-        res.json(resultado);
+            console.log(`✅ [DEBUG] Status final retornado para pedido ${id_pedido}`);
+            res.json(resultado);
+        }
 
     } catch (error) {
         console.error(`❌ [DEBUG] ERRO CRÍTICO ao buscar status do pedido ${req.params.id}:`, error);
@@ -1022,31 +1187,31 @@ app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
     }
 });
 
-// Rota para monitorar produção em tempo real
+// Rota para monitorar produção em tempo real (CORRIGIDA)
 app.get('/api/producao/monitoramento', autenticar, async (req, res) => {
     try {
         const client = await pool.connect();
         
-        // Pedidos em produção do usuário
+        // Pedidos em produção do usuário (CORRIGIDO)
         const pedidosProducao = await client.query(`
             SELECT DISTINCT p.*,
-                   (SELECT COUNT(*) FROM producao_itens WHERE id_pedido = p.id_pedido) as total_itens,
-                   (SELECT COUNT(*) FROM producao_itens WHERE id_pedido = p.id_pedido AND status_maquina = 'COMPLETED') as itens_prontos
+                   (SELECT COUNT(*) FROM producao WHERE id_pedido = p.id_pedido) as total_itens,
+                   (SELECT COUNT(*) FROM producao WHERE id_pedido = p.id_pedido AND status_maquina = 'COMPLETED') as itens_prontos
             FROM pedidos p
-            INNER JOIN producao_itens pri ON p.id_pedido = pri.id_pedido
+            INNER JOIN producao pr ON p.id_pedido = pr.id_pedido
             WHERE p.idusuarios = $1 AND p.status_geral = 'PROCESSANDO'
             ORDER BY p.data_pedido DESC
-        `, [req.session.user.id]);
+        `, [req.session.user.idusuarios]);
 
-        // Itens em produção
+        // Itens em produção (CORRIGIDO)
         const itensProducao = await client.query(`
-            SELECT pri.*, p.nome_produto, p.imagem_url, pd.id_pedido
-            FROM producao_itens pri
-            INNER JOIN produtos p ON pri.id_produto = p.id_produto
-            INNER JOIN pedidos pd ON pri.id_pedido = pd.id_pedido
-            WHERE pd.idusuarios = $1 AND pri.status_maquina != 'COMPLETED'
-            ORDER BY pri.criado_em DESC
-        `, [req.session.user.id]);
+            SELECT pr.*, p.nome_produto, p.imagem_url, pd.id_pedido
+            FROM producao pr
+            INNER JOIN produtos p ON pr.id_produto = p.id_produto
+            INNER JOIN pedidos pd ON pr.id_pedido = pd.id_pedido
+            WHERE pd.idusuarios = $1 AND pr.status_maquina != 'COMPLETED'
+            ORDER BY pr.criado_em DESC
+        `, [req.session.user.idusuarios]);
 
         client.release();
 
@@ -1057,13 +1222,69 @@ app.get('/api/producao/monitoramento', autenticar, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Erro no monitoramento de produção:', error);
+        console.error('❌ Erro no monitoramento de produção:', error);
         res.status(500).json({ erro: 'Erro no monitoramento' });
     }
 });
 
+// ==========================================
+// 🐛 ROTAS DE DEBUG
+// ==========================================
 
-//testes
+app.get('/api/debug/produtos', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(`
+      SELECT p.*, u.email_user, u.nome_usuario 
+      FROM produtos p 
+      LEFT JOIN usuarios u ON p.idusuarios = u.idusuarios 
+      ORDER BY p.data_criacao DESC
+    `);
+    client.release();
+    console.log('🐛 DEBUG - Todos os produtos no banco:', result.rows);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Erro no debug:', error);
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// Rota de teste para verificar pedido
+app.get('/api/debug/pedido/:id', autenticar, async (req, res) => {
+  try {
+    const id_pedido = parseInt(req.params.id);
+    
+    const client = await pool.connect();
+    
+    // Verificar pedido básico
+    const pedido = await client.query(
+      'SELECT * FROM pedidos WHERE id_pedido = $1',
+      [id_pedido]
+    );
+    
+    // Verificar itens do pedido
+    const itens = await client.query(
+      'SELECT * FROM pedido_itens WHERE id_pedido = $1',
+      [id_pedido]
+    );
+    
+    client.release();
+    
+    res.json({
+      pedido: pedido.rows[0] || null,
+      itens: itens.rows,
+      existe: pedido.rows.length > 0
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro no debug do pedido:', error);
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// ==========================================
+// 🧪 ROTAS DE TESTE
+// ==========================================
 
 // Teste rápido - adicione temporariamente no server.js
 app.get('/api/teste-maquina', async (req, res) => {
@@ -1121,7 +1342,7 @@ app.post('/api/teste-envio-pedido', autenticar, async (req, res) => {
         // Dados de teste
         const pedidoTeste = {
             id_pedido: 999,
-            idusuarios: req.session.user.id,
+            idusuarios: req.session.user.idusuarios,
             total: 150.50
         };
 
@@ -1139,26 +1360,20 @@ app.post('/api/teste-envio-pedido', autenticar, async (req, res) => {
         };
 
         console.log('📤 Enviando pedido de teste...');
-        const resultado = await queueSmart.enviarPedidoParaMaquina(
+        const resultado = await queueSmart.enviarItemParaMaquina(
             pedidoTeste,
             produtoTeste,
-            configuracaoTeste
+            configuracaoTeste,
+            0,
+            1
         );
 
         res.json({
             sucesso: true,
             mensagem: 'Pedido de teste enviado com sucesso!',
             dados: {
-                item_id_maquina: resultado.id,
-                configuracao_enviada: configuracaoTeste,
-                payload_gerado: {
-                    orderId: `PED-${pedidoTeste.id_pedido}-${Date.now()}`,
-                    andares: 2, // M = 2 andares
-                    materialExterno: 'PLASTICO_PRETO',
-                    materialInterno: 'PLASTICO_AZUL',
-                    tipoMaterial: 'NYLON',
-                    padrao: 'PADRAO_ESTRELAS'
-                }
+                item_id_maquina: resultado[0].item_id_maquina,
+                configuracao_enviada: configuracaoTeste
             }
         });
 
@@ -1196,7 +1411,7 @@ app.post('/api/teste-callback-manual', async (req, res) => {
         console.log('📨 Simulando callback:', callbackSimulado);
 
         // Chama a rota de callback como se fosse a máquina
-        const response = await fetch('http://localhost:3001/api/smart4-callback', {
+        const response = await fetch('http://52.72.137.244:3001/api/smart4-callback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(callbackSimulado)
@@ -1220,42 +1435,66 @@ app.post('/api/teste-callback-manual', async (req, res) => {
     }
 });
 
-// Rota de teste para verificar pedido
-app.get('/api/debug/pedido/:id', autenticar, async (req, res) => {
-  try {
-    const id_pedido = parseInt(req.params.id);
-    
-    const client = await pool.connect();
-    
-    // Verificar pedido básico
-    const pedido = await client.query(
-      'SELECT * FROM pedidos WHERE id_pedido = $1',
-      [id_pedido]
-    );
-    
-    // Verificar itens do pedido
-    const itens = await client.query(
-      'SELECT * FROM pedido_itens WHERE id_pedido = $1',
-      [id_pedido]
-    );
-    
-    client.release();
-    
-    res.json({
-      pedido: pedido.rows[0] || null,
-      itens: itens.rows,
-      existe: pedido.rows.length > 0
-    });
-    
-  } catch (error) {
-    console.error('Erro no debug do pedido:', error);
-    res.status(500).json({ erro: error.message });
-  }
+
+// 🧪 ROTAS DE TESTE DA INTEGRAÇÃO
+app.get('/api/teste-integracao-maquina', async (req, res) => {
+    try {
+        console.log('🧪 Testando integração completa com Queue Smart...');
+        
+        const resultados = [];
+        
+        // 1. Testar conexão
+        resultados.push({ teste: 'Conexão', dados: await queueSmart.verificarConexao() });
+        
+        // 2. Testar status
+        resultados.push({ teste: 'Status', dados: await queueSmart.statusMaquina() });
+        
+        // 3. Testar envio de item
+        resultados.push({ 
+            teste: 'Envio Item Teste', 
+            dados: await queueSmart.enviarItemTeste() 
+        });
+        
+        // 4. Testar listagem
+        resultados.push({ teste: 'Listar Fila', dados: await queueSmart.listarItensFila(5) });
+        
+        res.json({
+            sucesso: true,
+            mensagem: 'Teste de integração completo',
+            resultados: resultados
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro no teste de integração:', error);
+        res.status(500).json({
+            sucesso: false,
+            erro: error.message,
+            detalhes: 'Verifique se a Queue Smart está rodando e acessível'
+        });
+    }
 });
+
+app.get('/api/estatisticas-maquina', async (req, res) => {
+    try {
+        const estatisticas = await queueSmart.estatisticasFila();
+        res.json(estatisticas);
+    } catch (error) {
+        console.error('❌ Erro ao obter estatísticas:', error);
+        res.status(500).json({ erro: error.message });
+    }
+});
+
+// ==========================================
+// 🚀 INICIALIZAÇÃO DO SERVIDOR
+// ==========================================
 
 app.listen(port, () => {
   console.log(`🚀 Servidor rodando na porta ${port}`);
   console.log('📊 Rotas disponíveis:');
   console.log('🌐 Públicas: /api/produtos/public, /api/categorias/public, /api/cadastro, /api/login');
   console.log('🔐 Protegidas: /api/produtos, /api/meus-produtos, /api/carrinho, /api/pedidos');
+  console.log('🏠 Endereços: /api/enderecos');
+  console.log('🏭 Produção: /api/pedidos/producao, /api/pedidos/:id/status, /api/producao/monitoramento');
+  console.log('🧪 Testes: /api/teste-conexao-maquina, /api/teste-envio-pedido');
+  console.log('🔗 Queue Smart 4.0: http://52.72.137.244:3000');
 });
