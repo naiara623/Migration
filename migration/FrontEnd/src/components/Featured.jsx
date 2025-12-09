@@ -22,21 +22,31 @@ function Featured() {
 
       <div className="produtos-featured">
          {products.map(product => (
+
                 <div key={product.id} className="product-cardmun">
+
                     <div className="product-image">
                       <img src={product.image} alt={product.name} />
                       <div className="product-badge">{t("featuredproduct.produto.novo")}</div>
                     </div>
+
+
                   <div className="product-info1">
-                    <h3 className='name-product'>{product.name}</h3>
-                    <div className="product-rating">
-                      {[...Array(5)].map((_, i) => (
-                        <i key={i} className={`fas fa-star ${i < product.rating ? 'filled' : ''}`}></i>
-                      ))}
-                    </div>
-                    <div className="product-price">R$ {product.price.toFixed(2)}</div>
-                    <button className="button-carrinho">{t("featuredproduct.produto.button")}</button>
+
+                      <h3 className='name-product'>{product.name}</h3>
+
+                        <div className="product-rating">
+                          {[...Array(5)].map((_, i) => (
+                            <i key={i} className={`fas fa-star ${i < product.rating ? 'filled' : ''}`}></i>
+                          ))}
+                        </div>
+
+                      <div className="product-price">R$ {product.price.toFixed(2)}</div>
+                      
+                      <button className="button-carrinho">{t("featuredproduct.produto.button")}</button>
+
                   </div>
+
                 </div>
               ))}
       </div>

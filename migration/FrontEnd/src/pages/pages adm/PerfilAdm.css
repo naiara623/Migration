@@ -1,0 +1,326 @@
+.vermelha-ADM{
+      background: linear-gradient(to bottom, #324973, #324973, #F7F7F7);
+    /* border: 4px solid red; */
+    width: 100%;
+    height: 100vh;
+}
+
+.navbar-ADM{
+
+    /* border: 4px solid rgb(200, 255, 0); */
+    width: 100%;
+    height:11%;
+
+}
+
+.conteine-preto-ADM{
+
+    /* border: 4px solid rgb(0, 0, 0); */
+    width: 100%;
+    height:89%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2%;
+}
+
+.conteine-fino-ADM{
+
+    /* border: 4px solid rgb(9, 190, 28); */
+    width: 17%;
+    height:80%;
+    background-color: #D9D9D9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.conteine-img-nomeUsu-ADM{
+
+    /* border: 2px solid rgb(223, 7, 223); */
+    width: 100%;
+    height: 15%;
+    display: flex;
+
+}
+
+
+
+.conteineLINHA{
+
+    /* border: 1px solid purple; */
+    width: 100%;
+    height: 0%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.A-LINHA{
+
+border: 1px solid rgb(87, 85, 87);
+    width: 90%;
+    height: 0%;
+
+}
+
+
+.conteine-dos-links{
+
+    /* border: 2px solid rgb(19, 16, 222); */
+    width: 100%;
+    height: 89%;
+    display: flex;
+    justify-content: center;
+    align-items: center
+    
+
+}
+
+.conteine-da-img-ADM{
+
+    /* border: 2px solid rgb(222, 81, 15); */
+    width: 27%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.div-img-ADM{
+
+    /* border: 2px solid rgb(9, 168, 67); */
+    width: 65%;
+    height: 60%;
+
+}
+
+.div-nome-ADM{
+
+    /* border: 2px solid rgb(163, 9, 168); */
+    width: 90%;
+    height: 100%;
+    
+}
+
+.input-nome-ADM{
+    width: 90%;
+    height: 30%;
+    border: transparent;
+
+
+}
+
+.div-vazia5{
+
+     /* border: 2px solid rgb(163, 9, 168); */
+    width: 100%;
+    height: 30%;
+}
+
+.links{
+    /* border: 2px solid rgb(222, 81, 15); */
+    width: 80%;
+    height: 85%;
+    /* display: flex;
+    list-style: none; */
+
+}
+
+/* .links h3{
+    display: flex;
+    list-style: none;
+} */
+
+/* .li-loja h3{
+  color: var(--text-tertiary);
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.3s ease;
+ 
+}
+
+.li-loja link {
+    text-decoration: none;
+     display: flex;
+   list-style: none;
+} */
+
+.Loja-Link{
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.3s ease;
+}
+
+.Loja-Link :hover{
+    color: var(--accent-secondary);
+}
+
+
+
+
+
+
+
+
+
+.conteine-grosso-ADM{
+
+    /* border: 4px solid rgb(11, 166, 233); */
+    width: 35%;
+    height:80%;
+    background-color: #D9D9D9;
+
+}
+
+.informação-pessoais-ADM{
+     /* border: 4px solid rgb(197, 165, 22); */
+    width: 100%;
+    height: 15%;
+    text-align: center;
+    color: #324973;
+    font-size: 1.3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.conteine-LINHA2-ADM{
+
+     /* border: 1px solid rgb(80, 80, 84); */
+    width: 100%;
+    height: 0%;
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+
+}
+
+.div-LINHA2-ADM{
+
+    border: 1px solid rgb(80, 80, 84);
+    width: 95%;
+    height: 0%;
+}
+
+.div-vazia3ADM{
+
+    /* border: 4px solid rgb(95, 5, 5); */
+    width: 100%;
+    height: 5%;
+}
+
+.campo-formulario-nome-ADM{
+    /* border: 4px solid rgb(202, 53, 53); */
+    width: 100%;
+    height: 15%;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    color: #554;
+    padding-left: 9%;
+    
+}
+
+
+.campo-formulario-Email-ADM{
+    /* border: 4px solid rgb(48, 22, 197); */
+    width: 100%;
+    height: 15%;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    color: #554;
+    padding-left: 9%;
+}
+
+.campo-formulario-senha-ADM{
+    /* border: 4px solid rgb(197, 22, 142); */
+    width: 100%;
+    height: 15%;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    color: #554;
+    padding-left: 9%;
+}
+
+.conteine-dos-buttons-ADM{
+ /* border: 4px solid rgb(237, 136, 59); */
+    width: 100%;
+    height: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30%;
+}
+
+
+.botoes-acao-ADM {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.botao-editar-ADM, .botao-deletar-ADM {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.botao-editar-ADM {
+    background-color: #324973;
+    color: white;
+}
+
+.botao-deletar-ADM {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.botao-editar-ADM:hover {
+    background-color: #25365a;
+}
+
+.botao-deletar-ADM:hover {
+    background-color: #ff3333;
+}
+
+.input-nome-ADM2{
+width: 90%;
+border: transparent;
+border-radius: 5px;
+height: 55%;
+}
+
+.input-Email-ADM{
+width: 90%;
+border: transparent;
+border-radius: 5px;
+height: 55%;
+
+}
+
+.input-senha-ADM{
+
+width: 90%;
+border: transparent;
+border-radius: 5px;
+height: 55%;
+
+}
+
+
+.funcao-cor-Em-SE-SXADM{
+color: #324973;
+}
+
+.funcao-cor-Em-SE-SX1ADM{
+    color: #324973;
+    font-weight: 700;
+}

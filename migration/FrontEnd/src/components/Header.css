@@ -156,7 +156,7 @@
 .cart-btn {
   background: none;
   border: none;
-  color: var(--text-tertiary);
+  color: #ffffff;
   font-size: 1.2rem;
   cursor: pointer;
   position: relative;
@@ -304,4 +304,9 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
+}
+
+.fa-shopping-cart{
+  /* border: 2px solid red; */
+  color: #e8e8e8;
 }

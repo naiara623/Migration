@@ -181,12 +181,13 @@ const buscarStatusDetalhado = async (id_pedido) => {
 
                 <div className='conteine-grosso-MC' >
                     <div className='informação-pessoais-MC' >
-                        <h2>Minhas Compras</h2>
+                        <h2 className='Minha-Compras'>Minhas Compras</h2>
                         
                         {/* Seletor de Pedido */}
                         <div className="seletor-pedido">
-                            <label>Selecionar Pedido: </label>
+                            <label className='selecionar-produto'>Selecionar Pedido: </label>
                             <select 
+                            className='selecionar'
                                 onChange={(e) => {
                                     const pedido = pedidos.find(p => p.id_pedido === parseInt(e.target.value));
                                     setPedidoSelecionado(pedido);
