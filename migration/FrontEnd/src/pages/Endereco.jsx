@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { ThemeContext } from '../ThemeContext'
 import { ThemeEffect } from '../ThemeEffect'
 import Header from '../components/Header'
@@ -10,6 +10,56 @@ import { useTranslation } from 'react-i18next'
 function EnderecoContex(){
    ThemeEffect()
    const {t} = useTranslation();
+   // Adicione um state para os dados do endereço
+const [endereco, setEndereco] = useState({
+  cep: '',
+  estado: '',
+  complemento: '',
+  numero: '',
+  cidade: '',
+  bairro: ''
+});
+
+// Função para carregar endereço
+const carregarEndereco = async () => {
+  try {
+    const response = await fetch('http://localhost:3001/api/enderecos', {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      setEndereco(data);
+    }
+  } catch (error) {
+    console.error('Erro ao carregar endereço:', error);
+  }
+};
+
+// Função para salvar endereço
+const salvarEndereco = async () => {
+  try {
+    const response = await fetch('http://localhost:3001/api/enderecos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(endereco)
+    });
+    
+    if (response.ok) {
+      alert('Endereço salvo com sucesso!');
+    }
+  } catch (error) {
+    console.error('Erro ao salvar endereço:', error);
+  }
+};
+
+// Use useEffect para carregar o endereço quando o componente montar
+useEffect(() => {
+  carregarEndereco();
+}, []);
 
      return(
         <div className='div-inclobaTudo-Endereco'>

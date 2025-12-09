@@ -19,24 +19,12 @@ const {
   getProductById,
   insertUser,
   selectUser,
-  updateUser,
   getCarrinhoByUserId,
-  
-  addToCarrinho,
   updateCarrinhoItem,
   removeFromCarrinho,
   clearCarrinho,
-  createPedido,
   selectProductById,
-  getPedidosByUserId,
-  clearCarrinhoByUserId,
-  getCarrinhoItemsByUserId,
-  addOrUpdateCarrinhoItem,
-  updateCarrinhoItemQuantity,
-  removeCarrinhoItem,
-  createPedidoWithItems,
-  updateEnderecoEntrega,
-  getUserByEmail,
+ 
   // Produção (CORRIGIDAS)
   createPedidoComRastreamento,
   registrarItemProducao,
@@ -46,7 +34,9 @@ const {
   getStatusProducaoByPedido,
   // Endereços (NOVAS)
   insertEndereco,
-  getEnderecoByUserId
+   deleteEndereco,
+  getEnderecoByUserId,
+  updateEndereco
 } = require("./db");
 
 // server.js - adicione no topo com os outros imports
@@ -473,7 +463,91 @@ app.get('/api/produtos/public', async (req, res) => {
 // 🏠 ROTAS DE ENDEREÇO (NOVAS)
 // ==========================================
 
-// Rota para cadastrar endereço
+// server.js - adicione estas rotas após a rota GET /api/enderecos
+
+// Rota para atualizar endereço
+app.put('/api/enderecos/:id', autenticar, async (req, res) => {
+  try {
+    const id_endereco = parseInt(req.params.id);
+    const { cep, estado, complemento, numero, cidade, bairro } = req.body;
+    
+    // Verificar se o endereço pertence ao usuário
+    const client = await pool.connect();
+    const enderecoCheck = await client.query(
+      'SELECT idusuarios FROM endereco WHERE id_endereco = $1',
+      [id_endereco]
+    );
+    
+    if (enderecoCheck.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ erro: 'Endereço não encontrado' });
+    }
+    
+    if (enderecoCheck.rows[0].idusuarios !== req.session.user.idusuarios) {
+      client.release();
+      return res.status(403).json({ erro: 'Não autorizado' });
+    }
+    
+    // Atualizar endereço
+    const enderecoAtualizado = await updateEndereco(id_endereco, {
+      cep,
+      estado,
+      complemento,
+      numero,
+      cidade,
+      bairro
+    });
+    
+    client.release();
+    
+    res.json({
+      mensagem: 'Endereço atualizado com sucesso!',
+      endereco: enderecoAtualizado
+    });
+  } catch (error) {
+    console.error('❌ Erro ao atualizar endereço:', error);
+    res.status(500).json({ erro: 'Erro ao atualizar endereço' });
+  }
+});
+
+// Rota para deletar endereço
+app.delete('/api/enderecos/:id', autenticar, async (req, res) => {
+  try {
+    const id_endereco = parseInt(req.params.id);
+    
+    // Verificar se o endereço pertence ao usuário
+    const client = await pool.connect();
+    const enderecoCheck = await client.query(
+      'SELECT idusuarios FROM endereco WHERE id_endereco = $1',
+      [id_endereco]
+    );
+    
+    if (enderecoCheck.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ erro: 'Endereço não encontrado' });
+    }
+    
+    if (enderecoCheck.rows[0].idusuarios !== req.session.user.idusuarios) {
+      client.release();
+      return res.status(403).json({ erro: 'Não autorizado' });
+    }
+    
+    // Deletar endereço
+    const enderecoDeletado = await deleteEndereco(id_endereco);
+    
+    client.release();
+    
+    res.json({
+      mensagem: 'Endereço deletado com sucesso!',
+      endereco: enderecoDeletado
+    });
+  } catch (error) {
+    console.error('❌ Erro ao deletar endereço:', error);
+    res.status(500).json({ erro: 'Erro ao deletar endereço' });
+  }
+});
+
+// Rota para criar/atualizar endereço (versão simplificada - POST cria ou atualiza)
 app.post('/api/enderecos', autenticar, async (req, res) => {
   try {
     const { cep, estado, complemento, numero, cidade, bairro } = req.body;
@@ -484,32 +558,32 @@ app.post('/api/enderecos', autenticar, async (req, res) => {
       complemento,
       numero,
       cidade,
-      bairro
+      bairro,
+      idusuarios: req.session.user.idusuarios
     });
     
     res.status(201).json({
-      mensagem: 'Endereço cadastrado com sucesso!',
+      mensagem: 'Endereço salvo com sucesso!',
       endereco
     });
   } catch (error) {
-    console.error('❌ Erro ao cadastrar endereço:', error);
-    res.status(500).json({ erro: 'Erro ao cadastrar endereço' });
+    console.error('❌ Erro ao salvar endereço:', error);
+    res.status(500).json({ erro: 'Erro ao salvar endereço' });
   }
 });
 
-// Rota para obter endereço do usuário
-app.get('/api/enderecos', autenticar, async (req, res) => {
+// Rota para verificar se usuário tem endereço cadastrado
+app.get('/api/enderecos/existe', autenticar, async (req, res) => {
   try {
     const endereco = await getEnderecoByUserId(req.session.user.idusuarios);
     
-    if (endereco) {
-      res.json(endereco);
-    } else {
-      res.status(404).json({ erro: 'Endereço não encontrado' });
-    }
+    res.json({
+      temEndereco: !!endereco,
+      endereco: endereco || null
+    });
   } catch (error) {
-    console.error('❌ Erro ao buscar endereço:', error);
-    res.status(500).json({ erro: 'Erro ao buscar endereço' });
+    console.error('❌ Erro ao verificar endereço:', error);
+    res.status(500).json({ erro: 'Erro ao verificar endereço' });
   }
 });
 
@@ -796,7 +870,7 @@ app.get('/api/usuario-atual', autenticar, async (req, res) => {
 
     const client = await pool.connect();
     const result = await client.query(
-      `SELECT idusuarios, nome_usuario, email_user, numero
+      `SELECT idusuarios, nome_usuario, email_user, senhauser, numero
        FROM usuarios 
        WHERE idusuarios = $1`,
       [req.session.user.idusuarios]
@@ -813,6 +887,7 @@ app.get('/api/usuario-atual', autenticar, async (req, res) => {
       idusuarios: usuario.idusuarios,
       nome: usuario.nome_usuario,
       email: usuario.email_user,
+      senha: usuario.senhauser,
       numero: usuario.numero
       // senha removida por segurança
     };
@@ -830,17 +905,21 @@ app.get('/api/usuario-atual', autenticar, async (req, res) => {
 });
 
 
-
-// Rota para atualizar usuário por ID
-app.put('/api/usuarios/:id', autenticar, async (req, res) => {
-  const userId = parseInt(req.params.idusuarios);
+// Rota para atualizar usuário por ID - CORRIGIDA
+app.put('/api/usuario-atual/:id', autenticar, async (req, res) => {
+  // CORREÇÃO: Usar req.params.id, não req.params.idusuarios
+  const userId = parseInt(req.params.id);
   const { nome, email, numero, senha } = req.body;
   
   console.log('📝 Atualizando usuário:', { userId, nome, email, numero });
   
   // Verificar se o usuário da sessão é o mesmo que está sendo atualizado
   if (userId !== req.session.user.idusuarios) {
-    return res.status(403).json({ erro: 'Não autorizado' });
+    console.log('❌ Não autorizado: userId da sessão:', req.session.user.idusuarios, 'userId da requisição:', userId);
+    return res.status(403).json({ 
+      erro: 'Não autorizado - você só pode editar seu próprio perfil',
+      detalhes: `Sessão: ${req.session.user.idusuarios}, Requisição: ${userId}`
+    });
   }
 
   try {
@@ -859,16 +938,17 @@ app.put('/api/usuarios/:id', autenticar, async (req, res) => {
       `;
       values = [nome, email, numero, senha, userId];
     } else {
-      // Atualizar sem senha
+      // Atualizar sem senha - CORREÇÃO: faltava um parâmetro aqui
       sql = `
         UPDATE usuarios 
         SET nome_usuario = $1, email_user = $2, numero = $3
-        WHERE idusuarios = $5 
+        WHERE idusuarios = $4 
         RETURNING idusuarios, nome_usuario, email_user, numero
       `;
       values = [nome, email, numero, userId];
     }
 
+    console.log('📝 Executando SQL:', sql, 'com valores:', values);
     const result = await client.query(sql, values);
     client.release();
 
@@ -899,9 +979,10 @@ app.put('/api/usuarios/:id', autenticar, async (req, res) => {
   }
 });
 
-// Rota para deletar usuário por ID
-app.delete('/api/usuarios/:id', autenticar, async (req, res) => {
-  const userId = parseInt(req.params.idusuarios);
+// Rota para deletar usuário por ID - CORRIGIDA
+app.delete('/api/usuario-atual/:id', autenticar, async (req, res) => {
+  // CORREÇÃO: Usar req.params.id, não req.params.idusuarios
+  const userId = parseInt(req.params.id);
   
   console.log('🗑️ Deletando usuário:', userId);
   
@@ -957,6 +1038,16 @@ app.post('/api/logout', autenticar, (req, res) => {
       return res.status(500).json({ erro: 'Erro ao fazer logout' });
     }
     res.json({ sucesso: true, mensagem: 'Logout realizado com sucesso' });
+  });
+});
+
+// Rota de debug para verificar parâmetros
+app.get('/api/debug/params/:id', (req, res) => {
+  console.log('🔍 Parâmetros recebidos:', req.params);
+  res.json({
+    params: req.params,
+    query: req.query,
+    body: req.body
   });
 });
 
