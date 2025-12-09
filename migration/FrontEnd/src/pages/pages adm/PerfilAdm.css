@@ -1,13 +1,13 @@
 .vermelha-ADM{
       background: linear-gradient(to bottom, #324973, #324973, #F7F7F7);
-    border: 4px solid red;
+    /* border: 4px solid red; */
     width: 100%;
     height: 100vh;
 }
 
 .navbar-ADM{
 
-    border: 4px solid rgb(200, 255, 0);
+    /* border: 4px solid rgb(200, 255, 0); */
     width: 100%;
     height:11%;
 
@@ -15,7 +15,7 @@
 
 .conteine-preto-ADM{
 
-    border: 4px solid rgb(0, 0, 0);
+    /* border: 4px solid rgb(0, 0, 0); */
     width: 100%;
     height:89%;
     display: flex;
@@ -26,7 +26,7 @@
 
 .conteine-fino-ADM{
 
-    border: 4px solid rgb(9, 190, 28);
+    /* border: 4px solid rgb(9, 190, 28); */
     width: 17%;
     height:80%;
     background-color: #D9D9D9;
@@ -38,27 +38,49 @@
 
 .conteine-img-nomeUsu-ADM{
 
-    border: 2px solid purple;
+    /* border: 2px solid rgb(223, 7, 223); */
     width: 100%;
     height: 15%;
     display: flex;
 
 }
 
+
+
+.conteineLINHA{
+
+    /* border: 1px solid purple; */
+    width: 100%;
+    height: 0%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.A-LINHA{
+
+border: 1px solid rgb(87, 85, 87);
+    width: 90%;
+    height: 0%;
+
+}
+
+
 .conteine-dos-links{
 
-    border: 2px solid rgb(222, 81, 15);
+    /* border: 2px solid rgb(19, 16, 222); */
     width: 100%;
-    height: 95%;
+    height: 89%;
     display: flex;
     justify-content: center;
     align-items: center
+    
 
 }
 
 .conteine-da-img-ADM{
 
-    border: 2px solid rgb(222, 81, 15);
+    /* border: 2px solid rgb(222, 81, 15); */
     width: 27%;
     height: 100%;
     display: flex;
@@ -69,47 +91,73 @@
 
 .div-img-ADM{
 
-    border: 2px solid rgb(9, 168, 67);
-    width: 60%;
+    /* border: 2px solid rgb(9, 168, 67); */
+    width: 65%;
     height: 60%;
 
 }
 
 .div-nome-ADM{
 
-    border: 2px solid rgb(163, 9, 168);
-    width: 80%;
+    /* border: 2px solid rgb(163, 9, 168); */
+    width: 90%;
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center
-
+    
 }
 
 .input-nome-ADM{
-    width: 95%;
+    width: 90%;
     height: 30%;
+    border: transparent;
 
+
+}
+
+.div-vazia5{
+
+     /* border: 2px solid rgb(163, 9, 168); */
+    width: 100%;
+    height: 30%;
 }
 
 .links{
-    border: 2px solid rgb(222, 81, 15);
+    /* border: 2px solid rgb(222, 81, 15); */
     width: 80%;
     height: 85%;
+    /* display: flex;
+    list-style: none; */
 
 }
 
-.link-loja{
-    color: var(--text-tertiary);
-  /* text-decoration: none; */
+/* .links h3{
+    display: flex;
+    list-style: none;
+} */
+
+/* .li-loja h3{
+  color: var(--text-tertiary);
+  text-decoration: none;
   font-weight: 700;
-  /* transition: color 0.3s ease; */
+  transition: color 0.3s ease;
+ 
 }
 
-.link-loja link {
+.li-loja link {
     text-decoration: none;
+     display: flex;
+   list-style: none;
+} */
+
+.Loja-Link{
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.3s ease;
 }
 
+.Loja-Link :hover{
+    color: var(--accent-secondary);
+}
 
 
 
@@ -243,29 +291,29 @@
     background-color: #ff3333;
 }
 
+.input-nome-ADM2{
+width: 90%;
+border: transparent;
+border-radius: 5px;
+height: 55%;
+}
 
+.input-Email-ADM{
+width: 90%;
+border: transparent;
+border-radius: 5px;
+height: 55%;
 
+}
 
+.input-senha-ADM{
 
+width: 90%;
+border: transparent;
+border-radius: 5px;
+height: 55%;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 .funcao-cor-Em-SE-SXADM{

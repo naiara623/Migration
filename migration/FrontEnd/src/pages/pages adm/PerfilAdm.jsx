@@ -31,6 +31,7 @@ const {t} = useTranslation();
                     </div>
 
                     <div className='div-nome-ADM' >
+                      <div className='div-vazia5' ></div>
                       <input className='input-nome-ADM' type="text" />
                     </div>
 
@@ -38,12 +39,18 @@ const {t} = useTranslation();
 
                  </div>
 
+                        <div className='conteineLINHA'>
+
+                            <div className='A-LINHA' ></div>
+
+                        </div>
+
 
                 <div className='conteine-dos-links' >
 
                         <div className="links">
 
-                          <h3 className='link-loja'><Link to="/loja">{t("navbar.nav.min")}</Link></h3>
+                          <h3 className='li-loja'><Link className='Loja-Link' to="/loja">{t("navbar.nav.min")}</Link></h3>
 
                         </div>
 
@@ -78,19 +85,21 @@ const {t} = useTranslation();
             
                  <div className='campo-formulario-nome-ADM' >
                             <label className='funcao-cor-Em-SE-SXADM  'htmlFor="">Nome:</label>
-                              <input type="text" name="" id="" className='input-nome-PRF' />
+                              <input type="text" name="" id="" className='input-nome-ADM2' />
+
+
                   </div> 
 
                       
                    <div className='campo-formulario-Email-ADM' >
                             <label className='funcao-cor-Em-SE-SXADM'  htmlFor="">Email:</label>
-                              <input type="text" name="" id="" className='input-Email-PRF' />
+                              <input type="text" name="" id="" className='input-Email-ADM' />
                      </div> 
 
                           
                       <div className='campo-formulario-senha-ADM' >
                             <label className='funcao-cor-Em-SE-SXADM' htmlFor="">Senha:</label>
-                              <input type="text" name="" id="" className='input-senha-PRF' />
+                              <input type="text" name="" id="" className='input-senha-ADM' />
                       </div> 
 
 
