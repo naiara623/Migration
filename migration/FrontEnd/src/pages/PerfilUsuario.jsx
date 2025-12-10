@@ -13,7 +13,7 @@ function PerfilUsuariocontext(){
     const {t} = useTranslation();
     
     const [userData, setUserData] = useState({
-        id: '',
+        idusuarios: '',
         nome: '',
         email: '',
         senha: '',
@@ -31,7 +31,7 @@ const carregarDadosUsuario = async () => {
     try {
         console.log('🔄 Carregando dados do usuário...');
         
-        const response = await fetch('/api/usuario-atual', {
+        const response = await fetch('http://localhost:3001/api/usuario-atual', {
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,10 +53,10 @@ const carregarDadosUsuario = async () => {
             console.log('✅ Dados do usuário recebidos:', user);
             
             setUserData({
-                id: user.id || '',
+                idusuarios: user.idusuarios || '',
                 nome: user.nome || '',
                 email: user.email || '',
-                senha: '', // Não preencher a senha por segurança
+                senha: user.senha || '',
                 numero: user.numero || ''
             });
         } else {
@@ -87,7 +87,8 @@ const carregarDadosUsuario = async () => {
     try {
         console.log('📤 Enviando dados para atualização:', userData);
         
-        const response = await fetch(`/api/usuarios/${userData.id}`, {
+        // CORREÇÃO: Remova o ":id" literal da URL
+        const response = await fetch(`http://localhost:3001/api/usuario-atual/${userData.idusuarios}`, {
             method: 'PUT',
             credentials: 'include',
             headers: {
@@ -101,6 +102,14 @@ const carregarDadosUsuario = async () => {
             })
         });
 
+        // Verificar se a resposta é JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('❌ Resposta não é JSON:', text.substring(0, 200));
+            throw new Error('Resposta do servidor não é JSON');
+        }
+        
         const result = await response.json();
         
         if (response.ok) {
@@ -112,14 +121,14 @@ const carregarDadosUsuario = async () => {
         }
     } catch (error) {
         console.error('💥 Erro ao atualizar perfil:', error);
-        setMessage('Erro de conexão com o servidor');
+        setMessage('Erro de conexão com o servidor: ' + error.message);
     }
 };
 
     const handleDeletarConta = async () => {
         if (window.confirm('Tem certeza que deseja deletar sua conta? Esta ação não pode ser desfeita.')) {
             try {
-                const response = await fetch(`/api/usuarios/${userData.id}`, {
+                const response = await fetch(`/api/usuario-atual/${userData.idusuarios}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 });
