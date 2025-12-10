@@ -344,7 +344,7 @@ const total = subtotal - desconto;
                     />
                   </div>
                   <button 
-                    className="clear-cart-btn"
+                    className="Limpar-carrinho"
                     onClick={handleClearCart}
                   >
                     🗑️ Limpar Carrinho
@@ -364,8 +364,12 @@ const total = subtotal - desconto;
                 </div>
               )}
 
+            <div className="produto-carrinhos">
               {products.map((p) => (
                 <div className="item-card" key={p.id}>
+                  <div className="divdaimg">
+                    <div className="img-produto"></div>
+                  </div>
                   <div className="item-header">
                     <ProductCheckbox 
                       id={p.id} 
@@ -373,35 +377,64 @@ const total = subtotal - desconto;
                       onChange={() => handleProductSelect(p.id)}
                     />
                   </div>
-                  <div className="item-info">
-                    <h3>{p.name}</h3>
-                    <div className="item-details">
-                      {p.tamanho && <span className="detail-tag">Tamanho: {p.tamanho}</span>}
-                      {p.cor && <span className="detail-tag">Cor: {p.cor}</span>}
-                      <span className="item-price">R$ {p.price.toFixed(2)}</span>
 
-                      <div className="quantity-controls">
+                  <div className="item-info">
+                    <h3 className='nome-produto-carrinho'>{p.name}</h3>
+                    <div className="tamanh-cor">
+                      {p.tamanho && <span className="detail-tag">Tamanho: {p.tamanho}</span>}
+                      <div className="espacovazio"></div>
+                      {p.cor && <span className="detail-tagC">Cor: {p.cor}</span>}
+                      </div>
+
+                      <div className="preco-carinho">
+                        <span className="item-price">R$ {p.price.toFixed(2)}</span>
+                      </div>
+
+                      <div className="buttons-carrinho">
+                        <div className="quantity-controls">
                         <button 
+                        className='buttonmenos-carrinho'
                           onClick={() => updateQuantity(p.id, p.quantity - 1)} 
                           disabled={p.quantity <= 1}
                         >
-                          -
+                         -   
                         </button>
                         <span>{p.quantity}</span>
-                        <button onClick={() => updateQuantity(p.id, p.quantity + 1)}>
+                        <button 
+                        className='buttonmais-carrinho'
+                        onClick={() => updateQuantity(p.id, p.quantity + 1)}>
                           +
                         </button>
                       </div>
-                    </div>
-                  </div>
-                  <button 
+
+                      <div className="button-remover">
+                    <button 
                     className="remove-button" 
                     onClick={() => handleRemoveProduct(p.id)}
                   >
                     Remover
                   </button>
+                  </div>
+                      </div>
+                    {/* <div className="item-details">
+                      
+                      
+
+                      
+                    </div> 
+
+                     
+                    */}
+                  </div>
+                  
+                  
+                 
+                  
+                  
                 </div>
               ))}
+            </div>
+              
             </div>
           </div>
 

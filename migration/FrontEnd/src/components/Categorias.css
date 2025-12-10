@@ -8,21 +8,14 @@
   cursor: pointer;
 }
 
-.modal-container {
-  background: #f3a974; /* cor de fundo tipo o que você mostrou */
-  padding: 20px;
-  border-radius: 12px;
-  width: 80%;
-  max-width: 900px;
-cursor: default;
-}
+
 
 .modal-contente{
   /* border: 2px solid red; */
     background-color: var(--modal-primary);
     border-radius: 8px;
-    width: 50%;
-    height: 35%;
+    width: 45%;
+    height: 40%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -38,6 +31,8 @@ cursor: default;
 }
 
 .grid-categorias {
+  /* border: 2px solid yellowgreen; */
+  width: 95%;
   display: grid;
   grid-template-columns: repeat(4, 1fr); /* 4 colunas */
   gap: 10px;

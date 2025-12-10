@@ -97,7 +97,7 @@ const formatarnome_categoria = (nome_categoria) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className='modal-content' onClick={(e) => e.stopPropagation()}>
+      <div className='modal-contente' onClick={(e) => e.stopPropagation()}>
         {loading && <div className="loading">Carregando categorias...</div>}
         
         {error && (

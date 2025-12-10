@@ -3,7 +3,7 @@ import { ThemeProvider } from '../ThemeContext'
 import { ThemeEffect } from '../ThemeEffect'
 import './PerfilUsuario.css'; 
 import Header from '../components/Header';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import ConteineFino from '../components/ConteineFino'
 import { useTranslation } from 'react-i18next';
 import "../i18n"
