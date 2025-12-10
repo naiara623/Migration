@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import './Avaliar.css'
 
@@ -5,231 +6,199 @@ function Avaliar({isOpen, onClose}) {
 
     if (!isOpen) return null;
 
-      const [avaliacao, setAvaliacao] = useState({
-        nota: 0,
-        titulo: '',
-        comentario: '',
-        nome: '',
-        email: ''
-      });
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [titulo, setTitulo] = useState('');
+    const [comentario, setComentario] = useState('');
+    const [nome, setNome] = useState('');
+    const [email, setEmail] = useState('');
     
-      const [avaliacoesExistentes, setAvaliacoesExistentes] = useState([
-        {
-          id: 1,
-          nome: 'João Silva',
-          nota: 5,
-          titulo: 'Produto excelente!',
-          comentario: 'Superou minhas expectativas. Qualidade impressionante.',
-          data: '15/03/2024',
-          verificado: true
-        },
-        
-      ]);
-    
-      const handleNotaClick = (nota) => {
-        setAvaliacao({ ...avaliacao, nota });
-      };
-    
-      const handleChange = (e) => {
-        const { name, value } = e.target;
-        setAvaliacao({ ...avaliacao, [name]: value });
-      };
-    
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        
-        if (avaliacao.nota === 0) {
-          alert('Por favor, selecione uma nota!');
-          return;
-        }
-    
-        const novaAvaliacao = {
-          id: avaliacoesExistentes.length + 1,
-          nome: avaliacao.nome || 'Anônimo',
-          nota: avaliacao.nota,
-          titulo: avaliacao.titulo,
-          comentario: avaliacao.comentario,
-          data: new Date().toLocaleDateString('pt-BR'),
-          verificado: false
-        };
-    
-        setAvaliacoesExistentes([novaAvaliacao, ...avaliacoesExistentes]);
-        
-        // Reset form
-        setAvaliacao({
-          nota: 0,
-          titulo: '',
-          comentario: '',
-          nome: '',
-          email: ''
-        });
-    
-        alert('Avaliação enviada com sucesso!');
-      };
-    
-      const calcularMedia = () => {
-        if (avaliacoesExistentes.length === 0) return 0;
-        const soma = avaliacoesExistentes.reduce((acc, curr) => acc + curr.nota, 0);
-        return (soma / avaliacoesExistentes.length).toFixed(1);
-      };
-    
-      const Estrelas = ({ nota, tamanho = 'medio' }) => {
-        return (
-          <div className={`estrelas ${tamanho}`}>
-            {[1, 2, 3, 4, 5].map((estrela) => (
-              <span
-                key={estrela}
-                className={`estrela ${estrela <= nota ? 'preenchida' : ''}`}
-              >
-                ★
-              </span>
-            ))}
-          </div>
-        );
-      };
+    const [avaliacoes, setAvaliacoes] = useState([
+      {
+        id: 1,
+        nome: 'João Silva',
+        verificado: true,
+        data: '15/03/2024',
+        rating: 5,
+        titulo: 'Produto excelente!',
+        comentario: 'Superou minhas expectativas. Qualidade impressionante.',
+        util: 12
+      }
+    ]);
 
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      
+      if (rating === 0) {
+        alert('Por favor, selecione uma nota');
+        return;
+      }
+      
+      const novaAvaliacao = {
+        id: avaliacoes.length + 1,
+        nome: nome || 'Anônimo',
+        verificado: false,
+        data: new Date().toLocaleDateString('pt-BR'),
+        rating: rating,
+        titulo: titulo,
+        comentario: comentario,
+        util: 0
+      };
+      
+      setAvaliacoes([novaAvaliacao, ...avaliacoes]);
+      
+      // Limpar formulário
+      setRating(0);
+      setTitulo('');
+      setComentario('');
+      setNome('');
+      setEmail('');
+    };
+
+    const handleUtilClick = (id) => {
+      setAvaliacoes(avaliacoes.map(avaliacao => 
+        avaliacao.id === id 
+          ? { ...avaliacao, util: avaliacao.util + 1 }
+          : avaliacao
+      ));
+    };
+
+    const renderStars = (currentRating, isInteractive = false) => {
+      return (
+        <div className="stars-container">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <span
+              key={star}
+              className={`star ${star <= (isInteractive ? (hoverRating || rating) : currentRating) ? 'filled' : ''}`}
+              onClick={isInteractive ? () => setRating(star) : undefined}
+              onMouseEnter={isInteractive ? () => setHoverRating(star) : undefined}
+              onMouseLeave={isInteractive ? () => setHoverRating(0) : undefined}
+              style={{ cursor: isInteractive ? 'pointer' : 'default' }}
+            >
+              ★
+            </span>
+          ))}
+        </div>
+      );
+    };
     
   return (
      <div className='englobaTudo-Modal' onClick={onClose}>
-       <div className='grande-modal' onClick={(e) => e.stopPropagation()}>
       
-        
-      <div className="conteudo-avaliacao">
+         <div className='grande-modal1' onClick={(e) => e.stopPropagation()}>
+      
+           <div className="avaliacao-container">
+             <div className="formulario-secao">
+               <h2 className="titulo-principal">Deixe sua avaliação</h2>
+               
+               <form onSubmit={handleSubmit}>
+                 <div className="campo-grupo">
+                   <label className="label">Sua nota:</label>
+                   <div className="rating-input">
+                     {renderStars(rating, true)}
+                     <span className="rating-text">Selecione uma nota</span>
+                   </div>
+                 </div>
 
-        <div className="formulario-avaliacao-avaliar">
+                 <div className="campo-grupo">
+                   <label className="label">
+                     Título da avaliação <span className="obrigatorio">*</span>
+                   </label>
+                   <input
+                     type="text"
+                     className="input-campo"
+                     placeholder="Resuma sua experiência"
+                     value={titulo}
+                     onChange={(e) => setTitulo(e.target.value)}
+                     required
+                   />
+                 </div>
 
-        <div  className='conteine-deixe-sua-avaliação'>
-          <h2>Deixe sua avaliação</h2>
-        </div>
-          <div className='conteudo-avaliacao-2'> 
+                 <div className="campo-grupo">
+                   <label className="label">
+                     Comentário <span className="obrigatorio">*</span>
+                   </label>
+                   <textarea
+                     className="textarea-campo"
+                     placeholder="Descreva sua experiência com o produto..."
+                     value={comentario}
+                     onChange={(e) => setComentario(e.target.value)}
+                     required
+                     rows="4"
+                   />
+                 </div>
 
-          <form className='Form-ava' onSubmit={handleSubmit}>
-            <div className="campo-nota">
-              <label>Sua nota:</label>
-              <div className="selecao-estrelas">
-                {[1, 2, 3, 4, 5].map((estrela) => (
-                  <button
-                    key={estrela}
-                    type="button"
-                    className={`estrela-selecionavel ${
-                      estrela <= avaliacao.nota ? 'selecionada' : ''
-                    }`}
-                    onClick={() => handleNotaClick(estrela)}
-                  >
-                    ★
-                  </button>
-                ))}
-                <span className="texto-nota">
-                  {avaliacao.nota === 0 ? 'Selecione uma nota' : 
-                   avaliacao.nota === 1 ? 'Péssimo' :
-                   avaliacao.nota === 2 ? 'Ruim' :
-                   avaliacao.nota === 3 ? 'Regular' :
-                   avaliacao.nota === 4 ? 'Bom' : 'Excelente'}
-                </span>
-              </div>
-            </div>
+                 <div className="campo-grupo">
+                   <label className="label">
+                     Seu nome <span className="obrigatorio">*</span>
+                   </label>
+                   <input
+                     type="text"
+                     className="input-campo"
+                     placeholder="Como quer ser chamado"
+                     value={nome}
+                     onChange={(e) => setNome(e.target.value)}
+                     required
+                   />
+                 </div>
 
-            <div className="campo-grupo">
-              <div className="campo">
-                <label htmlFor="titulo">Título da avaliação *</label>
-                <input
-                  type="text"
-                  id="titulo"
-                  name="titulo"
-                  value={avaliacao.titulo}
-                  onChange={handleChange}
-                  required
-                  placeholder="Resuma sua experiência"
-                />
-              </div>
-            </div>
+                 <div className="campo-grupo">
+                   <label className="label">
+                     E-mail <span className="obrigatorio">*</span>
+                   </label>
+                   <input
+                     type="email"
+                     className="input-campo"
+                     placeholder="seu@email.com"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     required
+                   />
+                 </div>
 
-            <div className="campo">
-              <label htmlFor="comentario">Comentário *</label>
-              <textarea
-                id="comentario"
-                name="comentario"
-                value={avaliacao.comentario}
-                onChange={handleChange}
-                required
-                rows="5"
-                placeholder="Descreva sua experiência com o produto..."
-              ></textarea>
-            </div>
+                 <button type="submit" className="botao-enviar">
+                   Enviar Avaliação
+                 </button>
+               </form>
+             </div>
 
-            <div className="campo-duplo">
-              <div className="campo">
-                <label htmlFor="nome">Seu nome *</label>
-                <input
-                  type="text"
-                  id="nome"
-                  name="nome"
-                  value={avaliacao.nome}
-                  onChange={handleChange}
-                  required
-                  placeholder="Como quer ser chamado"
-                />
-              </div>
-              <div className="campo">
-                <label htmlFor="email">E-mail *</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={avaliacao.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="seu@email.com"
-                />
-              </div>
-            </div>
-
-            <div className='conteine-botao-enviar' >
-              <button type="submit" className="botao-enviar">
-                Enviar Avaliação
-              </button>
-            </div>
-
-          </form>
-            </div>
-
-
-
-        </div>
-
-        <div className="lista-avaliacoes">
-          <h2>Avaliações dos clientes</h2>
-          {avaliacoesExistentes.length === 0 ? (
-            <p className="sem-avaliacoes">Seja o primeiro a avaliar este produto!</p>
-          ) : (
-            avaliacoesExistentes.map((avaliacao) => (
-              <div key={avaliacao.id} className="card-avaliacao">
-                <div className="cabecalho-avaliacao">
-                  <div className="info-usuario">
-                    <span className="nome-usuario">{avaliacao.nome}</span>
-                    {avaliacao.verificado && (
-                      <span className="verificado">✓ Verificado</span>
-                    )}
-                  </div>
-                  <div className="data-avaliacao">{avaliacao.data}</div>
-                </div>
-                <Estrelas nota={avaliacao.nota} />
-                <h3 className="titulo-avaliacao">{avaliacao.titulo}</h3>
-                <p className="comentario-avaliacao">{avaliacao.comentario}</p>
-                <div className="acoes-avaliacao">
-                  <button className="botao-util">👍 Útil (12)</button>
-                  <button className="botao-denunciar">Denunciar</button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    </div>
-
-
-
-
+             <div className="avaliacoes-secao">
+               <h2 className="titulo-avaliacoes">Avaliações dos clientes</h2>
+               
+               {avaliacoes.map((avaliacao) => (
+                 <div key={avaliacao.id} className="avaliacao-card">
+                   <div className="avaliacao-header">
+                     <div className="usuario-info">
+                       <span className="usuario-nome">{avaliacao.nome}</span>
+                       {avaliacao.verificado && (
+                         <span className="badge-verificado">✓ Verificado</span>
+                       )}
+                     </div>
+                     <span className="avaliacao-data">{avaliacao.data}</span>
+                   </div>
+                   
+                   <div className="avaliacao-rating">
+                     {renderStars(avaliacao.rating)}
+                   </div>
+                   
+                   <h3 className="avaliacao-titulo">{avaliacao.titulo}</h3>
+                   <p className="avaliacao-comentario">{avaliacao.comentario}</p>
+                   
+                   <div className="avaliacao-acoes">
+                     <button 
+                       className="botao-util"
+                       onClick={() => handleUtilClick(avaliacao.id)}
+                     >
+                       👍 Útil ({avaliacao.util})
+                     </button>
+                     <button className="botao-denunciar">Denunciar</button>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           </div>
+      
+         </div>
 
       </div>
 
