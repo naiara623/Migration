@@ -131,7 +131,7 @@ function LoginContext() {
           <div className="modal">
             <div className="modal-content">
                <img src="oiiiii.png" alt="OI mundo" className='Oimundo-cadastro'/>
-              <p className='olaMundo-Cadastro'>Seja bem vindo!</p>
+              <p className='olaMundo-Cadastro'>{t("modais.modal.logar")}</p>
               <button onClick={closeModal} className='button-cadastro'>Fechar modal</button>
             </div>
           </div>

@@ -36,6 +36,14 @@
     }
   },
 
+   "modais": {
+    "modal": {
+      "cadas": "¡Registro exitoso!",
+      "logar": "¡Inicia sesión exitosamente!"
+
+    }
+  },
+
   "featuredproduct": {
      "produto": {
         "title": "Featured Products",

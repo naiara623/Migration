@@ -31,6 +31,12 @@
     /* border: 3px solid orange; */
     width: 100%;
     height: 60%;
+    /* padding-left: 15px; */
+    
+}
+
+.Inputs-Cadastro::placeholder{
+    padding-left: 15px;
 }
 
 .Buttons-Cadastro{
@@ -56,11 +62,11 @@
     flex-direction: column;
 }
 
-input::placeholder {
+/* input::placeholder {
  position: relative;
   left: 10px;  /* move horizontalmente */
-  top: 2px;    /* move verticalmente */
-}
+  /* top: 2px;    /* move verticalmente */
+
 
 
 .butonLogar-Cadastro, 
@@ -79,7 +85,7 @@ input::placeholder {
 
 .BemVindo-cadastro{
     /* border: 2px solid yellow; */
-    width: 60%;
+    width: 70%;
     font-size: 40px;
     color: var(--text-primary);
     position: relative;
@@ -122,12 +128,14 @@ input::placeholder {
     border-radius: 5px;
 background-color: var(--cadastro-inputs);
 border: 1px solid var(--accent-tertiary);
+padding: 10px;
 
 }
 
 input::placeholder {
     color: var(--cinza);
-    font-size: 17px;
+    font-size: 10px;
+  
 }
 
 input:focus {

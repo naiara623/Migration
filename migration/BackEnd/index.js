@@ -1055,85 +1055,85 @@ app.get('/api/debug/params/:id', (req, res) => {
 // 🏭 ROTAS DE PRODUÇÃO E MONITORAMENTO (CORRIGIDAS)
 // ==========================================
 
-// Rota para criar pedido e enviar para produção (CORRIGIDA)
-app.post('/api/pedidos/producao', autenticar, async (req, res) => {
-    console.log('🏭 Criando pedido com monitoramento de produção:', req.body);
+// ==========================================
+// 📦 ROTAS DE PEDIDOS (PROTEGIDAS)
+// ==========================================
+
+// Rota para criar pedido (simples, sem produção)
+app.post('/api/pedidos', autenticar, async (req, res) => {
+  console.log('📦 Criando pedido simples:', req.body);
+
+  try {
+    const { total, metodo_pagamento, endereco_entrega, itens } = req.body;
+    
+    if (!Array.isArray(itens) || itens.length === 0) {
+      return res.status(400).json({ erro: 'Itens do pedido inválidos' });
+    }
+
+    const client = await pool.connect();
+    
+    // Iniciar transação
+    await client.query('BEGIN');
 
     try {
-        const { total, metodo_pagamento, endereco_entrega, itens } = req.body;
-        
-        if (!Array.isArray(itens) || itens.length === 0) {
-            return res.status(400).json({ erro: 'Itens do pedido inválidos' });
-        }
+      // 1. Inserir pedido
+      const pedidoResult = await client.query(
+        `INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega, status_geral) 
+         VALUES ($1, $2, $3, $4, $5) 
+         RETURNING *`,
+        [req.session.user.idusuarios, total, metodo_pagamento, endereco_entrega, 'PENDENTE']
+      );
 
-        // 1. Criar pedido no banco
-        const pedido = await createPedidoComRastreamento({ 
-            idusuarios: req.session.user.idusuarios, 
-            total, 
-            metodo_pagamento, 
-            endereco_entrega, 
-            itens 
-        });
+      const pedido = pedidoResult.rows[0];
 
-        // 2. Enviar cada item individualmente para a máquina
-        const resultadosProducao = [];
-        
-        for (let itemIndex = 0; itemIndex < itens.length; itemIndex++) {
-            const item = itens[itemIndex];
-            const product = await getProductById(item.id_produto);
-            
-            if (product && item.configuracao) {
-                try {
-                    // Enviar cada unidade do produto
-                    const itemsMaquina = await queueSmart.enviarItemParaMaquina(
-                        pedido,
-                        product,
-                        item.configuracao,
-                        itemIndex,
-                        item.quantidade
-                    );
+      // 2. Inserir itens do pedido
+      for (const item of itens) {
+        await client.query(
+          `INSERT INTO pedido_itens 
+           (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor, configuracao) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [
+            pedido.id_pedido,
+            item.id_produto,
+            item.quantidade,
+            item.preco_unitario,
+            item.tamanho || '',
+            item.cor || '',
+            item.configuracao || {}
+          ]
+        );
+      }
 
-                    // Registrar cada item na produção (CORRIGIDO - usando producao)
-                    for (const itemMaquina of itemsMaquina) {
-                        const itemProducao = await registrarItemProducao({
-                            id_pedido: pedido.id_pedido,
-                            id_produto: item.id_produto,
-                            item_index: itemIndex,
-                            item_unit: itemMaquina.item_unit,
-                            item_id_maquina: itemMaquina.item_id_maquina,
-                            order_id: itemMaquina.order_id,
-                            status_maquina: 'PENDENTE',
-                            estagio_maquina: 'AGUARDANDO',
-                            progresso_maquina: '0%',
-                            slot_expedicao: `SLOT-${Math.floor(Math.random() * 20) + 1}`
-                        });
-                        
-                        resultadosProducao.push(itemProducao);
-                    }
+      // 3. Limpar carrinho
+      await client.query(
+        'DELETE FROM carrinho WHERE idusuarios = $1',
+        [req.session.user.idusuarios]
+      );
 
-                } catch (error) {
-                    console.error(`⚠️ Erro ao enviar item ${itemIndex} para produção:`, error);
-                    // Continua com os outros itens mesmo se um falhar
-                }
-            }
-        }
+      await client.query('COMMIT');
+      client.release();
 
-        console.log(`✅ Pedido ${pedido.id_pedido} criado com ${resultadosProducao.length} itens de produção`);
+      console.log(`✅ Pedido ${pedido.id_pedido} criado com sucesso`);
 
-        res.status(201).json({ 
-            mensagem: 'Pedido criado e enviado para produção!', 
-            pedido,
-            itens_producao: resultadosProducao.length,
-            detalhes: 'Cada item está sendo produzido individualmente e será monitorado'
-        });
+      res.status(201).json({
+        mensagem: 'Pedido criado com sucesso!',
+        pedido: pedido,
+        total_itens: itens.length
+      });
 
     } catch (error) {
-        console.error('❌ Erro ao criar pedido de produção:', error);
-        res.status(500).json({ 
-            erro: 'Erro ao criar pedido', 
-            detalhes: error.message 
-        });
+      await client.query('ROLLBACK');
+      client.release();
+      throw error;
     }
+
+  } catch (error) {
+    console.error('❌ Erro ao criar pedido:', error);
+    res.status(500).json({
+      erro: 'Erro ao criar pedido',
+      detalhes: error.message
+    });
+  }
 });
 
 // Rota para receber callbacks da Queue Smart 4.0 (CORRIGIDA)
