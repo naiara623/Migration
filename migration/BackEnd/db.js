@@ -534,16 +534,21 @@ async function getStatusProducaoByPedido(id_pedido) {
 // db.js - adicione estas funções
 
 // Inserir um novo endereço
+// Atualize a função insertEndereco no db.js
 async function insertEndereco(enderecoData) {
+  console.log('📝 [DB] Inserindo/atualizando endereço:', enderecoData);
+  
   const client = await pool.connect();
   try {
-    const { cep, estado, complemento, numero, cidade, bairro, idusuarios  } = enderecoData;
+    const { cep, estado, complemento, numero, cidade, bairro, idusuarios } = enderecoData;
     
     // Verificar se o usuário já tem um endereço cadastrado
     const existingAddress = await client.query(
       'SELECT id_endereco FROM endereco WHERE idusuarios = $1',
-      [enderecoData.idusuarios]
+      [idusuarios]
     );
+    
+    console.log(`🔍 [DB] Endereço existente? ${existingAddress.rows.length > 0}`);
     
     if (existingAddress.rows.length > 0) {
       // Atualizar endereço existente
@@ -554,12 +559,13 @@ async function insertEndereco(enderecoData) {
              complemento = $3, 
              numero = $4, 
              cidade = $5, 
-             bairro = $6,
-             atualizado_em = CURRENT_TIMESTAMP
+             bairro = $6
          WHERE idusuarios = $7
          RETURNING *`,
-        [cep, estado, complemento, numero, cidade, bairro, enderecoData.idusuarios]
+        [cep, estado, complemento, numero, cidade, bairro, idusuarios]
       );
+      
+      console.log('✅ [DB] Endereço atualizado:', result.rows[0]);
       return result.rows[0];
     } else {
       // Inserir novo endereço
@@ -568,10 +574,21 @@ async function insertEndereco(enderecoData) {
          (cep, estado, complemento, numero, cidade, bairro, idusuarios) 
          VALUES ($1, $2, $3, $4, $5, $6, $7) 
          RETURNING *`,
-        [cep, estado, complemento, numero, cidade, bairro, enderecoData.idusuarios]
+        [cep, estado, complemento, numero, cidade, bairro, idusuarios]
       );
+      
+      console.log('✅ [DB] Endereço criado:', result.rows[0]);
       return result.rows[0];
     }
+  } catch (error) {
+    console.error('❌ [DB] ERRO ao salvar endereço:', error);
+    console.error('❌ [DB] Detalhes do erro:', {
+      code: error.code,
+      message: error.message,
+      detail: error.detail,
+      constraint: error.constraint
+    });
+    throw error;
   } finally {
     client.release();
   }
@@ -605,7 +622,6 @@ async function updateEndereco(id_endereco, enderecoData) {
            numero = $4, 
            cidade = $5, 
            bairro = $6,
-           atualizado_em = CURRENT_TIMESTAMP
        WHERE id_endereco = $7
        RETURNING *`,
       [cep, estado, complemento, numero, cidade, bairro, id_endereco]

@@ -125,27 +125,38 @@ const carregarDadosUsuario = async () => {
     }
 };
 
-    const handleDeletarConta = async () => {
-        if (window.confirm('Tem certeza que deseja deletar sua conta? Esta ação não pode ser desfeita.')) {
-            try {
-                const response = await fetch(`/api/usuario-atual/${userData.idusuarios}`, {
-                    method: 'DELETE',
-                    credentials: 'include'
-                });
+   const handleDeletarConta = async () => {
+    if (window.confirm('Tem certeza que deseja deletar sua conta? Esta ação não pode ser desfeita.')) {
+        try {
+            // CORREÇÃO: Usar a URL completa com localhost:3001
+            const response = await fetch(`http://localhost:3001/api/usuario-atual/${userData.idusuarios}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
 
-                if (response.ok) {
-                    alert('Conta deletada com sucesso!');
-                    window.location.href = '/';
-                } else {
-                    const error = await response.json();
-                    setMessage(error.erro || 'Erro ao deletar conta');
-                }
-            } catch (error) {
-                console.error('💥 Erro ao deletar conta:', error);
-                setMessage('Erro de conexão');
+            // Verificar se a resposta é JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('❌ Resposta não é JSON:', text.substring(0, 200));
+                throw new Error('Resposta do servidor não é JSON');
             }
+
+            const result = await response.json();
+            
+            if (response.ok) {
+                alert('Conta deletada com sucesso!');
+                // Redirecionar para a página inicial
+                window.location.href = '/';
+            } else {
+                setMessage(result.erro || 'Erro ao deletar conta');
+            }
+        } catch (error) {
+            console.error('💥 Erro ao deletar conta:', error);
+            setMessage('Erro de conexão: ' + error.message);
         }
-    };
+    }
+};
 
     if (loading) {
         return (

@@ -465,6 +465,34 @@ app.get('/api/produtos/public', async (req, res) => {
 
 // server.js - adicione estas rotas após a rota GET /api/enderecos
 
+
+// Rota para obter endereço do usuário (FALTANTE - ADICIONE ESTA ROTA)
+app.get('/api/enderecos', autenticar, async (req, res) => {
+  try {
+    console.log('🏠 Buscando endereço para usuário:', req.session.user.idusuarios);
+    
+    const endereco = await getEnderecoByUserId(req.session.user.idusuarios);
+    
+    if (!endereco) {
+      console.log('ℹ️ Usuário não tem endereço cadastrado');
+      return res.status(404).json({ 
+        erro: 'Endereço não encontrado',
+        mensagem: 'Você ainda não cadastrou um endereço' 
+      });
+    }
+    
+    console.log('✅ Endereço encontrado:', endereco);
+    res.json(endereco);
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar endereço:', error);
+    res.status(500).json({ 
+      erro: 'Erro ao buscar endereço',
+      detalhes: error.message 
+    });
+  }
+});
+
 // Rota para atualizar endereço
 app.put('/api/enderecos/:id', autenticar, async (req, res) => {
   try {
