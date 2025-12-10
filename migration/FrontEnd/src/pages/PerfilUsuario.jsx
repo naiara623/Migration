@@ -170,13 +170,19 @@ const carregarDadosUsuario = async () => {
                         <div className='div-LINHA2-PRF'></div>
                     </div>
 
-                    <div className='div-vazia3' ></div>
+                    <div className='div-vazia3' >
+
 
                     {message && (
                         <div className={`mensagem ${message.includes('sucesso') ? 'mensagem-sucesso' : 'mensagem-erro'}`}>
                             {message}
                         </div>
                     )}
+
+
+
+                    </div>
+
 
                     <form className='form-perfil' onSubmit={handleEditarPerfil}>
                         <div className='campo-formulario-nome-PRF' >
