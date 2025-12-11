@@ -94,11 +94,16 @@
 .input-campo {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #a0aec0;
+  border: 1px solid  #ebba9793;
   background-color: #fff;
-  font-size: 14px;
+  /* font-size: 14px; */
   box-sizing: border-box;
   font-family: inherit;
+}
+
+.input-campo::placeholder{
+  color: #a7a6a6;
+  font-size: 0.9rem;
 }
 
 .input-campo:focus {
@@ -109,7 +114,7 @@
 .textarea-campo {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #a0aec0;
+  border: 1px solid #e5b18b93;
   background-color: #fff;
   font-size: 14px;
   resize: vertical;

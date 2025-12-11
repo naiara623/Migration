@@ -1,195 +1,383 @@
+
 .Modal-overlay1 {
-   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: #324973a3;
-  display: flex; align-items: center; justify-content: center;
-   z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
   cursor: pointer;
-  
 }
+
+/* ============================================
+   MODAL CONTENT
+   ============================================ */
 
 .Modal-ContentPre {
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    background-color: var(--modal-primary);
-    border-radius: 8px;
-    width: 50%;
-    height: 94%;
-    border: 3px solid rgb(0, 217, 255);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.conteine-titulo-Prepa{
-    border: 3px solid red;
-    width: 100%;
-    height: 15%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;    
-  
-}
-
-.conteine-aviso-Prepa{
-    border: 3px solid rgb(230, 0, 255);
-    width: 100%;
-    height: 12%;
-}
-
-.conteine-produto-Prepa{
-    border: 3px solid rgb(0, 255, 21);
-    width: 100%;
-    height: 32%;
-}
-
-.conteine-detalhes-Prepa{
-    border: 1px solid rgba(9, 9, 9, 0.437);
-    width: 100%;
-    height: 37%;
-    background-color: #F9F9F9;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.conteine-body{
- border: 3px solid rgb(10, 1, 1);
-    width: 90%;
-    height: 95%;
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-
-}
-
-/* conteine do aviso */
-
-.conteine-aviso-Prepa {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+;
+  border-radius: 8px;
+  width: 50%;
+  height: 94%;
+  /* border: 3px solid rgb(0, 217, 255); */
   display: flex;
   justify-content: center;
   align-items: center;
-  
-  width: 100%; /* Ocupa 100% da largura disponível */
-  
-  
+  overflow: hidden;
 }
 
-.notification-message {
-  background-color: #1175d95e;
-  border-left: 4px solid #007bff;
-  padding: 1rem 1.5rem;
-  border-radius: 4px;
-  width: 100%; /* Ocupa toda a largura do container pai */
-  max-width: 100%; /* Não ultrapassa a largura do container */
-  text-align: center;
-  box-sizing: border-box; /* Inclui padding no cálculo do tamanho */
-}
+/* ============================================
+   CONTENT WRAPPER
+   ============================================ */
 
-.notification-message p {
-  margin: 0;
-  color: #333;
-  font-size: 85%;
-  line-height: 1.5;
-  font-weight: 50%;
-}
-
-
-/* Estilos para o container do produto */
-.conteine-produto-Prepa {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
+.order-tracking-content-wrapper {
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  overflow-y: auto;
   display: flex;
-   height: 36% ;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.conteine-imgDoproduto{
-    border: 4px solid red;
-    width: 30%;
-    height: 100% ;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+/* ============================================
+   C1: HEADER SECTION
+   ============================================ */
+
+.header-section {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #0c0c0c;
+  padding: 24px;
+  flex-shrink: 0;
 }
 
-.div-imgDoproduto{
-    border: 4px solid rgb(0, 255, 51);
-    width: 80%;
-    height: 80% ;
+.header-title {
+  font-size: 24px;
+  font-weight: 700;
+color: #2c5282;
+  margin-bottom: 8px;
+  margin: 0;
 }
 
-.conteine-informaçãoProduto{
-    border: 4px solid rgb(0, 255, 51);
-    width: 42%;
-    height: 100% ;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
+.header-subtitle {
+  font-size: 14px;
+  color: #475569;
+  margin: 0;
 }
 
-.div-informaçãoProduto{
-    border: 4px solid rgb(76, 0, 255);
+/* ============================================
+   C2: STATUS ALERT SECTION
+   ============================================ */
+
+.status-alert-section {
+    background-color: #f0dacb7e;
+ /* : #744320;  */
+  border-radius: 8px;
+  /* border: 1px solid #4cf703; */
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.status-alert-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.status-alert-text {
+  color: #1e3a8a;
+  font-weight: 500;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ============================================
+   C3: PRODUCT DETAILS SECTION
+   ============================================ */
+
+.product-section {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #232324;
+  padding: 24px;
+  flex-shrink: 0;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 1200px) {
+  .product-grid {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+/* Product Image Container */
+.product-image-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+    background-color: #eacab393;
+  border-radius: 8px;
+  padding: 16px;
+  border: 2px dashed #cbd5e1;
+  aspect-ratio: 1 / 1;
+  min-height: 150px;
+}
+
+.product-image-text {
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Product Information */
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.product-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.product-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.product-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
+.product-detail-label {
+    color: var(--accent-primary);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.product-detail-value {
+    color: #276abd;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.product-price-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+        background-color: #eacab393;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+}
+
+.product-price-label {
+      color: var(--accent-primary);
+
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.product-price-value {
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* ============================================
+   C4: ORDER DETAILS SECTION
+   ============================================ */
+
+.order-details-section {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #333435;
+  padding: 24px;
+  flex-shrink: 0;
+}
+
+.order-details-title {
+  font-size: 18px;
+  font-weight: 700;
+color: var(--accent-primary); 
+ margin-bottom: 16px;
+  margin: 0 0 16px 0;
+}
+
+.order-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.order-detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.order-detail-label {
+color: var(--accent-primary); 
+  font-weight: 500;
+  font-size: 14px;
+  min-width: fit-content;
+  white-space: nowrap;
+}
+
+.order-detail-input {
+  flex: 1;
+  padding: 6px 12px;
+    background-color: #eacab393;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+    color: #276abd;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+
+.order-detail-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.order-status-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+    background-color: #eacab393;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  color: #1e3a8a;
+  font-weight: 600;
+  font-size: 14px;
+  flex: 1;
+}
+
+.order-status-icon {
+  width: 16px;
+  height: 16px;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+.order-tracking-content-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.order-tracking-content-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.order-tracking-content-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.order-tracking-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .Modal-ContentPre {
+    width: 60%;
+    height: 90%;
+  }
+
+  .order-tracking-content-wrapper {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .Modal-ContentPre {
+    width: 90%;
+    height: 95%;
+  }
+
+  .order-tracking-content-wrapper {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .header-section,
+  .product-section,
+  .order-details-section {
+    padding: 16px;
+  }
+
+  .header-title {
+    font-size: 20px;
+  }
+
+  .product-name {
+    font-size: 18px;
+  }
+
+  .order-detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .order-detail-input,
+  .order-status-container {
     width: 100%;
-    height: 90% ;
-   
-}
-
-.div-titulo-detalhes{
-    /* border: 2px solid  lch(46.12% 104.5 321.38); */
-    width: 100%;
-    height: 13%;
-}
-
-.conteine-dasLabel-prepa{
-
-     border: 2px solid  lch(77.52% 90.13 143.3);
-    width: 100%;
-    height: 87%;
-    display: flex;
-    gap: 3%;
-    flex-direction: column  ;
-}
-
-.div-numeroPedido{
-     /* border: 2px solid  lch(46.12% 104.5 321.38); */
-    width: 100%;
-    height: 17%;
-}
-
-.div-numeroPedido{
-      /* border: 2px solid  lch(46.12% 104.5 321.38); */
-    width: 100%;
-    height: 17%;
-}
-
-.div-TempoEstimado{
-      /* border: 2px solid  lch(46.12% 104.5 321.38); */
-    width: 100%;
-    height: 17%;
-}
-
-.div-StatusAtual{
-      /* border: 2px solid  lch(46.12% 104.5 321.38); */
-    width: 100%;
-    height: 17%;
-}
-
-.div-vazia-prepa1{
-    border: 1px solid  lch(3.97% 0 296.81);     width: 100%;
-    width: 100% ;
-    height: 0%;
-}
-
-.div-vazia-prepa2{
-    border: 1px solid  lch(3.97% 0 296.81);     width: 100%;
-    width: 100% ;
-    height: 0%;
-}
-
-.div-vazia-prepa3{
-    border: 1px solid  lch(3.97% 0 296.81);     width: 100%;
-    width: 100% ;
-    height: 0%;
+  }
 }
