@@ -10,6 +10,11 @@ require("dotenv").config();
 
 const {
   pool,
+    getFavoritosByUserId,
+  addToFavoritos,
+  removeFromFavoritos,
+  isFavorito,
+  getTotalFavoritos,
   selectCategoryByName,
   selectAllCategories,
   insertProduct,
@@ -911,6 +916,75 @@ app.get('/api/enderecos/existe', autenticar, async (req, res) => {
 });
 
 // ==========================================
+// ❤️ ROTAS DE FAVORITOS (PROTEGIDAS)
+// ==========================================
+
+// Rota para obter todos os favoritos do usuário
+app.get('/api/favoritos', autenticar, async (req, res) => {
+  try {
+    const favoritos_usuario = await getFavoritosByUserId(req.session.user.idusuarios);
+    res.json(favoritos_usuario);
+  } catch (error) {
+    console.error('❌ Erro ao buscar favoritos:', error);
+    res.status(500).json({ erro: 'Erro ao buscar favoritos' });
+  }
+});
+
+// Rota para adicionar produto aos favoritos
+app.post('/api/favoritos', autenticar, async (req, res) => {
+  try {
+    const { id_produto } = req.body;
+    
+    if (!id_produto) {
+      return res.status(400).json({ erro: 'ID do produto é obrigatório' });
+    }
+    
+    const resultado = await addToFavoritos(req.session.user.idusuarios, id_produto);
+    res.status(201).json(resultado);
+  } catch (error) {
+    console.error('❌ Erro ao adicionar aos favoritos:', error);
+    res.status(500).json({ erro: 'Erro ao adicionar aos favoritos' });
+  }
+});
+
+// Rota para remover produto dos favoritos
+app.delete('/api/favoritos/:id_produto', autenticar, async (req, res) => {
+  try {
+    const id_produto = req.params.id_produto;
+    
+    const resultado = await removeFromFavoritos(req.session.user.idusuarios, id_produto);
+    res.json(resultado);
+  } catch (error) {
+    console.error('❌ Erro ao remover dos favoritos:', error);
+    res.status(500).json({ erro: 'Erro ao remover dos favoritos' });
+  }
+});
+
+// Rota para verificar se um produto é favorito
+app.get('/api/favoritos/verificar/:id_produto', autenticar, async (req, res) => {
+  try {
+    const id_produto = req.params.id_produto;
+    
+    const isFav = await isFavorito(req.session.user.idusuarios, id_produto);
+    res.json({ isFavorito: isFav });
+  } catch (error) {
+    console.error('❌ Erro ao verificar favorito:', error);
+    res.status(500).json({ erro: 'Erro ao verificar favorito' });
+  }
+});
+
+// Rota para obter quantidade de favoritos
+app.get('/api/favoritos/quantidade', autenticar, async (req, res) => {
+  try {
+    const total = await getTotalFavoritos(req.session.user.idusuarios);
+    res.json({ quantidade: total });
+  } catch (error) {
+    console.error('❌ Erro ao buscar quantidade de favoritos:', error);
+    res.status(500).json({ erro: 'Erro interno do servidor' });
+  }
+});
+
+// ==========================================
 // 🔐 ROTAS PROTEGIDAS (PRECISAM DE AUTENTICAÇÃO)
 // ==========================================
 
@@ -1433,6 +1507,55 @@ app.get('/api/debug/params/:id', (req, res) => {
 // ==========================================
 // 📦 ROTAS DE PEDIDOS (PROTEGIDAS)
 // ==========================================
+
+
+// Adicione esta rota ANTES da rota app.listen()
+
+// Rota para obter todos os pedidos do usuário (CORRIGIDA)
+app.get('/api/pedidos', autenticar, async (req, res) => {
+    console.log('📦 Buscando pedidos para usuário:', req.session.user.idusuarios);
+    
+    try {
+        const client = await pool.connect();
+        
+        const result = await client.query(`
+            SELECT 
+                p.id_pedido,
+                p.total,
+                p.status_geral,
+                p.metodo_pagamento,
+                p.data_pedido,
+                p.atualizado_em,
+                COUNT(pi.id_item) as total_itens,
+                SUM(pi.quantidade) as quantidade_total
+            FROM pedidos p
+            LEFT JOIN pedido_itens pi ON p.id_pedido = pi.id_pedido
+            WHERE p.idusuarios = $1
+            GROUP BY p.id_pedido
+            ORDER BY p.data_pedido DESC
+        `, [req.session.user.idusuarios]);
+        
+        client.release();
+        
+        console.log(`✅ ${result.rows.length} pedidos encontrados para o usuário`);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                erro: 'Nenhum pedido encontrado',
+                mensagem: 'Você ainda não fez nenhum pedido' 
+            });
+        }
+        
+        res.json(result.rows);
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar pedidos:', error);
+        res.status(500).json({ 
+            erro: 'Erro ao buscar pedidos',
+            detalhes: error.message 
+        });
+    }
+});
 
 // Rota para criar pedido (simples, sem produção)
 app.post('/api/pedidos', autenticar, async (req, res) => {

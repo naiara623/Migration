@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import "./ModalConfig.css";
+import { useEffect } from "react";
 
 export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho }) {
-  if (!isOpen || !product) return null;
-
-  // Estado para armazenar as seleções do usuário
+    const [isFavorito, setIsFavorito] = useState(false);
+  const [loadingFavorito, setLoadingFavorito] = useState(false);
+ 
   const [selections, setSelections] = useState({
     tamanho: 'M', // valor padrão
     corDentro: '',
@@ -12,6 +13,108 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
     material: 'Nylon', // valor padrão
     estampa: ''
   });
+
+   useEffect(() => {
+    if (isOpen && product) {
+      checkIfFavorito();
+    }
+  }, [isOpen, product]);
+
+  // Reset selections when product changes
+  useEffect(() => {
+    if (product) {
+      setSelections({
+        tamanho: 'M',
+        corDentro: '',
+        corFora: '',
+        material: 'Nylon',
+        estampa: ''
+      });
+    }
+  }, [product]);
+    if (!isOpen || !product) return null;
+  const checkIfFavorito = async () => {
+    if (!product || !product.id_produto) return;
+    
+    try {
+      const userCheck = await fetch('http://localhost:3001/api/check-session', {
+        credentials: 'include'
+      });
+      
+      const sessionData = await userCheck.json();
+      
+      if (sessionData.autenticado) {
+        const response = await fetch(`http://localhost:3001/api/favoritos/verificar/${product.id_produto}`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setIsFavorito(data.isFavorito);
+        }
+      } else {
+        setIsFavorito(false);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar favorito:', error);
+      setIsFavorito(false);
+    }
+  };
+
+  const handleToggleFavorito = async () => {
+    if (!product || !product.id_produto) return;
+    
+    try {
+      setLoadingFavorito(true);
+      
+      const userCheck = await fetch('http://localhost:3001/api/check-session', {
+        credentials: 'include'
+      });
+      
+      const sessionData = await userCheck.json();
+      
+      if (!sessionData.autenticado) {
+        alert("Você precisa estar logado para favoritar produtos.");
+        setLoadingFavorito(false);
+        return;
+      }
+
+      if (isFavorito) {
+        // Remover dos favoritos
+        const response = await fetch(`http://localhost:3001/api/favoritos/${product.id_produto}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          setIsFavorito(false);
+          alert('Produto removido dos favoritos!');
+        }
+      } else {
+        // Adicionar aos favoritos
+        const response = await fetch('http://localhost:3001/api/favoritos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ id_produto: product.id_produto })
+        });
+        
+        if (response.ok) {
+          setIsFavorito(true);
+          alert('Produto adicionado aos favoritos!');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao alternar favorito:', error);
+      alert('Erro ao processar favorito');
+    } finally {
+      setLoadingFavorito(false);
+    }
+  };
+
+  // Return null EARLY, but AFTER all hooks
+  if (!isOpen || !product) return null;
+  
 
   // Função para atualizar as seleções
   const handleSelectionChange = (type, value) => {
@@ -105,7 +208,28 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
             </div>
 
             <div className="gostei">
-              <img className="curti" src="Love.png" alt="Adicionar aos favoritos" />
+              <button 
+                className="favorito-btn"
+                onClick={handleToggleFavorito}
+                disabled={loadingFavorito}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0
+                }}
+              >
+                <img 
+                  className="curti" 
+                  src={isFavorito ? "Love-filled.png" : "Love.png"} 
+                  alt={isFavorito ? "Remover dos favoritos_usuario" : "Adicionar aos favoritos_usuario"} 
+                  style={{
+                    filter: isFavorito ? 'invert(26%) sepia(89%) saturate(2977%) hue-rotate(326deg) brightness(95%) contrast(93%)' : 'none',
+                    width: '24px',
+                    height: '24px'
+                  }}
+                />
+              </button>
             </div>
           </div>
         </div>

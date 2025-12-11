@@ -662,7 +662,110 @@ async function deleteEndereco(id_endereco) {
   }
 }
 
+// db.js - adicione estas funções na seção de funções do usuário
 
+// Funções de Favoritos
+async function getFavoritosByUserId(idusuarios) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT f.*, p.nome_produto, p.descricao, p.valor_produto, p.imagem_url, p.estoque
+      FROM favoritos_usuario f
+      INNER JOIN produtos p ON f.id_produto = p.id_produto
+      WHERE f.idusuarios = $1
+      ORDER BY f.id_favoritos DESC
+    `, [idusuarios]);
+    return result.rows;
+  } catch (error) {
+    console.error('Erro ao buscar favoritos:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function addToFavoritos(idusuarios, id_produto) {
+  const client = await pool.connect();
+  try {
+    // Verificar se já está favoritado
+    const check = await client.query(
+      'SELECT * FROM favoritos_usuario WHERE idusuarios = $1 AND id_produto = $2',
+      [idusuarios, id_produto]
+    );
+    
+    if (check.rows.length > 0) {
+      return { message: 'Produto já está nos favoritos_usuario', favorito: check.rows[0] };
+    }
+    
+    // Adicionar aos favoritos
+    const result = await client.query(
+      `INSERT INTO favoritos_usuario (idusuarios, id_produto, favoritado) 
+       VALUES ($1, $2, NOW()) 
+       RETURNING *`,
+      [idusuarios, id_produto]
+    );
+    
+    return { message: 'Produto adicionado aos favoritos', favorito: result.rows[0] };
+  } catch (error) {
+    console.error('Erro ao adicionar aos favoritos:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function removeFromFavoritos(idusuarios, id_produto) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'DELETE FROM favoritos_usuario WHERE idusuarios = $1 AND id_produto = $2 RETURNING *',
+      [idusuarios, id_produto]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new Error('Produto não encontrado nos favoritos');
+    }
+    
+    return { message: 'Produto removido dos favoritos', favorito: result.rows[0] };
+  } catch (error) {
+    console.error('Erro ao remover dos favoritos:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function isFavorito(idusuarios, id_produto) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'SELECT * FROM favoritos_usuario WHERE idusuarios = $1 AND id_produto = $2',
+      [idusuarios, id_produto]
+    );
+    return result.rows.length > 0;
+  } catch (error) {
+    console.error('Erro ao verificar favorito:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function getTotalFavoritos(idusuarios) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'SELECT COUNT(*) as total FROM favoritos_usuario WHERE idusuarios = $1',
+      [idusuarios]
+    );
+    return parseInt(result.rows[0].total);
+  } catch (error) {
+    console.error('Erro ao contar favoritos:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
 
 
 // ==========================================
@@ -698,6 +801,11 @@ module.exports = {
   // createPedidoWithItems,
   // updateEnderecoEntrega,
   // Produção
+    getFavoritosByUserId,
+  addToFavoritos,
+  removeFromFavoritos,
+  isFavorito,
+  getTotalFavoritos,
   createPedidoComRastreamento,
   registrarItemProducao,
   atualizarStatusProducao,

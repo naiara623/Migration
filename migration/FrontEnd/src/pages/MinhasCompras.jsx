@@ -95,38 +95,44 @@ const buscarStatusDetalhado = async (id_pedido) => {
 
     // Função para determinar a etapa atual baseada no status real
     const getEtapaAtual = () => {
-        if (!statusDetalhado) return 0;
+    if (!statusDetalhado) return 0;
 
-        const { pedido, resumo, itens } = statusDetalhado;
+    const { pedido, resumo, itens } = statusDetalhado;
 
-        // Etapa 0: A Pagar (pedido criado mas nenhum item em produção)
-        if (resumo.itens_prontos === 0 && !itens.some(item => 
-            item.unidades.some(unit => unit.status_maquina === 'PROCESSING'))) {
-            return 0;
-        }
+    if (!resumo || !Array.isArray(itens)) return 0;
 
-        // Etapa 1: Preparando (alguns itens em produção)
-        if (resumo.itens_prontos < resumo.total_itens) {
-            return 1;
-        }
+    // Etapa 0: A Pagar
+    const temItemProcessando = itens.some(item =>
+        Array.isArray(item.unidades) &&
+        item.unidades.some(unit => unit.status_maquina === 'PROCESSING')
+    );
 
-        // Etapa 2: A Caminho (todos os itens prontos, mas não entregue)
-        if (resumo.completo && pedido.status_geral === 'COMPLETO') {
-            return 2;
-        }
+    if (resumo.itens_prontos === 0 && !temItemProcessando) {
+        return 0;
+    }
 
-        // Etapa 3: Avaliar (entregue - você pode adicionar lógica de entrega depois)
-        return 3;
-    };
+    // Etapa 1: Preparando
+    if (resumo.itens_prontos < resumo.total_itens) {
+        return 1;
+    }
+
+    // Etapa 2: A caminho
+    if (resumo.completo && pedido?.status_geral === 'COMPLETO') {
+        return 2;
+    }
+
+    // Etapa 3: Avaliar
+    return 3;
+};
+
 
     const etapaAtual = getEtapaAtual();
 
     // Função para calcular progresso por etapa
     const getProgressoEtapa = () => {
-        if (!statusDetalhado || !statusDetalhado.resumo) return 0;
-
-        const { resumo, itens } = statusDetalhado;
-        
+       if (!statusDetalhado || !statusDetalhado.resumo || !statusDetalhado.itens) {
+    return 0;
+}
         switch (etapaAtual) {
             case 0: // A Pagar
                 return 100; // Sempre 100% se está nessa etapa
