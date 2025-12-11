@@ -70,7 +70,7 @@
 
 .BemVindo-Login{
     /* border: 2px solid yellow; */
-    width: 77%;
+    width: 90%;
     font-size: 40px;
     color: var(--text-primary);
     position: relative;
@@ -103,6 +103,7 @@
     border-radius: 5px;
 background-color: var(--bg-secondary);
 border: 1px solid var(--accent-tertiary);
+padding: 10px;
 
 }
 

@@ -119,6 +119,14 @@
   }
 },
 
+  "modais": {
+    "modal": {
+      "cadas": "Cadastro realizado com sucesso!",
+      "logar": "Login realizado com sucesso!"
+
+    }
+  },
+
   "produto": {
     "categoria":{
       "buton": "Ver Categorias"

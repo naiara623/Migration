@@ -229,8 +229,13 @@ function ProdutosAlta() {
 
               <section className='Section1-produtos'>
                 <div className="slavei">
-                {!loading && products.length === 0 && !error && (
-                  <div className="escritas-produto">
+                {/* {!loading && products.length === 0 && !error && (
+                 
+                  )} */}
+
+                  <div className="products-grid">
+                {products.length === 0 && !loading ? (
+                   <div className="escritas-produto">
                     <div className="empty-products">
                   <p>Nenhum produto encontrado</p>
                   <button className="retry-btn">
@@ -238,14 +243,9 @@ function ProdutosAlta() {
                   </button>
                 </div>
                   </div>
-                  )}
-
-                  <div className="products-grid">
-                {products.length === 0 && !loading ? (
-                  <p>Nenhum produto encontrado.</p>
                 ) : (
                   products.map(product => (
-                    <div key={product.id_produto} className="product-card1">
+                    <div key={product.id_produto} className="card-produto">
                       <div className="product-image">
                         <img 
                           src={product.imagem_url 
@@ -262,15 +262,20 @@ function ProdutosAlta() {
                           <div className="out-of-stock-badge">Esgotado</div>
                         )}
                       </div>
-                      <div className="product-info">
-                        <div className='div-nome'>
-                          <h3 className='nome_produto'>{product.nome_produto}</h3>
-                        </div>
-                      
-                        <div className="product-category">
-                          <span className="category-tag">{product.nome_categoria}</span>
-                        </div>
-                        <div className="product-rating">
+       
+                      <div className="info-produtos">
+
+                         <div className="nome-categoria">
+                          <div className='nome-div'>
+                            <h3 className='nome_produto1'>{product.nome_produto}</h3>
+                          </div>
+
+                          <div className="categoria-produto">
+                            <span className="category-tag1">{product.nome_categoria}</span>
+                          </div>
+        </div>
+
+         <div className="avaliação-produto">
                           {[...Array(5)].map((_, i) => (
                             <i 
                               key={i} 
@@ -281,24 +286,32 @@ function ProdutosAlta() {
                             ({product.avaliacao_produto || 'Sem avaliação'})
                           </span>
                         </div>
-
-                        <div className="product-stock">
+                        
+                        
+                       
+                      <div className="estoque-preco">
+                         <div className="product-stock">
                           {product.estoque > 0 
                             ? `🟢 ${product.estoque} em estoque` 
                             : '🔴 Esgotado'
                           }
                         </div>
-                        <div className="product-price">
+                        <div className="produto-valor">
                           R$ {parseFloat(product.valor_produto).toFixed(2)}
                         </div>
+                      </div>
+                       
                       
+                      <div className="button-carinho">
                         <button 
                           onClick={() => handleOpenModal(product)} 
-                          className="btn btn-primary"
+                          className="button-adicionar-carrinho"
                           disabled={product.estoque <= 0}
                         >
                           {product.estoque > 0 ? '🛒 Adicionar ao Carrinho' : 'Esgotado'}
                         </button>
+                      </div>
+                        
                       </div>
                     </div>
                   ))

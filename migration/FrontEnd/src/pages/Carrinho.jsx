@@ -72,7 +72,9 @@ function CarrinhoContent() {
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
+
+
 const subtotal = products
   .filter(item => item.checked) // só produtos marcados
   .reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -226,64 +228,71 @@ const total = subtotal - desconto;
     ));
   };
 
-  // ✅ ATUALIZADO: Finalizar compra
-  const handleFinalizarCompra = async () => {
-    const selectedProducts = products.filter(p => p.checked);
-    
-    if (selectedProducts.length === 0) {
-      alert('Selecione pelo menos um produto para comprar');
-      return;
+ // ✅ ATUALIZADO: Finalizar compra
+const handleFinalizarCompra = async () => {
+  const selectedProducts = products.filter(p => p.checked);
+  
+  if (selectedProducts.length === 0) {
+    alert('Selecione pelo menos um produto para comprar');
+    return;
+  }
+
+  if (!paymentMethod) {
+    alert('Selecione uma forma de pagamento');
+    return;
+  }
+
+  try {
+    const pedidoData = {
+      itens: selectedProducts.map(p => ({
+        id_produto: p.id_produto,
+        quantidade: p.quantity,
+        preco_unitario: p.price,
+        tamanho: p.tamanho,
+        cor: p.cor
+      })),
+      total: total, // Use a variável 'total' que já existe
+      metodo_pagamento: paymentMethod,
+      endereco_entrega: "Endereço do usuário" // Você pode pegar do perfil do usuário
+    };
+
+    console.log('📦 Dados do pedido:', pedidoData);
+
+    // CORREÇÃO: Use a variável 'total' em vez de 'totalComFrete'
+    // CORREÇÃO: Mude para /api/pedidos em vez de /api/pedidos/producao
+const response = await fetch('http://localhost:3001/api/pedidos', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    total: total,
+    metodo_pagamento: paymentMethod,
+    endereco_entrega: "Endereço do usuário",
+    itens: pedidoData.itens
+  }),
+  credentials: 'include'
+});
+
+    if (response.ok) {
+      const result = await response.json();
+      alert('✅ Pedido realizado com sucesso!');
+      console.log('📋 Pedido criado:', result);
+      
+      // Recarregar carrinho (deve estar vazio agora)
+      await fetchCarrinho();
+      setSelectAll(false);
+      setPaymentMethod("");
+    } else {
+      const errorData = await response.json();
+      console.error('❌ Erro na resposta:', errorData);
+      alert('❌ Erro ao realizar pedido: ' + (errorData.erro || 'Erro desconhecido'));
     }
-
-    if (!paymentMethod) {
-      alert('Selecione uma forma de pagamento');
-      return;
-    }
-
-    try {
-      const pedidoData = {
-        itens: selectedProducts.map(p => ({
-          id_produto: p.id_produto,
-          quantidade: p.quantity,
-          preco_unitario: p.price,
-          tamanho: p.tamanho,
-          cor: p.cor
-        })),
-        total: total,
-        metodo_pagamento: paymentMethod,
-        endereco_entrega: "Endereço do usuário" // Você pode pegar do perfil do usuário
-      };
-
-      console.log('📦 Dados do pedido:', pedidoData);
-
-      const response = await fetch('http://localhost:3001/api/pedidos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(pedidoData),
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert('✅ Pedido realizado com sucesso!');
-        console.log('📋 Pedido criado:', result);
-        
-        // Recarregar carrinho (deve estar vazio agora)
-        await fetchCarrinho();
-        setSelectAll(false);
-        setPaymentMethod("");
-      } else {
-        const errorData = await response.json();
-        console.error('❌ Erro na resposta:', errorData);
-        alert('❌ Erro ao realizar pedido: ' + (errorData.erro || 'Erro desconhecido'));
-      }
-    } catch (error) {
-      console.error('❌ Erro ao finalizar compra:', error);
-      alert('❌ Erro ao finalizar compra: ' + error.message);
-    }
-  };
+  } catch (error) {
+    console.error('❌ Erro ao finalizar compra:', error);
+    alert('❌ Erro ao finalizar compra: ' + error.message);
+  }
+};
 
   // Função remover cupom
   const handleRemoveCoupon = () => {
@@ -344,7 +353,7 @@ const total = subtotal - desconto;
                     />
                   </div>
                   <button 
-                    className="clear-cart-btn"
+                    className="Limpar-carrinho"
                     onClick={handleClearCart}
                   >
                     🗑️ Limpar Carrinho
@@ -364,8 +373,12 @@ const total = subtotal - desconto;
                 </div>
               )}
 
+            <div className="produto-carrinhos">
               {products.map((p) => (
                 <div className="item-card" key={p.id}>
+                  <div className="divdaimg">
+                    <div className="img-produto"></div>
+                  </div>
                   <div className="item-header">
                     <ProductCheckbox 
                       id={p.id} 
@@ -373,35 +386,64 @@ const total = subtotal - desconto;
                       onChange={() => handleProductSelect(p.id)}
                     />
                   </div>
-                  <div className="item-info">
-                    <h3>{p.name}</h3>
-                    <div className="item-details">
-                      {p.tamanho && <span className="detail-tag">Tamanho: {p.tamanho}</span>}
-                      {p.cor && <span className="detail-tag">Cor: {p.cor}</span>}
-                      <span className="item-price">R$ {p.price.toFixed(2)}</span>
 
-                      <div className="quantity-controls">
+                  <div className="item-info">
+                    <h3 className='nome-produto-carrinho'>{p.name}</h3>
+                    <div className="tamanh-cor">
+                      {p.tamanho && <span className="detail-tag">Tamanho: {p.tamanho}</span>}
+                      <div className="espacovazio"></div>
+                      {p.cor && <span className="detail-tagC">Cor: {p.cor}</span>}
+                      </div>
+
+                      <div className="preco-carinho">
+                        <span className="item-price">R$ {p.price.toFixed(2)}</span>
+                      </div>
+
+                      <div className="buttons-carrinho">
+                        <div className="quantity-controls">
                         <button 
+                        className='buttonmenos-carrinho'
                           onClick={() => updateQuantity(p.id, p.quantity - 1)} 
                           disabled={p.quantity <= 1}
                         >
-                          -
+                         -   
                         </button>
                         <span>{p.quantity}</span>
-                        <button onClick={() => updateQuantity(p.id, p.quantity + 1)}>
+                        <button 
+                        className='buttonmais-carrinho'
+                        onClick={() => updateQuantity(p.id, p.quantity + 1)}>
                           +
                         </button>
                       </div>
-                    </div>
-                  </div>
-                  <button 
+
+                      <div className="button-remover">
+                    <button 
                     className="remove-button" 
                     onClick={() => handleRemoveProduct(p.id)}
                   >
                     Remover
                   </button>
+                  </div>
+                      </div>
+                    {/* <div className="item-details">
+                      
+                      
+
+                      
+                    </div> 
+
+                     
+                    */}
+                  </div>
+                  
+                  
+                 
+                  
+                  
                 </div>
               ))}
+            </div>
+              
             </div>
           </div>
 

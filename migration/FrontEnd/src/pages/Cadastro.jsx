@@ -213,7 +213,7 @@ function CadastroContext() {
           <div className="modal">
             <div className="modal-content">
               <img src="oiiiii.png" alt="OI mundo" className='Oimundo-cadastro'/>
-              <p className='olaMundo-Cadastro'>{t('welcomeMessage')}</p>
+              <p className='olaMundo-Cadastro'>{t("modais.modal.cadas")}</p>
               <button onClick={closeModal} className='button-cadastro'>
                 {t('closeModal')}
               </button>

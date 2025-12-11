@@ -130,6 +130,14 @@
     }
   },
 
+  "modais": {
+    "modal": {
+      "cadas": "Registration successful!",
+      "logar": "Login successful!"
+
+    }
+  },
+
   
   "perfil": {
     "dadospessoais": {
