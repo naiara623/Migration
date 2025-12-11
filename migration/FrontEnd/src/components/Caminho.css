@@ -1,3 +1,19 @@
+
+
+.englobaTudo-Modal1{
+   /* border: 2px solid yellow;  */
+    background-color: #324973b1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
 .grande-modal2{
     background-color: #F7F7F7;
     /* border: 4px solid ; */

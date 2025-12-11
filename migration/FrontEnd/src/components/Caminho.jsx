@@ -6,7 +6,7 @@ function Caminho({ isOpen, onClose}) {
      if (!isOpen) return null;
 
   return (
-    <div className='englobaTudo-Modal' onClick={onClose}>
+    <div className='englobaTudo-Modal1' onClick={onClose}>
        <div className='grande-modal2' onClick={(e) => e.stopPropagation()}>
 
         <div className="conteine-1titulo">

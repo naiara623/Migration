@@ -31,7 +31,6 @@ const router = createBrowserRouter([
     {path: "/minhasCompras", element: <MinhasCompras/>},
     {path: "/meusFavoritos", element: <MeusFavoritos/>},
     {path: "/car", element: <Carrinho/>},
-    {path: "/Perfil-usuario", element: <PerfilUsuario/>},
     {path: "/loja", element: <Loja/>},
     {path: "/produtos", element: <ProdutosAlta />},
     {path: "/endereco", element: <Endereco/>},

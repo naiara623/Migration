@@ -162,8 +162,8 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
             id_produto: product.id_produto,
             quantidade: 1,
             tamanho: selections.tamanho,
-            cor: `Dentro: ${selections.corDentro} | Fora: ${selections.corFora} | Material: ${selections.material} | Estampa: ${selections.estampa}`,
-            configuracao: configuracaoProduto // ✅ Nova propriedade
+            cor: `Dentro: ${selections.corDentro} | Fora: ${selections.corFora} | Material: ${selections.material} | Estampa: ${selections.estampa}`
+            
         };
 
        console.log('📦 Dados do carrinho com configuração:', carrinhoData);
