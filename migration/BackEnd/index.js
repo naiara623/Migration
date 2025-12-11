@@ -122,15 +122,17 @@ function autenticar(req, res, next) {
     });
   }
   
-  if (!req.session.user.idusuarios) {
-    console.log('❌ AUTENTICAÇÃO FALHOU: Sem ID de usuário na sessão');
+  // Verificar se tem idusuarios (usuário normal) ou isAdmin (admin)
+  // ADMs não precisam de idusuarios, mas têm isAdmin = true
+  if (!req.session.user.idusuarios && !req.session.user.isAdmin) {
+    console.log('❌ AUTENTICAÇÃO FALHOU: Sessão inválida - sem ID de usuário nem flag de admin');
     return res.status(401).json({ 
       erro: 'Sessão inválida',
-      detalhes: 'ID de usuário não encontrado'
+      detalhes: 'Dados de usuário não encontrados'
     });
   }
   
-  console.log('✅ Autenticação bem-sucedida para usuário:', req.session.user.idusuarios);
+  console.log('✅ Autenticação bem-sucedida para:', req.session.user.email_user);
   next();
 }
 
@@ -275,6 +277,287 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ erro: 'Erro ao fazer login' });
   }
 });
+
+// server.js - adicione esta rota após a rota /api/login
+
+// Rota pública para login de administrador
+app.post('/api/login-adm', async (req, res) => {
+  const { email, senha } = req.body; // Usando 'email' e 'senha' como no frontend
+  
+  console.log('🔐 Tentativa de login ADM:', { email });
+  
+  try {
+    const client = await pool.connect();
+    
+    // Buscar administrador pelo email
+    const result = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [email]
+    );
+    
+    client.release();
+    
+    if (result.rows.length === 0) {
+      console.log('❌ Administrador não encontrado');
+      return res.status(401).json({ erro: 'Email ou senha incorretos' });
+    }
+    
+    const administrador = result.rows[0];
+    
+    // Verificar senha (em produção, use bcrypt para comparação!)
+    if (senha !== administrador.senhadm) {
+      console.log('❌ Senha incorreta');
+      return res.status(401).json({ erro: 'Email ou senha incorretos' });
+    }
+    
+    // Criar sessão de administrador
+    req.session.user = {
+      idusuarios: administrador.id_adm,
+      email_user: administrador.email_adm,
+      nome_usuario: administrador.nome_adm,
+      isAdmin: true // Flag para identificar que é administrador
+    };
+    
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Erro ao salvar sessão ADM:', err);
+        return res.status(500).json({ erro: 'Erro interno do servidor' });
+      }
+      
+      console.log("✅ Sessão ADM salva - Admin ID:", administrador.id_adm);
+      res.json({ 
+        sucesso: true, 
+        usuario: {
+          idusuarios: administrador.id_adm,
+          nome_usuario: administrador.nome_adm,
+          email_user: administrador.email_adm,
+          isAdmin: true
+        }
+      });
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao fazer login ADM:', error);
+    res.status(500).json({ erro: 'Erro ao fazer login' });
+  }
+});
+
+// Rota para verificar se usuário é administrador
+app.get('/api/check-admin', autenticar, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    
+    const result = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [req.session.user.email_user]
+    );
+    
+    client.release();
+    
+    const isAdmin = result.rows.length > 0;
+    
+    res.json({ 
+      isAdmin,
+      adminData: isAdmin ? {
+        id_adm: result.rows[0].id_adm,
+        nome_adm: result.rows[0].nome_adm,
+        email_adm: result.rows[0].email_adm
+      } : null
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao verificar admin:', error);
+    res.status(500).json({ erro: 'Erro ao verificar permissões' });
+  }
+});
+
+
+// Rota para obter dados do administrador autenticado
+app.get('/api/admin-data', autenticar, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    
+    // Primeiro verificar se é admin
+    const adminCheck = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [req.session.user.email_user]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    const administrador = adminCheck.rows[0];
+    
+    // Retornar dados sem a senha por segurança
+    const adminData = {
+      id_adm: administrador.id_adm,
+      nome_adm: administrador.nome_adm,
+      email_adm: administrador.email_adm,
+      // Não incluir a senha!
+    };
+    
+    client.release();
+    res.json(adminData);
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar dados do admin:', error);
+    res.status(500).json({ erro: 'Erro ao buscar dados do administrador' });
+  }
+});
+
+// Rota para atualizar dados do administrador
+app.put('/api/admin-update', autenticar, async (req, res) => {
+  const { nome_adm, email_adm, senha_atual, nova_senha } = req.body;
+  
+  console.log('📝 Atualizando admin:', { nome_adm, email_adm });
+  
+  try {
+    const client = await pool.connect();
+    
+    // Verificar se o admin existe
+    const adminCheck = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [req.session.user.email_user]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    const administrador = adminCheck.rows[0];
+    
+    // Se for alterar senha, verificar senha atual
+    if (senha_atual) {
+      if (senha_atual !== administrador.senhadm) {
+        client.release();
+        return res.status(400).json({ erro: 'Senha atual incorreta' });
+      }
+      
+      if (!nova_senha || nova_senha.length < 6) {
+        client.release();
+        return res.status(400).json({ erro: 'Nova senha inválida (mínimo 6 caracteres)' });
+      }
+    }
+    
+    // Atualizar dados
+    let sql;
+    let values;
+    
+    if (nova_senha) {
+      // Atualizar com nova senha
+      sql = `
+        UPDATE adm 
+        SET nome_adm = $1, email_adm = $2, senhadm = $3
+        WHERE id_adm = $4 
+        RETURNING id_adm, nome_adm, email_adm
+      `;
+      values = [nome_adm, email_adm, nova_senha, administrador.id_adm];
+    } else {
+      // Atualizar sem alterar senha
+      sql = `
+        UPDATE adm 
+        SET nome_adm = $1, email_adm = $2
+        WHERE id_adm = $3 
+        RETURNING id_adm, nome_adm, email_adm
+      `;
+      values = [nome_adm, email_adm, administrador.id_adm];
+    }
+    
+    const result = await client.query(sql, values);
+    
+    // Atualizar sessão com novos dados
+    if (result.rows.length > 0) {
+      const adminAtualizado = result.rows[0];
+      
+      req.session.user = {
+        ...req.session.user,
+        nome_usuario: adminAtualizado.nome_adm,
+        email_user: adminAtualizado.email_adm
+      };
+      
+      await req.session.save();
+      
+      client.release();
+      
+      res.json({
+        mensagem: 'Dados atualizados com sucesso!',
+        admin: adminAtualizado
+      });
+    } else {
+      client.release();
+      res.status(404).json({ erro: 'Administrador não encontrado' });
+    }
+    
+  } catch (error) {
+    console.error('❌ Erro ao atualizar admin:', error);
+    
+    if (error.code === '23505') { // Erro de unique constraint
+      res.status(409).json({ erro: 'Email já está em uso' });
+    } else {
+      res.status(500).json({ 
+        erro: 'Erro ao atualizar dados',
+        detalhes: error.message 
+      });
+    }
+  }
+});
+
+// Rota para deletar administrador (opcional, cuidado!)
+app.delete('/api/admin-delete', autenticar, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    
+    // Primeiro verificar se é admin
+    const adminCheck = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [req.session.user.email_user]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    const administrador = adminCheck.rows[0];
+    
+    // Contar quantos admins existem
+    const countResult = await client.query('SELECT COUNT(*) FROM adm');
+    const adminCount = parseInt(countResult.rows[0].count);
+    
+    // Impedir deletar o último admin
+    if (adminCount <= 1) {
+      client.release();
+      return res.status(400).json({ 
+        erro: 'Não é possível deletar o último administrador do sistema' 
+      });
+    }
+    
+    // Deletar admin
+    await client.query('DELETE FROM adm WHERE id_adm = $1', [administrador.id_adm]);
+    
+    client.release();
+    
+    // Destruir sessão
+    req.session.destroy();
+    
+    res.json({ 
+      mensagem: 'Conta de administrador deletada com sucesso!',
+      redirecionar: '/login'
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao deletar admin:', error);
+    res.status(500).json({ 
+      erro: 'Erro ao deletar conta',
+      detalhes: error.message 
+    });
+  }
+});
+
+
 
 // Rota para obter dados completos do usuário (CORRIGIDA)
 app.get('/api/usuario-completo', autenticar, async (req, res) => {
