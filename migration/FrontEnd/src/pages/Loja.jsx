@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ThemeContext } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
 import Header from '../components/Header';
-import { FaPlusCircle, FaBoxOpen, FaChartPie, FaEdit, FaTrash, FaCheckSquare, FaSquare, FaTimes, FaShoppingCart, FaShare, FaHeart, FaStar } from "react-icons/fa";
+import { FaPlusCircle, FaBoxOpen, FaChartPie, FaEdit, FaTrash, FaCheckSquare, FaSquare, FaTimes, FaShoppingCart, FaShare, FaHeart, FaStar, FaUserShield } from "react-icons/fa";
 import ProductForm from '../components/ProductForm';
 import './Loja.css';
 import NovoProduct from '../components/NovoProduct';
@@ -16,6 +16,8 @@ function Lojacontext() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // Nova state para verificar se é admin
+  const [userData, setUserData] = useState(null);
 
   // Dados de desempenho (mockados para demonstração)
   const [performanceData, setPerformanceData] = useState({
@@ -27,7 +29,29 @@ function Lojacontext() {
     salesLabels: ['Jan 15', 'Feb 16', 'Mar 17', 'Apr 18', 'May 19', 'Jun 21', 'Jul 22', 'Aug 23', 'Sep 24', 'Oct 25', 'Nov 26', 'Dec 27']
   });
 
-  // Adicionar verificação de sessão antes de fazer requisições
+  // Verificar se usuário é administrador
+  const checkAdminStatus = async () => {
+    try {
+      console.log('👑 Verificando se é administrador...');
+      const response = await fetch('http://localhost:3001/api/check-admin', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('👑 Status de admin:', data);
+        setIsAdmin(data.isAdmin);
+        return data.isAdmin;
+      }
+      return false;
+    } catch (error) {
+      console.error('❌ Erro ao verificar admin:', error);
+      return false;
+    }
+  };
+
+  // Adicionar verificação de sessão
   const checkSession = async () => {
     try {
       console.log('🔐 Verificando sessão...');
@@ -39,8 +63,10 @@ function Lojacontext() {
       const data = await response.json();
       console.log('📋 Resposta da sessão:', data);
       
-      if (response.ok) {
-        return data.autenticado;
+      if (response.ok && data.autenticado) {
+        // Verificar se é admin
+        await checkAdminStatus();
+        return true;
       }
       return false;
     } catch (error) {
@@ -53,14 +79,16 @@ function Lojacontext() {
     setLoading(true);
     try {
       const isAuthenticated = await checkSession();
+      
+      // Usuários autenticados podem ver produtos
       if (!isAuthenticated) {
         console.log('❌ Usuário não autenticado');
         setProducts([]);
         return;
       }
 
-      // ✅ ATUALIZADO: Usando a nova rota correta
-      const response = await fetch('http://localhost:3001/api/produtos', {
+      // ✅ AGORA: Usando rota pública para visualizar produtos
+      const response = await fetch('http://localhost:3001/api/produtos/public', {
         method: 'GET',
         credentials: 'include',
       });
@@ -73,11 +101,11 @@ function Lojacontext() {
       const data = await response.json();
       console.log('📦 Dados recebidos do backend:', data);
 
-      // ✅ CORREÇÃO: Normalização correta dos produtos
+      // Normalização dos produtos
       const normalizedProducts = data.map(product => ({
         ...product,
-        id: Number(product.id_produto), // Mantém compatibilidade com componentes existentes
-        id_produto: Number(product.id_produto) // Garante que existe
+        id: Number(product.id_produto),
+        id_produto: Number(product.id_produto)
       }));
 
       setProducts(normalizedProducts);
@@ -91,15 +119,25 @@ function Lojacontext() {
     }
   };
 
-  // Carregar produtos ao iniciar e quando a seção mudar
+  // Carregar produtos ao iniciar
   useEffect(() => {
-    if (activeSection === 'itens' || activeSection === 'produtos') {
-      fetchProducts();
-    }
+    const loadInitialData = async () => {
+      await checkSession();
+      if (activeSection === 'itens' || activeSection === 'produtos' || activeSection === 'desempenho') {
+        await fetchProducts();
+      }
+    };
+    loadInitialData();
   }, [activeSection]);
 
-  // ✅ ATUALIZADO: Função para adicionar/editar produto
+  // ✅ ATUALIZADA: Função para adicionar/editar produto (apenas admin)
   const handleAddProduct = async (newProduct) => {
+    // Verificar se é admin
+    if (!isAdmin) {
+      alert('❌ Apenas administradores podem cadastrar produtos!');
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('nome_produto', newProduct.nome_produto);
@@ -116,7 +154,7 @@ function Lojacontext() {
       let url;
 
       if (editingProduct) {
-        // ✅ ATUALIZADO: Usando a rota PUT correta
+        // ✅ Rota protegida para admin
         url = `http://localhost:3001/api/produtos/${editingProduct.id_produto}`;
         response = await fetch(url, {
           method: 'PUT',
@@ -124,7 +162,7 @@ function Lojacontext() {
           credentials: 'include'
         });
       } else {
-        // ✅ ATUALIZADO: Usando a rota POST correta
+        // ✅ Rota protegida para admin
         url = 'http://localhost:3001/api/produtos';
         response = await fetch(url, {
           method: 'POST',
@@ -137,12 +175,14 @@ function Lojacontext() {
         const result = await response.json();
         console.log('✅ Produto salvo com sucesso:', result);
         
-        // Recarregar a lista de produtos
         await fetchProducts();
         setEditingProduct(null);
         setActiveSection(null);
         
         alert(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!');
+      } else if (response.status === 401 || response.status === 403) {
+        alert('❌ Acesso negado! Apenas administradores podem realizar esta ação.');
+        setIsAdmin(false); // Re-verificar status
       } else {
         const errorData = await response.json();
         console.error('❌ Erro na resposta:', errorData);
@@ -154,8 +194,13 @@ function Lojacontext() {
     }
   };
 
-  // ✅ ATUALIZADO: Função para deletar produtos selecionados
+  // ✅ ATUALIZADA: Função para deletar produtos (apenas admin)
   const deleteSelectedProducts = async () => {
+    if (!isAdmin) {
+      alert('❌ Apenas administradores podem excluir produtos!');
+      return;
+    }
+
     if (selectedProducts.size === 0) {
       alert('Nenhum produto selecionado para excluir.');
       return;
@@ -168,7 +213,7 @@ function Lojacontext() {
         
         for (const productId of selectedProducts) {
           try {
-            // ✅ ATUALIZADO: Usando a rota DELETE correta
+            // ✅ Rota protegida para admin
             const response = await fetch(`http://localhost:3001/api/produtos/${productId}`, {
               method: 'DELETE',
               credentials: 'include'
@@ -176,6 +221,10 @@ function Lojacontext() {
             
             if (response.ok) {
               successCount++;
+            } else if (response.status === 401 || response.status === 403) {
+              alert('❌ Acesso negado! Apenas administradores podem excluir produtos.');
+              errorCount++;
+              break;
             } else {
               const errorData = await response.json();
               console.error(`❌ Erro ao deletar produto ${productId}:`, errorData.erro);
@@ -187,14 +236,13 @@ function Lojacontext() {
           }
         }
         
-        // Recarregar a lista
         await fetchProducts();
         exitSelectionMode();
         
         if (errorCount === 0) {
           alert(`${successCount} produto(s) excluído(s) com sucesso!`);
-        } else {
-          alert(`${successCount} produto(s) excluído(s), ${errorCount} falha(s). Verifique o console.`);
+        } else if (successCount > 0) {
+          alert(`${successCount} produto(s) excluído(s), ${errorCount} falha(s).`);
         }
         
       } catch (error) {
@@ -204,28 +252,25 @@ function Lojacontext() {
     }
   };
 
-  // ✅ CORRIGIDO: Função para editar produto selecionado
+  // ✅ ATUALIZADA: Função para editar produto (apenas admin)
   const editSelectedProduct = () => {
+    if (!isAdmin) {
+      alert('❌ Apenas administradores podem editar produtos!');
+      return;
+    }
+
     if (selectedProducts.size === 1) {
       const productId = Array.from(selectedProducts)[0];
-      console.log('🔧 ID do produto para editar:', productId);
-      console.log('📦 Todos os produtos disponíveis:', products);
-      
-      // Buscar usando o ID correto
       const productToEdit = products.find(p => 
         Number(p.id) === Number(productId) || 
         Number(p.id_produto) === Number(productId)
       );
       
       if (productToEdit) {
-        console.log('✅ Produto encontrado para edição:', productToEdit);
         setEditingProduct(productToEdit);
         setActiveSection('produtos');
         exitSelectionMode();
       } else {
-        console.error('❌ Produto não encontrado. IDs disponíveis:', 
-          products.map(p => ({ id: p.id, id_produto: p.id_produto }))
-        );
         alert('Produto não encontrado para edição.');
       }
     } else if (selectedProducts.size > 1) {
@@ -245,7 +290,6 @@ function Lojacontext() {
       newSelected.add(id);
     }
     setSelectedProducts(newSelected);
-    console.log('📋 Produtos selecionados:', Array.from(newSelected));
   };
 
   const toggleSelectAll = () => {
@@ -258,6 +302,10 @@ function Lojacontext() {
   };
 
   const enterSelectionMode = () => {
+    if (!isAdmin) {
+      alert('❌ Apenas administradores podem gerenciar produtos!');
+      return;
+    }
     setIsSelectionMode(true);
     setSelectedProducts(new Set());
     setEditingProduct(null);
@@ -274,19 +322,29 @@ function Lojacontext() {
     setActiveSection(null);
   };
 
-  // ✅ ATUALIZADO: Função para recarregar produtos manualmente
   const handleRefreshProducts = () => {
     fetchProducts();
   };
 
-  // Componente do Dashboard de Desempenho
+  // Componente do Dashboard de Desempenho (apenas admin)
   const PerformanceDashboard = () => {
+    if (!isAdmin) {
+      return (
+        <div className="not-admin-message">
+          <FaUserShield className="admin-icon" />
+          <h2>🔒 Acesso Restrito</h2>
+          <p>Esta área é apenas para administradores do sistema.</p>
+        </div>
+      );
+    }
+
     const maxSales = Math.max(...performanceData.salesData);
     
     return (
       <div className="performance-dashboard">
         <div className="topo">
-          <h2>📊 Dashboard de Desempenho</h2>
+          <h2>📊 Dashboard de Desempenho (Admin)</h2>
+          <span className="admin-badge">👑 Administrador</span>
         </div>
 
         <div className="fim">
@@ -409,6 +467,7 @@ function Lojacontext() {
               <div className="form-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h2 style={{ marginRight: '2px' }}>
                   {editingProduct ? 'Editar Produto' : 'Adicionar Novo Produto'}
+                  {isAdmin && <span className="admin-badge-small">👑 Admin</span>}
                 </h2>
                 <button
                   className="cancel-btn"
@@ -434,46 +493,68 @@ function Lojacontext() {
                   </button>
                 )}
               </div>
-              <ProductForm 
-                onAddProduct={handleAddProduct}
-                editingProduct={editingProduct}
-                onCancel={cancelEdit}
-              />
+              
+              {!isAdmin ? (
+                <div className="not-admin-message">
+                  <FaUserShield className="admin-icon" />
+                  <h2>🔒 Acesso Restrito</h2>
+                  <p>Apenas administradores podem cadastrar ou editar produtos.</p>
+                  <button 
+                    className="back-btn" 
+                    onClick={() => setActiveSection(null)}
+                  >
+                    Voltar ao Menu
+                  </button>
+                </div>
+              ) : (
+                <ProductForm 
+                  onAddProduct={handleAddProduct}
+                  editingProduct={editingProduct}
+                  onCancel={cancelEdit}
+                />
+              )}
             </div>
           ) : (
             <div className="menu-lateral">
               <h2>My Store</h2>
+              {isAdmin && <div className="admin-status">👑 Administrador</div>}
               <div className="menu-options">
-                <div 
-                  className={`menu-option ${activeSection === 'produtos' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveSection('produtos');
-                    setEditingProduct(null);
-                  }}
-                >
-                  <FaPlusCircle className="option-icon"/>
-                  <span className="option-text">Adicionar Um Novo Produto</span>
-                  <div className={`selection-indicator ${activeSection === 'produtos' ? 'visible' : ''}`}></div>
-                </div>
+                {isAdmin && (
+                  <div 
+                    className={`menu-option ${activeSection === 'produtos' ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveSection('produtos');
+                      setEditingProduct(null);
+                    }}
+                  >
+                    <FaPlusCircle className="option-icon"/>
+                    <span className="option-text">Adicionar Um Novo Produto</span>
+                    <div className={`selection-indicator ${activeSection === 'produtos' ? 'visible' : ''}`}></div>
+                  </div>
+                )}
 
-                <div 
-                  className={`menu-option ${activeSection === 'itens' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveSection('itens');
-                    enterSelectionMode();
-                  }}
-                >
-                  <FaBoxOpen className="option-icon"/>
-                  <span className="option-text">Selecionar Itens</span>
-                  <div className={`selection-indicator ${activeSection === 'itens' ? 'visible' : ''}`}></div>
-                </div>
+                {isAdmin && (
+                  <div 
+                    className={`menu-option ${activeSection === 'itens' ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveSection('itens');
+                      enterSelectionMode();
+                    }}
+                  >
+                    <FaBoxOpen className="option-icon"/>
+                    <span className="option-text">Selecionar Itens</span>
+                    <div className={`selection-indicator ${activeSection === 'itens' ? 'visible' : ''}`}></div>
+                  </div>
+                )}
 
                 <div 
                   className={`menu-option ${activeSection === 'desempenho' ? 'active' : ''}`}
                   onClick={() => setActiveSection('desempenho')}
                 >
                   <FaChartPie className="option-icon"/>
-                  <span className="option-text">Desempenho Dos Itens</span>
+                  <span className="option-text">
+                    {isAdmin ? 'Desempenho Dos Itens' : 'Ver Produtos'}
+                  </span>
                   <div className={`selection-indicator ${activeSection === 'desempenho' ? 'visible' : ''}`}></div>
                 </div>
               </div>
@@ -488,40 +569,43 @@ function Lojacontext() {
             <div className="selection-mode">
               <div className="selection-header">
                 <h2 className='h2'>({selectedProducts.size}) {selectedProducts.size === 1 ? 'Selecionada' : 'Selecionadas'}</h2>
-                <div className="selection-actions">
-                  <button 
-                    className="select-all-btn"
-                    onClick={toggleSelectAll}
-                  >
-                    {selectedProducts.size === products.length ? 
-                      <FaCheckSquare /> : <FaSquare />
-                    }
-                    {selectedProducts.size === products.length ? 
-                      " Desmarcar Todos" : " Selecionar Todos"
-                    }
-                  </button>
-                  
-                  {selectedProducts.size > 0 && (
-                    <div className="action-buttons">
-                      <button className="edit-btn" onClick={editSelectedProduct}>
-                        <FaEdit /> Editar
-                      </button>
-                      <button className="delete-btn" onClick={deleteSelectedProducts}>
-                        <FaTrash /> Excluir
-                      </button>
-                    </div>
-                  )}
-                  
-                  <button className="cancel-btn" onClick={exitSelectionMode}>
-                    Cancelar
-                  </button>
-                </div>
+                {isAdmin && (
+                  <div className="selection-actions">
+                    <button 
+                      className="select-all-btn"
+                      onClick={toggleSelectAll}
+                    >
+                      {selectedProducts.size === products.length ? 
+                        <FaCheckSquare /> : <FaSquare />
+                      }
+                      {selectedProducts.size === products.length ? 
+                        " Desmarcar Todos" : " Selecionar Todos"
+                      }
+                    </button>
+                    
+                    {selectedProducts.size > 0 && (
+                      <div className="action-buttons">
+                        <button className="edit-btn" onClick={editSelectedProduct}>
+                          <FaEdit /> Editar
+                        </button>
+                        <button className="delete-btn" onClick={deleteSelectedProducts}>
+                          <FaTrash /> Excluir
+                        </button>
+                      </div>
+                    )}
+                    
+                    <button className="cancel-btn" onClick={exitSelectionMode}>
+                      Cancelar
+                    </button>
+                  </div>
+                )}
               </div>
               <NovoProduct 
                 products={products} 
                 isSelectionMode={isSelectionMode} 
                 selectedProducts={selectedProducts} 
-                toggleProductSelection={toggleProductSelection} 
+                toggleProductSelection={toggleProductSelection}
+                isAdmin={isAdmin}
               />         
             </div>
           ) : loading ? (
@@ -539,7 +623,10 @@ function Lojacontext() {
           ) : (
             <div className="featured-products">
               <div className="section-header">
-                <h2 className="section-title">Produtos Cadastrados</h2>
+                <h2 className="section-title">
+                  {isAdmin ? 'Produtos Cadastrados' : 'Produtos Disponíveis'}
+                  {!isAdmin && <span className="user-view-badge">👤 Visualização Usuário</span>}
+                </h2>
                 <button 
                   onClick={handleRefreshProducts}
                   className="refresh-btn"
@@ -561,6 +648,7 @@ function Lojacontext() {
                 isSelectionMode={isSelectionMode}
                 selectedProducts={selectedProducts}
                 toggleProductSelection={toggleProductSelection}
+                isAdmin={isAdmin}
               />
             </div>
           )}

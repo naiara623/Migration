@@ -47,7 +47,7 @@ function ProductForm({ onAddProduct, editingProduct, onCancel }) {
         nome_produto: editingProduct.nome_produto || '',
         descricao: editingProduct.descricao || '',
         valor_produto: editingProduct.valor_produto || '',
-        categoria: editingProduct.nome_categoria || '',
+        categoria: editingProduct.nome_categoria || '', // Nome da categoria
         estoque: editingProduct.estoque || '',
         imagem_url: null,
         imagePreview: editingProduct.imagem_url ? `http://localhost:3001${editingProduct.imagem_url}` : ''
@@ -106,7 +106,7 @@ function ProductForm({ onAddProduct, editingProduct, onCancel }) {
       formData.append("nome_produto", product.nome_produto);
       formData.append("descricao", product.descricao || '');
       formData.append("valor_produto", product.valor_produto);
-   formData.append("categoria", Number(product.categoria));
+      formData.append("categoria", product.categoria); // Enviar o NOME da categoria
       formData.append("estoque", product.estoque || 0);
       
       if (product.imagem_url) {
@@ -117,7 +117,7 @@ function ProductForm({ onAddProduct, editingProduct, onCancel }) {
       let url;
 
       if (editingProduct) {
-        // ✅ ATUALIZADO: Editar produto existente
+        // Editar produto existente
         url = `http://localhost:3001/api/produtos/${editingProduct.id_produto}`;
         response = await fetch(url, {
           method: "PUT",
@@ -125,7 +125,7 @@ function ProductForm({ onAddProduct, editingProduct, onCancel }) {
           credentials: "include"
         });
       } else {
-        // ✅ ATUALIZADO: Criar novo produto
+        // Criar novo produto
         url = "http://localhost:3001/api/produtos";
         response = await fetch(url, {
           method: "POST",
@@ -245,10 +245,10 @@ function ProductForm({ onAddProduct, editingProduct, onCancel }) {
                 >
                   <option value="">Selecione uma categoria</option>
                   {categorias.map(categoria => (
-                  <option key={categoria.id_categoria} value={categoria.id_categoria}>
-  {categoria.nome_categoria}
-</option>
-
+                    // Corrigido: usar nome_categoria como value
+                    <option key={categoria.id_categoria} value={categoria.nome_categoria}>
+                      {categoria.nome_categoria}
+                    </option>
                   ))}
                 </select>
               </div>

@@ -109,6 +109,7 @@ const port = 3001;
 // 🛡️ MIDDLEWARE DE AUTENTICAÇÃO
 // ==========================================
 
+// server.js - Atualize o middleware de autenticação
 function autenticar(req, res, next) {
   console.log('🔐 Middleware de autenticação executando');
   console.log('📋 Sessão no middleware:', req.session);
@@ -121,21 +122,32 @@ function autenticar(req, res, next) {
       detalhes: 'Faça login novamente'
     });
   }
-  
-  // Verificar se tem idusuarios (usuário normal) ou isAdmin (admin)
-  // ADMs não precisam de idusuarios, mas têm isAdmin = true
-  if (!req.session.user.idusuarios && !req.session.user.isAdmin) {
-    console.log('❌ AUTENTICAÇÃO FALHOU: Sessão inválida - sem ID de usuário nem flag de admin');
-    return res.status(401).json({ 
-      erro: 'Sessão inválida',
-      detalhes: 'Dados de usuário não encontrados'
-    });
-  }
-  
-  console.log('✅ Autenticação bem-sucedida para:', req.session.user.email_user);
   next();
 }
 
+// Middleware para verificar se é administrador
+function verificarAdmin(req, res, next) {
+  console.log('👑 Verificando se é administrador:', req.session.user);
+  
+  if (!req.session.user) {
+    console.log('❌ ACESSO NEGADO: Sem sessão de usuário');
+    return res.status(401).json({ 
+      erro: 'Não autenticado',
+      detalhes: 'Faça login novamente' 
+    });
+  }
+  
+  if (!req.session.user.isAdmin) {
+    console.log('❌ ACESSO NEGADO: Usuário não é administrador');
+    return res.status(403).json({ 
+      erro: 'Acesso negado',
+      detalhes: 'Esta ação requer privilégios de administrador' 
+    });
+  }
+  
+  console.log('✅ Usuário é administrador');
+  next();
+}
 // ==========================================
 // 🌐 ROTAS PÚBLICAS (NÃO PRECISAM DE AUTENTICAÇÃO)
 // ==========================================
@@ -914,25 +926,59 @@ app.get('/api/produtos', autenticar, async (req, res) => {
   }
 });
 
-// Rota protegida para obter produtos do usuário logado
-app.get('/api/meus-produtos', autenticar, async (req, res) => {
+// Rota para verificar se é admin
+app.get('/api/check-admin', autenticar, async (req, res) => {
+  try {
+    const isAdmin = !!req.session.user.isAdmin;
+    
+    res.json({ 
+      isAdmin,
+      adminData: isAdmin ? {
+        id: req.session.user.idusuarios,
+        nome: req.session.user.nome_usuario,
+        email: req.session.user.email_user
+      } : null
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao verificar admin:', error);
+    res.status(500).json({ erro: 'Erro ao verificar permissões' });
+  }
+});
+
+// Rota para obter produtos do administrador logado
+app.get('/api/meus-produtos', autenticar, verificarAdmin, async (req, res) => {
   console.log('🔍 INICIANDO /api/meus-produtos');
-  console.log('👤 Sessão completa:', req.session);
-  console.log('🆔 User ID na sessão:', req.session.user?.idusuarios);
+  console.log('👤 Sessão completa:', req.session.user);
+  console.log('🆔 Admin ID na sessão:', req.session.user.idusuarios);
   
   try {
     const client = await pool.connect();
+    
+    // Primeiro verificar se é admin
+    const adminCheck = await client.query(
+      'SELECT id_adm FROM adm WHERE id_adm = $1',
+      [req.session.user.idusuarios]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    const adminId = adminCheck.rows[0].id_adm;
+    
     const result = await client.query(`
       SELECT p.*, c.nome_categoria 
       FROM produtos p 
       INNER JOIN categorias c ON p.id_categoria = c.id_categoria 
-      WHERE p.idusuarios = $1
+      WHERE p.id_adm = $1
       ORDER BY p.data_criacao DESC
-    `, [req.session.user.idusuarios]);
+    `, [adminId]);
     
     client.release();
     
-    console.log(`✅ Busca concluída: ${result.rows.length} produtos para usuário ${req.session.user.idusuarios}`);
+    console.log(`✅ Busca concluída: ${result.rows.length} produtos para admin ${adminId}`);
     res.json(result.rows);
     
   } catch (error) {
@@ -944,8 +990,8 @@ app.get('/api/meus-produtos', autenticar, async (req, res) => {
   }
 });
 
-// Rota protegida para cadastrar produto
-app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, res) => {
+// Rota protegida para cadastrar produto (SOMENTE ADMIN)
+app.post('/api/produtos', autenticar, verificarAdmin, upload.single('imagem_url'), async (req, res) => {
   console.log("📦 Dados recebidos para cadastro de produto:");
   console.log("body:", req.body);
   console.log("file:", req.file);
@@ -954,12 +1000,28 @@ app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, r
   try {
     const { nome_produto, descricao, valor_produto, categoria, estoque } = req.body;
 
+    // Verificar se o usuário é realmente administrador
+    const client = await pool.connect();
+    const adminCheck = await client.query(
+      'SELECT id_adm FROM adm WHERE id_adm = $1',
+      [req.session.user.idusuarios]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso negado. Apenas administradores podem cadastrar produtos.' });
+    }
+
     const categoriaObj = await selectCategoryByName(categoria);
     if (!categoriaObj) {
+      client.release();
       return res.status(400).json({ erro: 'Categoria inválida' });
     }
 
     const imagem_url = req.file ? `/uploads/${req.file.filename}` : null;
+
+    // Obter ID do administrador
+    const admin = adminCheck.rows[0];
 
     const product = await insertProduct({
       nome_produto,
@@ -968,8 +1030,10 @@ app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, r
       id_categoria: categoriaObj.id_categoria,
       estoque: parseInt(estoque) || 0,
       imagem_url,
-      idusuarios: req.session.user.idusuarios
+      id_adm: admin.id_adm  // <-- Usar id_adm em vez de idusuarios
     });
+
+    client.release();
 
     res.status(201).json({ 
       mensagem: 'Produto cadastrado com sucesso!',
@@ -982,7 +1046,7 @@ app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, r
 });
 
 // Rota protegida para atualizar produto
-app.put('/api/produtos/:id', autenticar, upload.single('imagem_url'), async (req, res) => {
+app.put('/api/produtos/:id', autenticar, verificarAdmin, upload.single('imagem_url'), async (req, res) => {
   const id_produto = parseInt(req.params.id, 10);
   if (isNaN(id_produto)) {
     return res.status(400).json({ erro: 'ID de produto inválido' });
@@ -1015,7 +1079,7 @@ app.put('/api/produtos/:id', autenticar, upload.single('imagem_url'), async (req
 });
 
 // Rota protegida para deletar produto
-app.delete('/api/produtos/:id', autenticar, async (req, res) => {
+app.delete('/api/produtos/:id', autenticar, verificarAdmin, async (req, res) => {
   const id_produto = parseInt(req.params.id, 10);
   if (isNaN(id_produto)) {
     return res.status(400).json({ erro: 'ID de produto inválido' });

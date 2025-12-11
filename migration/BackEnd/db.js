@@ -100,7 +100,7 @@ async function insertProduct(produto) {
     const client = await pool.connect();
     const result = await client.query(`
       INSERT INTO produtos 
-        (nome_produto, descricao, valor_produto, id_categoria, estoque, imagem_url, idusuarios)
+        (nome_produto, descricao, valor_produto, id_categoria, estoque, imagem_url, id_adm)
       VALUES
         ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
@@ -111,7 +111,7 @@ async function insertProduct(produto) {
       produto.id_categoria,
       produto.estoque,
       produto.imagem_url,
-      produto.idusuarios
+      produto.id_adm  // <-- AGORA USA id_adm
     ]);
     client.release();
     return result.rows[0];
@@ -160,9 +160,23 @@ async function selectProductById(id) {
 // getProductById é um alias para selectProductById (para manter compatibilidade)
 const getProductById = selectProductById;
 
-async function updateProductById(id_produto, product) {
+async function updateProductById(id_produto, product, adminId) {
   const client = await pool.connect();
   try {
+    // Verificar se o produto pertence ao administrador
+    const checkResult = await client.query(
+      'SELECT id_adm FROM produtos WHERE id_produto = $1',
+      [id_produto]
+    );
+    
+    if (checkResult.rows.length === 0) {
+      throw new Error('Produto não encontrado');
+    }
+    
+    if (checkResult.rows[0].id_adm !== adminId) {
+      throw new Error('Produto não pertence a este administrador');
+    }
+    
     let sql, values;
     if (product.imagem_url) {
       sql = `
@@ -533,6 +547,7 @@ async function getStatusProducaoByPedido(id_pedido) {
 // ==========================================
 // db.js - adicione estas funções
 
+// Inserir um novo endereço
 // Inserir um novo endereço
 // Atualize a função insertEndereco no db.js
 async function insertEndereco(enderecoData) {
