@@ -105,7 +105,7 @@ function LoginContext() {
 
         <div className='inputsenha-Login'>
           <label className='Labelsenha-Login'>{t("login.input.senha2")}</label>
-           <input type="text" className='Senha-Login'
+           <input type="password" className='Senha-Login'
             placeholder={t("login.place.senha")}
             value={senha}
             onChange={(e) => setSenha(e.target.value)}/>

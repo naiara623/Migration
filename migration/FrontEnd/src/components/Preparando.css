@@ -19,8 +19,7 @@
 
 .Modal-ContentPre {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-;
+  background-color: #F7F7F7;
   border-radius: 8px;
   width: 50%;
   height: 94%;
@@ -317,12 +316,13 @@ color: var(--accent-primary);
 }
 
 .order-tracking-content-wrapper::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background:  #2c5282;
+;
   border-radius: 4px;
 }
 
 .order-tracking-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #2c5282;
 }
 
 /* ============================================
