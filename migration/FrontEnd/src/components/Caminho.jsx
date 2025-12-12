@@ -20,10 +20,10 @@ function Caminho({ isOpen, onClose}) {
 
         <div className="conteine-animacao">
 
-                            <div class="loader">
-                  <div class="truckWrapper">
-                    <div class="truckBody">
-                      <svg
+        <div class="loader">
+              <div class="truckWrapper">
+                <div class="truckBody">
+                  <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 198 93"
