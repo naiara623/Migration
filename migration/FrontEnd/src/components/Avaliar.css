@@ -55,7 +55,7 @@
     font-size: 28px;
     margin-bottom: 30px;
     font-weight: 600;
-    border-bottom: 2px solid #06060593; /* Cor de destaque */
+    border-bottom: 2px solid #eacab393; /* Cor de destaque */
     padding-bottom: 10px;
 }
 
@@ -359,7 +359,7 @@
 }
 
 .grande-modal1::-webkit-scrollbar-thumb {
-    background: #324973; /* Cor de destaque */
+    background: #eacab393; /* Cor de destaque */
     border-radius: 4px;
 }
 

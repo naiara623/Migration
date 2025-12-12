@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import "./Pagar.css"
 
 function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
-  const [endereco, setEndereco] = useState({
-    numeroContato: '',
-    bairro: '',
-    cidade: '',
-    estado: ''
+  const navigate = useNavigate();
+  
+  const [dadosUsuario, setDadosUsuario] = useState({
+    usuario: {
+      nome_usuario: '',
+      numero: ''
+    },
+    endereco: {
+      cep: '',
+      bairro: '',
+      cidade: '',
+      estado: '',
+      complemento: '',
+      numero_endereco: ''
+    }
   });
   
   const [resumoPedido, setResumoPedido] = useState({
@@ -14,63 +25,124 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
     cupom: '',
     quantidadeProdutos: 0,
     valorTotalProdutos: 0,
-    totalFrete: 0,
+    totalFrete: 15.00,
     desconto: 0,
     totalAPagar: 0
   });
 
   const [loading, setLoading] = useState(false);
+  const [verificandoDados, setVerificandoDados] = useState(true);
 
   useEffect(() => {
-    if (usuario && isOpen) {
-      carregarDadosUsuario();
-      calcularResumo();
+    if (isOpen) {
+      carregarDadosParaPagamento();
     }
-  }, [usuario, isOpen, carrinhoItens]);
+  }, [isOpen, carrinhoItens]);
 
-  const carregarDadosUsuario = async () => {
+  const carregarDadosParaPagamento = async () => {
     try {
-      // Carregar dados do usuário do backend
-      const response = await fetch('/api/usuario-atual', {
+      setLoading(true);
+      setVerificandoDados(true);
+      
+      // Usar a nova API para buscar dados completos
+      const response = await fetch('http://localhost:3001/api/pagamento/dados-usuario', {
         credentials: 'include'
       });
       
-      if (response.ok) {
-        const userData = await response.json();
-        setEndereco({
-          numeroContato: userData.numero || '',
-          bairro: userData.rua || '',
-          cidade: userData.estado || '',
-          estado: userData.estado || ''
-        });
+      if (!response.ok) {
+        throw new Error('Erro ao carregar dados do usuário');
       }
+      
+      const resultado = await response.json();
+      
+      if (resultado.sucesso) {
+        setDadosUsuario(resultado);
+        calcularResumo();
+      } else {
+        throw new Error(resultado.erro || 'Erro desconhecido');
+      }
+      
     } catch (error) {
-      console.error('Erro ao carregar dados do usuário:', error);
+      console.error('Erro ao carregar dados para pagamento:', error);
+      alert('Erro ao carregar informações. Tente novamente.');
+      onClose();
+    } finally {
+      setLoading(false);
+      setVerificandoDados(false);
+    }
+  };
+
+  const verificarDadosAntesDeAbrir = async () => {
+    try {
+      setVerificandoDados(true);
+      
+      const response = await fetch('http://localhost:3001/api/pagamento/verificar-dados', {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erro ao verificar dados');
+      }
+      
+      const resultado = await response.json();
+      
+      if (!resultado.podeFinalizar && resultado.camposFaltantes.length > 0) {
+        const primeiroCampoFaltante = resultado.camposFaltantes[0];
+        alert(`Por favor, complete seu ${primeiroCampoFaltante.campo.replace('_', ' ')} antes de fazer um pedido.`);
+        
+        // Fechar modal e redirecionar
+        onClose();
+        navigate(primeiroCampoFaltante.rota);
+        return false;
+      }
+      
+      return true;
+      
+    } catch (error) {
+      console.error('Erro ao verificar dados:', error);
+      alert('Erro ao verificar informações. Tente novamente.');
+      return false;
+    } finally {
+      setVerificandoDados(false);
     }
   };
 
   const calcularResumo = () => {
-    if (!carrinhoItens || carrinhoItens.length === 0) return;
+    if (!carrinhoItens || carrinhoItens.length === 0) {
+      setResumoPedido({
+        ...resumoPedido,
+        quantidadeProdutos: 0,
+        valorTotalProdutos: 0,
+        totalAPagar: 0
+      });
+      return;
+    }
 
     const quantidadeProdutos = carrinhoItens.reduce((total, item) => total + item.quantidade, 0);
     const valorTotalProdutos = carrinhoItens.reduce((total, item) => {
-      return total + (item.preco_unitario * item.quantidade);
+      return total + (parseFloat(item.valor_produto || item.preco_unitario || 0) * item.quantidade);
     }, 0);
     
     const totalFrete = 15.00;
     const desconto = 0;
     const totalAPagar = valorTotalProdutos + totalFrete - desconto;
 
-    setResumoPedido({
-      ...resumoPedido,
+    setResumoPedido(prev => ({
+      ...prev,
       quantidadeProdutos,
       valorTotalProdutos: valorTotalProdutos.toFixed(2),
       totalFrete: totalFrete.toFixed(2),
       totalAPagar: totalAPagar.toFixed(2)
-    });
+    }));
   };
 
   const handleFazerPedido = async () => {
+    // Primeiro verificar se os dados estão completos
+    const dadosOk = await verificarDadosAntesDeAbrir();
+    if (!dadosOk) {
+      return;
+    }
+    
     if (!carrinhoItens || carrinhoItens.length === 0) {
       alert('Carrinho vazio!');
       return;
@@ -83,22 +155,22 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
         total: parseFloat(resumoPedido.totalAPagar),
         metodo_pagamento: resumoPedido.metodoPagamento,
         endereco_entrega: {
-          ...endereco,
-          nomeUsuario: usuario?.nome_usuario
+          ...dadosUsuario.endereco,
+          nomeUsuario: dadosUsuario.usuario.nome_usuario,
+          numeroContato: dadosUsuario.usuario.numero
         },
         itens: carrinhoItens.map(item => ({
           id_produto: item.id_produto,
           quantidade: item.quantidade,
-          preco_unitario: parseFloat(item.preco_unitario),
+          preco_unitario: parseFloat(item.valor_produto || item.preco_unitario || 0),
           tamanho: item.tamanho || '',
-          cor: item.cor || '',
-          configuracao: item.configuracao || {}
+          cor: item.cor || ''
         }))
       };
 
       console.log('Enviando pedido:', pedidoData);
 
-      const response = await fetch('/api/pedidos/producao', {
+      const response = await fetch('http://localhost:3001/api/pedidos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,14 +179,15 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
         body: JSON.stringify(pedidoData)
       });
 
+      const resultado = await response.json();
+
       if (response.ok) {
-        const resultado = await response.json();
         alert('Pedido realizado com sucesso! Número do pedido: ' + resultado.pedido.id_pedido);
         onClose();
-        window.location.reload();
+        // Redirecionar para página de pedidos ou home
+        navigate('/pedidos');
       } else {
-        const erro = await response.json();
-        alert('Erro ao fazer pedido: ' + (erro.detalhes || erro.erro));
+        alert('Erro ao fazer pedido: ' + (resultado.detalhes || resultado.erro || 'Erro desconhecido'));
       }
     } catch (error) {
       console.error('Erro ao processar pedido:', error);
@@ -141,6 +214,8 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
           <div className='pagar-header-section'>
             <h1 className='pagar-header-title'>Resumo da Compra</h1>
             <p className='pagar-header-subtitle'>Verifique seus dados e finalize o pedido</p>
+            {loading && <p className='pagar-loading-message'>Carregando informações...</p>}
+            {verificandoDados && <p className='pagar-loading-message'>Verificando dados...</p>}
           </div>
 
           {/* User & Address Section */}
@@ -157,7 +232,7 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
               <input 
                 type="text" 
                 className='pagar-user-name'
-                value={usuario?.nome_usuario || ''}
+                value={dadosUsuario.usuario.nome_usuario || ''}
                 readOnly
                 placeholder="Nome do usuário"
               />
@@ -169,9 +244,27 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
                 <input 
                   className='pagar-form-input' 
                   type="text" 
-                  value={endereco.numeroContato}
-                  onChange={(e) => setEndereco({...endereco, numeroContato: e.target.value})}
+                  value={dadosUsuario.usuario.numero || ''}
+                  readOnly
                   placeholder="(00) 00000-0000"
+                />
+                {!dadosUsuario.usuario.numero && (
+                  <small className="pagar-aviso-link">
+                    <a href="/Perfil-usuario" onClick={(e) => { e.preventDefault(); onClose(); navigate('/Perfil-usuario'); }}>
+                      Cadastrar telefone
+                    </a>
+                  </small>
+                )}
+              </div>
+
+              <div className='pagar-form-group'>
+                <label className='pagar-form-label'>CEP:</label>
+                <input 
+                  className='pagar-form-input' 
+                  type="text" 
+                  value={dadosUsuario.endereco.cep || ''}
+                  readOnly
+                  placeholder="00000-000"
                 />
               </div>
 
@@ -180,8 +273,8 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
                 <input 
                   className='pagar-form-input' 
                   type="text" 
-                  value={endereco.bairro}
-                  onChange={(e) => setEndereco({...endereco, bairro: e.target.value})}
+                  value={dadosUsuario.endereco.bairro || ''}
+                  readOnly
                   placeholder="Seu bairro"
                 />
               </div>
@@ -191,8 +284,8 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
                 <input 
                   className='pagar-form-input' 
                   type="text" 
-                  value={endereco.cidade}
-                  onChange={(e) => setEndereco({...endereco, cidade: e.target.value})}
+                  value={dadosUsuario.endereco.cidade || ''}
+                  readOnly
                   placeholder="Sua cidade"
                 />
               </div>
@@ -202,64 +295,48 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
                 <input 
                   className='pagar-form-input' 
                   type="text" 
-                  value={endereco.estado}
-                  onChange={(e) => setEndereco({...endereco, estado: e.target.value})}
+                  value={dadosUsuario.endereco.estado || ''}
+                  readOnly
                   placeholder="Seu estado"
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Products Section */}
-          <div className='pagar-products-section'>
-            <h3 className='pagar-section-title'>Produtos Selecionados</h3>
+              <div className='pagar-form-group'>
+                <label className='pagar-form-label'>Número:</label>
+                <input 
+                  className='pagar-form-input' 
+                  type="text" 
+                  value={dadosUsuario.endereco.numero_endereco || ''}
+                  readOnly
+                  placeholder="123"
+                />
+              </div>
 
-            <div className='pagar-products-list'>
-              {carrinhoItens && carrinhoItens.length > 0 ? (
-                carrinhoItens.map((item, index) => (
-                  <div key={index} className='pagar-product-item'>
-                    <div className='pagar-product-image'>
-                      {item.imagem_url && (
-                        <img 
-                          src={item.imagem_url} 
-                          alt={item.nome_produto}
-                        />
-                      )}
-                    </div>
-                    
-                    <div className='pagar-product-details'>
-                      <p className='pagar-product-name'>
-                        {item.nome_produto}
-                      </p>
-                      <p className='pagar-product-specs'>
-                        {item.tamanho && `Tamanho: ${item.tamanho}`}
-                        {item.tamanho && item.cor && ' | '}
-                        {item.cor && `Cor: ${item.cor}`}
-                      </p>
-                    </div>
-                    
-                    <div className='pagar-product-price'>
-                      <p className='pagar-product-quantity'>
-                        {item.quantidade}x
-                      </p>
-                      <p className='pagar-product-total'>
-                        R$ {(item.preco_unitario * item.quantidade).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className='pagar-empty-cart'>
+              <div className='pagar-form-group'>
+                <label className='pagar-form-label'>Complemento:</label>
+                <input 
+                  className='pagar-form-input' 
+                  type="text" 
+                  value={dadosUsuario.endereco.complemento || ''}
+                  readOnly
+                  placeholder="Apto 101"
+                />
+              </div>
 
-
-
-
-                  <p>Nenhum produto no carrinho</p>
+              {(!dadosUsuario.endereco.bairro || !dadosUsuario.endereco.cidade || 
+                !dadosUsuario.endereco.estado || !dadosUsuario.endereco.numero_endereco) && (
+                <div className="pagar-aviso-endereco">
+                  <small>
+                    <a href="/endereco" onClick={(e) => { e.preventDefault(); onClose(); navigate('/endereco'); }}>
+                      ❗ Cadastrar/atualizar endereço
+                    </a>
+                  </small>
                 </div>
               )}
             </div>
           </div>
 
+          
           {/* Payment Details Section */}
           <div className='pagar-payment-section'>
             <h3 className='pagar-section-title'>Detalhes do Pagamento</h3>
@@ -298,7 +375,7 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
               </div>
 
               <div className='pagar-summary-item'>
-                <span className='pagar-summary-label'>Valor Total do Produto:</span>
+                <span className='pagar-summary-label'>Valor Total dos Produtos:</span>
                 <span className='pagar-summary-value'>R$ {resumoPedido.valorTotalProdutos}</span>
               </div>
               
@@ -333,7 +410,7 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
               onClick={handleFazerPedido}
               disabled={loading || !carrinhoItens || carrinhoItens.length === 0}
             >
-              {loading ? 'Processando...' : 'Fazer Pedido'}
+              {loading ? 'Processando...' : 'Confirmar Pedido'}
             </button>
           </div>
         </div>

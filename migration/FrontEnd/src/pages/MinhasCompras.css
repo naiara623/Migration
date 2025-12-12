@@ -213,3 +213,12 @@ font-weight: 600;
     height: 10%;
     width: 55%;
 }
+
+
+div-icone-avaliação-MC {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

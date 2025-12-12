@@ -17,63 +17,82 @@ function LoginContext() {
   const navigate = useNavigate()
   const { t } = useTranslation();
 
-  const handleLogin = async e => {
-    e.preventDefault()
-    let erro = false
-    setMensagemEmail('')
-    setMensagemSenha('')
+  // Login.js - modifique o handleLogin para verificar se é ADM
 
-    if (!email.trim()) {
-      setMensagemEmail('O campo é obrigatório.')
-      erro = true
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setMensagemEmail('Email inválido.')
-      erro = true
-    }
+const handleLogin = async e => {
+  e.preventDefault()
+  let erro = false
+  setMensagemEmail('')
+  setMensagemSenha('')
 
-    if (!senha) {
-      setMensagemSenha('O campo é obrigatório.')
-      erro = true
-    } else if (senha.length < 6) {
-      setMensagemSenha('A senha deve ter pelo menos 6 caracteres.')
-      erro = true
-    }
-
-    if (erro) return
-
-    setIsLoading(true)
-    try {
-      const response = await fetch('http://localhost:3001/api/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email_user: email, senhauser: senha }),
-      })
-
-      const data = await response.json()
-      if (!response.ok) {
-        const errorMessage = data.erro || data.message || `Erro ${response.status}`
-        throw new Error(errorMessage)
-      }
-
-      if (data.sucesso) {
-        setShowModal(true)
-        // Corrigido para corresponder à rota definida em App.jsx
-        setTimeout(() => navigate('/'), 2000)
-      } else {
-        throw new Error(data.mensagem || 'Login não foi bem-sucedido')
-      }
-    } catch (err) {
-      console.error('Erro ao logar:', err)
-      if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
-        setMensagemSenha('Erro de conexão. Verifique se o servidor está rodando.')
-      } else {
-        setMensagemSenha(err.message || 'Erro no servidor. Tente novamente.')
-      }
-    } finally {
-      setIsLoading(false)
-    }
+  if (!email.trim()) {
+    setMensagemEmail('O campo é obrigatório.')
+    erro = true
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setMensagemEmail('Email inválido.')
+    erro = true
   }
+
+  if (!senha) {
+    setMensagemSenha('O campo é obrigatório.')
+    erro = true
+  } else if (senha.length < 6) {
+    setMensagemSenha('A senha deve ter pelo menos 6 caracteres.')
+    erro = true
+  }
+
+  if (erro) return
+
+  setIsLoading(true)
+  try {
+    // PRIMEIRO: Tentar login como administrador
+    const responseAdm = await fetch('http://localhost:3001/api/login-adm', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha }),
+    });
+
+    const dataAdm = await responseAdm.json();
+    
+    if (responseAdm.ok && dataAdm.sucesso) {
+      // É ADMINISTRADOR - redirecionar para tela de ADM
+      setShowModal(true)
+      setTimeout(() => navigate('/perfiladm '), 3000) // Nova rota para ADM
+      return
+    }
+
+    // SE NÃO FOR ADMIN: Tentar login como usuário normal
+    const response = await fetch('http://localhost:3001/api/login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email_user: email, senhauser: senha }),
+    })
+
+    const data = await response.json()
+    if (!response.ok) {
+      const errorMessage = data.erro || data.message || `Erro ${response.status}`
+      throw new Error(errorMessage)
+    }
+
+    if (data.sucesso) {
+      setShowModal(true)
+      setTimeout(() => navigate('/'), 2000)
+    } else {
+      throw new Error(data.mensagem || 'Login não foi bem-sucedido')
+    }
+  } catch (err) {
+    console.error('Erro ao logar:', err)
+    if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
+      setMensagemSenha('Erro de conexão. Verifique se o servidor está rodando.')
+    } else {
+      setMensagemSenha(err.message || 'Email ou senha incorretos.')
+    }
+  } finally {
+    setIsLoading(false)
+  }
+}
 
   function closeModal() {
     setShowModal(false)

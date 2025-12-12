@@ -1,290 +1,415 @@
-.DivTudo{
-    /* border: 2px solid red; */
-    height: 100vh;
-    background-color: var(--bg-secondary);
+/* ================================================================== */
+/* === 1. RESET E CONFIGURAÇÕES GERAIS === */
+/* ================================================================== */
+
+/* RESET ESSENCIAL - Adicione isso no TOPO do arquivo */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.NavBar{
-    /* border: 2px solid purple; */
-    height: 12%;
-    width: 100%;
+html, body {
+  width: 100%;
+  overflow-x: hidden; /* Previne rolagem horizontal global */
 }
 
-.produtos{
-    /* border: 2px solid yellow; */
-    width: 100%;
-    height: 88%;
+:root {
+  /* Adicione suas variáveis de cor aqui para o código funcionar */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8F5F2; /* Cor de fundo da página da imagem */
+  --accent-primary: #3A5A9D; /* Azul da barra e botões */
+  --accent-secondary: #5272b4;
+  --text-primary: #333333;
+  --text-tertiary: #FFFFFF;
 }
 
-.butons{
-    /* border: 2px solid blue; */
-    height: 10%;
-    display: flex;
-    align-items: center;
-    gap: 2%;
+/* ================================================================== */
+/* === 2. ESTRUTURA GERAL DA PÁGINA === */
+/* ================================================================== */
+
+.DivTudo {
+  background-color: var(--bg-secondary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
-.titulo-alta{
-    /* border: 2px solid yellowgreen; */
-    height: 15%;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.NavBar {
+  flex-shrink: 0;
+  width: 100%;
 }
 
-.ProdutosemAlta{
-    /* border: 2px solid salmon; */
-    height: 75%;
+/* DIV PRINCIPAL CORRIGIDA */
+.produtos {
+  width: 100%;
+  max-width: 100%;
+  padding: 1.5rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
-.Section1-produtos{
-    /* border: 1px solid black; */
-    width: 100%;
-    height: 99%;
+/* ================================================================== */
+/* === 3. BOTÕES E TÍTULO === */
+/* ================================================================== */
+
+.butons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
-.slavei{
-    /* border: 2px solid chartreuse; */
-    height: 148%;
-    width: 100%;
-    position: relative;
-    top: -24%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.ButtonCate, .ButtonFiltro {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background-color: var(--accent-primary);
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.escritas-produto{
-    /* border: 2px solid rgb(129, 129, 255); */
-    height: 40%;
-    width: 20%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-
-}
-
-.products-grid{
-    /* border: 2px solid red; */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-/* BUTTONS */
-.ButtonCate{
-    /* border: 2px solid red; */
-    border: none;
-width: 10%;
-height: 50%;
-border-radius: 5px;
-position: relative;
-left: 1%;
-background-color: var(--accent-primary);
-color: var(--text-tertiary);
-font-size: 90%;
-font-weight: 600;
-}
-
-.ButtonFiltro{
-    /* border: 2px solid red; */
-    border: none;
-width: 15%;
-height: 50%;
-border-radius: 5px;
-position: relative;
-left: 1%;
-background-color: var(--accent-primary);
-color: var(--text-tertiary);
-font-size: 90%;
-font-weight: 600;
-}
-
-.ButtonCate:hover{
+.ButtonCate:hover, .ButtonFiltro:hover {
   background-color: var(--accent-secondary);
-  color: var(--text-primary);
 }
 
-.ButtonFiltro:hover {
+.titulo-alta {
+  text-align: center;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.ProdutosEmAlta {
+  font-size: 2.5rem;
+  color: var(--accent-primary);
+  margin: 0;
+  width: 100%;
+  word-wrap: break-word;
+}
+
+/* ================================================================== */
+/* === 4. GRADE DE PRODUTOS === */
+/* ================================================================== */
+
+.ProdutosemAlta {
+  width: 100%;
+}
+
+.Section1-produtos {
+  width: 100%;
+}
+
+.slavei {
+  width: 100%;
+}
+
+/* CORREÇÃO CRÍTICA: Remova width fixo e use grid corretamente */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  width: 100%;
+  justify-items: center; /* Centraliza os cards */
+}
+
+/* ================================================================== */
+/* === 5. CARD DE PRODUTO (CORRIGIDO) === */
+/* ================================================================== */
+
+.card-produto {
+  /* REMOVA A BORDA AMARELA OU COMENTE */
+  /* border: 2px solid yellowgreen; */
+  
+  background-color: var(--bg-primary);
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  /* CORREÇÃO: Use width 100% para ocupar o grid cell */
+  width: 100%;
+  height: 100%;
+  max-width: 300px; /* Largura máxima opcional */
+  /* height: auto; Altura automática */
+  /* min-height: 450px; Altura mínima consistente */
+  
+  /* Para layout consistente */
+  position: relative;
+  overflow: hidden; /* IMPORTANTE: esconde conteúdo que vaza */
+}
+
+.card-produto:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Imagem e Badges --- */
+.product-image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden; /* Previne que a imagem vaze */
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block; /* Remove espaço embaixo da imagem */
+}
+
+/* CORREÇÃO DA BADGE */
+.product-badge, .out-of-stock-badge {
+  /* REMOVA A BORDA VERMELHA */
+  /* border: 2px solid red; */
+  
+  position: absolute;
+  top: 12px;
+  left: auto; /* Remove left: 70% */
+  right: 12px; /* Posiciona à direita */
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 4px 8px; /* Padding adequado */
+  border-radius: 6px;
+  font-size: 0.7rem; /* Tamanho menor */
+  font-weight: bold;
+  text-align: center;
+  width: auto; /* Largura automática */
+  min-width: 60px; /* Largura mínima */
+  height: auto; /* Altura automática */
+  line-height: 1.2;
+  z-index: 2;
+}
+
+/* --- Contêiner de Informações --- */
+.info-produtos {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- Nome e Categoria --- */
+.nome-categoria {
+  display: flex;
+  flex-direction: column; /* Mude para coluna para melhor organização */
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  width: 100%;
+}
+
+.nome_produto1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  width: 100%;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+.category-tag1 {
+  background-color: #eee;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  display: inline-block;
+  align-self: flex-start; /* Alinha à esquerda */
+}
+
+/* --- Avaliação --- */
+.avaliação-produto {
+  margin-bottom: 1rem;
+  color: #fdd835;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.rating-text {
+  font-size: 0.8rem;
+  color: #757575;
+  margin-left: 0.5rem;
+}
+
+/* --- Estoque e Preço --- */
+.estoque-preco {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.product-stock {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.produto-valor {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+/* --- Botão --- */
+.button-carinho {
+  margin-top: auto;
+  width: 100%;
+}
+
+.button-adicionar-carrinho {
+  width: 100%;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--accent-primary);
+  color: var(--text-tertiary);
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  box-sizing: border-box;
+}
+
+.button-adicionar-carrinho:hover:not(:disabled) {
   background-color: var(--accent-secondary);
-  color: var(--text-primary);
 }
 
-.retry-btn{
-    border: none ;
-    height: 30px;
-    width: 70%;
-    position: relative;
-    left: 15%;
-    background-color: var(--accent-primary);
-    color: #fff;
-    border-radius: 6px;
+.button-adicionar-carrinho:disabled {
+  background-color: #9e9e9e;
+  cursor: not-allowed;
 }
 
-.retry-btn:hover {
-  background-color: var(--accent-secondary);
-  color: var(--text-primary);
+/* ================================================================== */
+/* === 6. MENSAGENS DE STATUS === */
+/* ================================================================== */
+
+.error-message, .loading-message, .empty-products {
+  text-align: center;
+  padding: 2rem;
+  width: 100%;
 }
 
-/* TEXTOS */
-.ProdutosEmAlta{
-    /* border: 2PX solid blueviolet; */
-    width: 100%;
-    height: 60%;
-    display: flex;
+.empty-products {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.retry-btn {
+  background-color: var(--accent-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* ================================================================== */
+/* === 7. RESPONSIVIDADE === */
+/* ================================================================== */
+
+@media (max-width: 1200px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .ProdutosEmAlta {
+    font-size: 2rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .produtos {
+    padding: 1rem;
+  }
+  
+  .ProdutosEmAlta {
+    font-size: 1.8rem;
+  }
+  
+  .butons {
     justify-content: center;
-    align-items: center;
-    font-size: 3rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
 }
 
-.error-message{
-    /* border: 2px solid red; */
-    width: 50%;
-}
-
-.loading-message{
-    /* border: 2px solid red; */
-    width: 50%;
-}
-
-
-.card-produto{
-    /* border: 2px solid green; */
-    width: 35%;
-    height: 70%;
-    background-color: var(--bg-primary);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 10px;
-    display: flex;
+@media (max-width: 576px) {
+  .produtos {
+    padding: 0.75rem;
+  }
+  
+  .ProdutosEmAlta {
+    font-size: 1.5rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr; /* Uma coluna em mobile */
+    max-width: 300px; /* Limita largura máxima */
+    margin: 0 auto; /* Centraliza */
+  }
+  
+  .ButtonCate, .ButtonFiltro {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .butons {
     flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    transition: transform 0.2s;
-    position: relative;
-    top: -5%;
+    gap: 0.5rem;
+  }
 }
 
-/* .imagem-produto{
-    border: 2px solid orange;
-    width: 80%;
-    height: 60%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+/* ================================================================== */
+/* === 8. DEBUG - Para ver limites (remova depois) === */
+/* ================================================================== */
+
+/* Apenas para debug - remova depois de corrigir */
+.debug-border {
+  border: 1px dashed #ccc;
 }
 
-.imagem-produto img{
-    border: 2px solid purple;
-    max-width: 100%;
-    max-height: 100%;
-} */
-
-.info-produtos{
-    /* border: 2px solid blue; */
-    width: 100%;
-    height: 50%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
+.produtos.debug {
+  border: 2px solid blue;
 }
 
-.nome-categoria{
-    /* border: 2px solid brown; */
-    width: 100%;
-    height: 20%;
-    display: flex;
-    /* display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center; */
-    gap: 5px;
+.products-grid.debug {
+  border: 2px solid green;
 }
 
-.estoque-preco{
-    /* border: 2px solid teal; */
-    width: 100%;
-    height: 20%;
-    display: flex;
-}
-
-.nome-div{
-    /* border: 2px solid red; */
-    width: 50%;
-}
-
-.categoria-produto{
-    /* border: 2px solid purple; */
-    width: 50%;
-}
-
-.avaliação-produto{
-    /* border: 2px solid orange; */
-}
-
-.product-stock{
-    /* border: 2px solid green; */
-    width: 70%;
-    position: relative;
-    top: 1%;
-}
-
-.produto-valor{
-    /* border: 2px solid blueviolet; */
-    width: 30%;
-    font-weight: 600;
-}
-
-.button-carinho{
-    /* border: 2px solid brown; */
-    width: 100%;
-    height: 30%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* .button-adicionar-carrinho{
-    border: 2px solid burlywood;
-    height: 100%;
-    width: 75%;
-} */
-
-.button-adicionar-carrinho{
-    border: 2px solid red;
-    border: none;
-    height: 100%;
-    width: 75%;
-    border-radius: 2px;
-position: relative;
-left: 1%;
-background-color: var(--accent-primary);
-color: var(--text-tertiary);
-font-size: 90%;
-font-weight: 600;
-}
-
-.button-adicionar-carrinho:hover{
-  background-color: var(--accent-secondary);
-  color: var(--text-primary);
-}
-
-.nome_produto1{
-    font-size: 1.1rem;
-    font-weight: 700;
-    position: relative;
-    top: -30%;
-}
-
-.category-tag1{
-    font-size: 1.1rem;
-    font-weight: 600;
-    position: relative;
-    top: -25%;
-    left: 35%;
+.card-produto.debug {
+  border: 1px solid orange;
 }

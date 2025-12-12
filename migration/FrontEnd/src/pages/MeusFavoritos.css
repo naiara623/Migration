@@ -65,3 +65,131 @@
     height: 0%;
 }
 
+/* MeusFavoritos.css */
+
+.contador-favoritos {
+  font-size: 16px;
+  color: #666;
+  margin-left: 10px;
+  font-weight: normal;
+}
+
+.lista-favoritos {
+  padding: 20px;
+  min-height: 400px;
+}
+
+.loading, .error-message, .empty-favorites {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+}
+
+.empty-favorites {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-explorar {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.btn-explorar:hover {
+  background-color: #0056b3;
+}
+
+.grid-favoritos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.card-favorito {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  background: white;
+}
+
+.card-favorito:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.imagem-favorito {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.info-favorito {
+  padding: 15px;
+}
+
+.info-favorito h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.descricao-favorito {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.preco-favorito {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2ecc71;
+  margin-bottom: 15px;
+}
+
+.acoes-favorito {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-adicionar-carrinho {
+  flex: 1;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-adicionar-carrinho:hover {
+  background-color: #2980b9;
+}
+
+.btn-remover-favorito {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-remover-favorito:hover {
+  background-color: #c0392b;
+}

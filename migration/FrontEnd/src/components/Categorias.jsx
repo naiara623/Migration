@@ -73,7 +73,7 @@ const categoriaMap = {
   },
   'outros': {
     nome: 'Outros',
-    imagem: '/default.jpg'
+    imagem: '/outros.jpg'
   }
 };
 

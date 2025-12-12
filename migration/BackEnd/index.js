@@ -10,6 +10,15 @@ require("dotenv").config();
 
 const {
   pool,
+    getFavoritosByUserId,
+    getDadosUsuarioParaPagamento,
+  addToFavoritos,
+  removeFromFavoritos,
+  isFavorito,
+  addToCarrinho,
+calcularTotalCarrinho,
+criarPedidoCompleto,
+  getTotalFavoritos,
   selectCategoryByName,
   selectAllCategories,
   insertProduct,
@@ -87,6 +96,13 @@ const storage = multer.diskStorage({
   }
 });
 
+// Adicione antes do app.listen()
+app.use((req, res, next) => {
+  console.log(`🌐 ${req.method} ${req.url}`);
+  next();
+});
+
+
 // Servir arquivos estáticos da pasta uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -109,6 +125,7 @@ const port = 3001;
 // 🛡️ MIDDLEWARE DE AUTENTICAÇÃO
 // ==========================================
 
+// server.js - Atualize o middleware de autenticação
 function autenticar(req, res, next) {
   console.log('🔐 Middleware de autenticação executando');
   console.log('📋 Sessão no middleware:', req.session);
@@ -121,19 +138,32 @@ function autenticar(req, res, next) {
       detalhes: 'Faça login novamente'
     });
   }
-  
-  if (!req.session.user.idusuarios) {
-    console.log('❌ AUTENTICAÇÃO FALHOU: Sem ID de usuário na sessão');
-    return res.status(401).json({ 
-      erro: 'Sessão inválida',
-      detalhes: 'ID de usuário não encontrado'
-    });
-  }
-  
-  console.log('✅ Autenticação bem-sucedida para usuário:', req.session.user.idusuarios);
   next();
 }
 
+// Middleware para verificar se é administrador
+function verificarAdmin(req, res, next) {
+  console.log('👑 Verificando se é administrador:', req.session.user);
+  
+  if (!req.session.user) {
+    console.log('❌ ACESSO NEGADO: Sem sessão de usuário');
+    return res.status(401).json({ 
+      erro: 'Não autenticado',
+      detalhes: 'Faça login novamente' 
+    });
+  }
+  
+  if (!req.session.user.isAdmin) {
+    console.log('❌ ACESSO NEGADO: Usuário não é administrador');
+    return res.status(403).json({ 
+      erro: 'Acesso negado',
+      detalhes: 'Esta ação requer privilégios de administrador' 
+    });
+  }
+  
+  console.log('✅ Usuário é administrador');
+  next();
+}
 // ==========================================
 // 🌐 ROTAS PÚBLICAS (NÃO PRECISAM DE AUTENTICAÇÃO)
 // ==========================================
@@ -275,6 +305,287 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ erro: 'Erro ao fazer login' });
   }
 });
+
+// server.js - adicione esta rota após a rota /api/login
+
+// Rota pública para login de administrador
+app.post('/api/login-adm', async (req, res) => {
+  const { email, senha } = req.body; // Usando 'email' e 'senha' como no frontend
+  
+  console.log('🔐 Tentativa de login ADM:', { email });
+  
+  try {
+    const client = await pool.connect();
+    
+    // Buscar administrador pelo email
+    const result = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [email]
+    );
+    
+    client.release();
+    
+    if (result.rows.length === 0) {
+      console.log('❌ Administrador não encontrado');
+      return res.status(401).json({ erro: 'Email ou senha incorretos' });
+    }
+    
+    const administrador = result.rows[0];
+    
+    // Verificar senha (em produção, use bcrypt para comparação!)
+    if (senha !== administrador.senhadm) {
+      console.log('❌ Senha incorreta');
+      return res.status(401).json({ erro: 'Email ou senha incorretos' });
+    }
+    
+    // Criar sessão de administrador
+    req.session.user = {
+      idusuarios: administrador.id_adm,
+      email_user: administrador.email_adm,
+      nome_usuario: administrador.nome_adm,
+      isAdmin: true // Flag para identificar que é administrador
+    };
+    
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Erro ao salvar sessão ADM:', err);
+        return res.status(500).json({ erro: 'Erro interno do servidor' });
+      }
+      
+      console.log("✅ Sessão ADM salva - Admin ID:", administrador.id_adm);
+      res.json({ 
+        sucesso: true, 
+        usuario: {
+          idusuarios: administrador.id_adm,
+          nome_usuario: administrador.nome_adm,
+          email_user: administrador.email_adm,
+          isAdmin: true
+        }
+      });
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao fazer login ADM:', error);
+    res.status(500).json({ erro: 'Erro ao fazer login' });
+  }
+});
+
+// Rota para verificar se usuário é administrador
+app.get('/api/check-admin', autenticar, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    
+    const result = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [req.session.user.email_user]
+    );
+    
+    client.release();
+    
+    const isAdmin = result.rows.length > 0;
+    
+    res.json({ 
+      isAdmin,
+      adminData: isAdmin ? {
+        id_adm: result.rows[0].id_adm,
+        nome_adm: result.rows[0].nome_adm,
+        email_adm: result.rows[0].email_adm
+      } : null
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao verificar admin:', error);
+    res.status(500).json({ erro: 'Erro ao verificar permissões' });
+  }
+});
+
+
+// Rota para obter dados do administrador autenticado
+app.get('/api/admin-data', autenticar, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    
+    // Primeiro verificar se é admin
+    const adminCheck = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [req.session.user.email_user]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    const administrador = adminCheck.rows[0];
+    
+    // Retornar dados sem a senha por segurança
+    const adminData = {
+      id_adm: administrador.id_adm,
+      nome_adm: administrador.nome_adm,
+      email_adm: administrador.email_adm,
+      // Não incluir a senha!
+    };
+    
+    client.release();
+    res.json(adminData);
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar dados do admin:', error);
+    res.status(500).json({ erro: 'Erro ao buscar dados do administrador' });
+  }
+});
+
+// Rota para atualizar dados do administrador
+app.put('/api/admin-update', autenticar, async (req, res) => {
+  const { nome_adm, email_adm, senha_atual, nova_senha } = req.body;
+  
+  console.log('📝 Atualizando admin:', { nome_adm, email_adm });
+  
+  try {
+    const client = await pool.connect();
+    
+    // Verificar se o admin existe
+    const adminCheck = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [req.session.user.email_user]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    const administrador = adminCheck.rows[0];
+    
+    // Se for alterar senha, verificar senha atual
+    if (senha_atual) {
+      if (senha_atual !== administrador.senhadm) {
+        client.release();
+        return res.status(400).json({ erro: 'Senha atual incorreta' });
+      }
+      
+      if (!nova_senha || nova_senha.length < 6) {
+        client.release();
+        return res.status(400).json({ erro: 'Nova senha inválida (mínimo 6 caracteres)' });
+      }
+    }
+    
+    // Atualizar dados
+    let sql;
+    let values;
+    
+    if (nova_senha) {
+      // Atualizar com nova senha
+      sql = `
+        UPDATE adm 
+        SET nome_adm = $1, email_adm = $2, senhadm = $3
+        WHERE id_adm = $4 
+        RETURNING id_adm, nome_adm, email_adm
+      `;
+      values = [nome_adm, email_adm, nova_senha, administrador.id_adm];
+    } else {
+      // Atualizar sem alterar senha
+      sql = `
+        UPDATE adm 
+        SET nome_adm = $1, email_adm = $2
+        WHERE id_adm = $3 
+        RETURNING id_adm, nome_adm, email_adm
+      `;
+      values = [nome_adm, email_adm, administrador.id_adm];
+    }
+    
+    const result = await client.query(sql, values);
+    
+    // Atualizar sessão com novos dados
+    if (result.rows.length > 0) {
+      const adminAtualizado = result.rows[0];
+      
+      req.session.user = {
+        ...req.session.user,
+        nome_usuario: adminAtualizado.nome_adm,
+        email_user: adminAtualizado.email_adm
+      };
+      
+      await req.session.save();
+      
+      client.release();
+      
+      res.json({
+        mensagem: 'Dados atualizados com sucesso!',
+        admin: adminAtualizado
+      });
+    } else {
+      client.release();
+      res.status(404).json({ erro: 'Administrador não encontrado' });
+    }
+    
+  } catch (error) {
+    console.error('❌ Erro ao atualizar admin:', error);
+    
+    if (error.code === '23505') { // Erro de unique constraint
+      res.status(409).json({ erro: 'Email já está em uso' });
+    } else {
+      res.status(500).json({ 
+        erro: 'Erro ao atualizar dados',
+        detalhes: error.message 
+      });
+    }
+  }
+});
+
+// Rota para deletar administrador (opcional, cuidado!)
+app.delete('/api/admin-delete', autenticar, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    
+    // Primeiro verificar se é admin
+    const adminCheck = await client.query(
+      'SELECT * FROM adm WHERE email_adm = $1',
+      [req.session.user.email_user]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    const administrador = adminCheck.rows[0];
+    
+    // Contar quantos admins existem
+    const countResult = await client.query('SELECT COUNT(*) FROM adm');
+    const adminCount = parseInt(countResult.rows[0].count);
+    
+    // Impedir deletar o último admin
+    if (adminCount <= 1) {
+      client.release();
+      return res.status(400).json({ 
+        erro: 'Não é possível deletar o último administrador do sistema' 
+      });
+    }
+    
+    // Deletar admin
+    await client.query('DELETE FROM adm WHERE id_adm = $1', [administrador.id_adm]);
+    
+    client.release();
+    
+    // Destruir sessão
+    req.session.destroy();
+    
+    res.json({ 
+      mensagem: 'Conta de administrador deletada com sucesso!',
+      redirecionar: '/login'
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao deletar admin:', error);
+    res.status(500).json({ 
+      erro: 'Erro ao deletar conta',
+      detalhes: error.message 
+    });
+  }
+});
+
+
 
 // Rota para obter dados completos do usuário (CORRIGIDA)
 app.get('/api/usuario-completo', autenticar, async (req, res) => {
@@ -616,6 +927,75 @@ app.get('/api/enderecos/existe', autenticar, async (req, res) => {
 });
 
 // ==========================================
+// ❤️ ROTAS DE FAVORITOS (PROTEGIDAS)
+// ==========================================
+
+// Rota para obter todos os favoritos do usuário
+app.get('/api/favoritos', autenticar, async (req, res) => {
+  try {
+    const favoritos_usuario = await getFavoritosByUserId(req.session.user.idusuarios);
+    res.json(favoritos_usuario);
+  } catch (error) {
+    console.error('❌ Erro ao buscar favoritos:', error);
+    res.status(500).json({ erro: 'Erro ao buscar favoritos' });
+  }
+});
+
+// Rota para adicionar produto aos favoritos
+app.post('/api/favoritos', autenticar, async (req, res) => {
+  try {
+    const { id_produto } = req.body;
+    
+    if (!id_produto) {
+      return res.status(400).json({ erro: 'ID do produto é obrigatório' });
+    }
+    
+    const resultado = await addToFavoritos(req.session.user.idusuarios, id_produto);
+    res.status(201).json(resultado);
+  } catch (error) {
+    console.error('❌ Erro ao adicionar aos favoritos:', error);
+    res.status(500).json({ erro: 'Erro ao adicionar aos favoritos' });
+  }
+});
+
+// Rota para remover produto dos favoritos
+app.delete('/api/favoritos/:id_produto', autenticar, async (req, res) => {
+  try {
+    const id_produto = req.params.id_produto;
+    
+    const resultado = await removeFromFavoritos(req.session.user.idusuarios, id_produto);
+    res.json(resultado);
+  } catch (error) {
+    console.error('❌ Erro ao remover dos favoritos:', error);
+    res.status(500).json({ erro: 'Erro ao remover dos favoritos' });
+  }
+});
+
+// Rota para verificar se um produto é favorito
+app.get('/api/favoritos/verificar/:id_produto', autenticar, async (req, res) => {
+  try {
+    const id_produto = req.params.id_produto;
+    
+    const isFav = await isFavorito(req.session.user.idusuarios, id_produto);
+    res.json({ isFavorito: isFav });
+  } catch (error) {
+    console.error('❌ Erro ao verificar favorito:', error);
+    res.status(500).json({ erro: 'Erro ao verificar favorito' });
+  }
+});
+
+// Rota para obter quantidade de favoritos
+app.get('/api/favoritos/quantidade', autenticar, async (req, res) => {
+  try {
+    const total = await getTotalFavoritos(req.session.user.idusuarios);
+    res.json({ quantidade: total });
+  } catch (error) {
+    console.error('❌ Erro ao buscar quantidade de favoritos:', error);
+    res.status(500).json({ erro: 'Erro interno do servidor' });
+  }
+});
+
+// ==========================================
 // 🔐 ROTAS PROTEGIDAS (PRECISAM DE AUTENTICAÇÃO)
 // ==========================================
 
@@ -631,25 +1011,59 @@ app.get('/api/produtos', autenticar, async (req, res) => {
   }
 });
 
-// Rota protegida para obter produtos do usuário logado
-app.get('/api/meus-produtos', autenticar, async (req, res) => {
+// Rota para verificar se é admin
+app.get('/api/check-admin', autenticar, async (req, res) => {
+  try {
+    const isAdmin = !!req.session.user.isAdmin;
+    
+    res.json({ 
+      isAdmin,
+      adminData: isAdmin ? {
+        id: req.session.user.idusuarios,
+        nome: req.session.user.nome_usuario,
+        email: req.session.user.email_user
+      } : null
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao verificar admin:', error);
+    res.status(500).json({ erro: 'Erro ao verificar permissões' });
+  }
+});
+
+// Rota para obter produtos do administrador logado
+app.get('/api/meus-produtos', autenticar, verificarAdmin, async (req, res) => {
   console.log('🔍 INICIANDO /api/meus-produtos');
-  console.log('👤 Sessão completa:', req.session);
-  console.log('🆔 User ID na sessão:', req.session.user?.idusuarios);
+  console.log('👤 Sessão completa:', req.session.user);
+  console.log('🆔 Admin ID na sessão:', req.session.user.idusuarios);
   
   try {
     const client = await pool.connect();
+    
+    // Primeiro verificar se é admin
+    const adminCheck = await client.query(
+      'SELECT id_adm FROM adm WHERE id_adm = $1',
+      [req.session.user.idusuarios]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    const adminId = adminCheck.rows[0].id_adm;
+    
     const result = await client.query(`
       SELECT p.*, c.nome_categoria 
       FROM produtos p 
       INNER JOIN categorias c ON p.id_categoria = c.id_categoria 
-      WHERE p.idusuarios = $1
+      WHERE p.id_adm = $1
       ORDER BY p.data_criacao DESC
-    `, [req.session.user.idusuarios]);
+    `, [adminId]);
     
     client.release();
     
-    console.log(`✅ Busca concluída: ${result.rows.length} produtos para usuário ${req.session.user.idusuarios}`);
+    console.log(`✅ Busca concluída: ${result.rows.length} produtos para admin ${adminId}`);
     res.json(result.rows);
     
   } catch (error) {
@@ -659,10 +1073,10 @@ app.get('/api/meus-produtos', autenticar, async (req, res) => {
       detalhes: error.message
     });
   }
-});
+}); 
 
-// Rota protegida para cadastrar produto
-app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, res) => {
+// Rota protegida para cadastrar produto (SOMENTE ADMIN)
+app.post('/api/produtos', autenticar, verificarAdmin, upload.single('imagem_url'), async (req, res) => {
   console.log("📦 Dados recebidos para cadastro de produto:");
   console.log("body:", req.body);
   console.log("file:", req.file);
@@ -671,12 +1085,28 @@ app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, r
   try {
     const { nome_produto, descricao, valor_produto, categoria, estoque } = req.body;
 
+    // Verificar se o usuário é realmente administrador
+    const client = await pool.connect();
+    const adminCheck = await client.query(
+      'SELECT id_adm FROM adm WHERE id_adm = $1',
+      [req.session.user.idusuarios]
+    );
+    
+    if (adminCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso negado. Apenas administradores podem cadastrar produtos.' });
+    }
+
     const categoriaObj = await selectCategoryByName(categoria);
     if (!categoriaObj) {
+      client.release();
       return res.status(400).json({ erro: 'Categoria inválida' });
     }
 
     const imagem_url = req.file ? `/uploads/${req.file.filename}` : null;
+
+    // Obter ID do administrador
+    const admin = adminCheck.rows[0];
 
     const product = await insertProduct({
       nome_produto,
@@ -685,8 +1115,10 @@ app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, r
       id_categoria: categoriaObj.id_categoria,
       estoque: parseInt(estoque) || 0,
       imagem_url,
-      idusuarios: req.session.user.idusuarios
+      id_adm: admin.id_adm  // <-- Usar id_adm em vez de idusuarios
     });
+
+    client.release();
 
     res.status(201).json({ 
       mensagem: 'Produto cadastrado com sucesso!',
@@ -699,7 +1131,7 @@ app.post('/api/produtos', autenticar, upload.single('imagem_url'), async (req, r
 });
 
 // Rota protegida para atualizar produto
-app.put('/api/produtos/:id', autenticar, upload.single('imagem_url'), async (req, res) => {
+app.put('/api/produtos/:id', autenticar, verificarAdmin, upload.single('imagem_url'), async (req, res) => {
   const id_produto = parseInt(req.params.id, 10);
   if (isNaN(id_produto)) {
     return res.status(400).json({ erro: 'ID de produto inválido' });
@@ -732,7 +1164,7 @@ app.put('/api/produtos/:id', autenticar, upload.single('imagem_url'), async (req
 });
 
 // Rota protegida para deletar produto
-app.delete('/api/produtos/:id', autenticar, async (req, res) => {
+app.delete('/api/produtos/:id', autenticar, verificarAdmin, async (req, res) => {
   const id_produto = parseInt(req.params.id, 10);
   if (isNaN(id_produto)) {
     return res.status(400).json({ erro: 'ID de produto inválido' });
@@ -782,17 +1214,18 @@ app.get('/api/carrinho', autenticar, async (req, res) => {
   }
 });
 
-// Atualize a rota POST /api/carrinho para salvar a configuração:
+
+
+// ROTA POST CORRIGIDA - adicione no server.js
 app.post('/api/carrinho', autenticar, async (req, res) => {
-    const { id_produto, quantidade = 1, tamanho = '', cor = '', configuracao = {} } = req.body;
+    const { id_produto, quantidade = 1, tamanho = '', cor = '' } = req.body;
     
     console.log('🛒 Recebendo requisição para adicionar ao carrinho:', {
         usuario: req.session.user.idusuarios,
         id_produto,
         quantidade,
         tamanho,
-        cor,
-        configuracao
+        cor
     });
 
     try {
@@ -808,20 +1241,23 @@ app.post('/api/carrinho', autenticar, async (req, res) => {
         if (existingItem.rows.length > 0) {
             // Atualizar quantidade
             const result = await client.query(
-                `UPDATE carrinho SET quantidade = quantidade + $1,
-                 configuracao = $2
-                 WHERE idusuarios = $3 AND id_produto = $4 AND tamanho = $5 AND cor = $6
+                `UPDATE carrinho SET quantidade = quantidade + $1
+                 WHERE idusuarios = $2 AND id_produto = $3 AND tamanho = $4 AND cor = $5
                  RETURNING *`,
-                [quantidade, configuracao, req.session.user.idusuarios, id_produto, tamanho, cor]
+                [quantidade, req.session.user.idusuarios, id_produto, tamanho, cor]
             );
             client.release();
-            return res.json({ mensagem: 'Item atualizado no carrinho', item: result.rows[0] });
+            return res.json({ 
+                mensagem: 'Item atualizado no carrinho', 
+                item: result.rows[0] 
+            });
         } else {
             // Inserir novo item
             const result = await client.query(
-                `INSERT INTO carrinho (idusuarios, id_produto, quantidade, tamanho, cor, configuracao) 
-                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-                [req.session.user.idusuarios, id_produto, quantidade, tamanho, cor, configuracao]
+                `INSERT INTO carrinho (idusuarios, id_produto, quantidade, tamanho, cor, data_adicionado) 
+                 VALUES ($1, $2, $3, $4, $5, NOW()) 
+                 RETURNING *`,
+                [req.session.user.idusuarios, id_produto, quantidade, tamanho, cor]
             );
             client.release();
             return res.status(201).json({ 
@@ -838,11 +1274,38 @@ app.post('/api/carrinho', autenticar, async (req, res) => {
     }
 });
 
+// ==========================================
+// 🛒 ROTAS DO CARRINHO (PROTEGIDAS) - CORRIGIDAS
+// ==========================================
+
+app.get('/api/carrinho', autenticar, async (req, res) => {
+  try {
+    const carrinhoItens = await getCarrinhoByUserId(req.session.user.idusuarios);
+    res.json(carrinhoItens);
+  } catch (error) {
+    console.error('❌ Erro ao buscar carrinho:', error);
+    res.status(500).json({ erro: 'Erro ao buscar carrinho' });
+  }
+});
+
+// Rota PUT para atualizar quantidade - CORRIGIDA
 app.put('/api/carrinho/:id', autenticar, async (req, res) => {
   try {
+    const id_carinho = req.params.id; // id_carinho (singular)
     const { quantidade } = req.body;
-    const updatedItem = await updateCarrinhoItem(req.params.id, quantidade);
-    res.json({ mensagem: 'Carrinho atualizado', item: updatedItem });
+    
+    console.log(`📝 Atualizando carrinho item ${id_carinho} para quantidade ${quantidade}`);
+    
+    const updatedItem = await updateCarrinhoItem(id_carinho, quantidade);
+    
+    if (updatedItem.mensagem) {
+      res.json({ mensagem: updatedItem.mensagem });
+    } else {
+      res.json({ 
+        mensagem: 'Carrinho atualizado', 
+        item: updatedItem 
+      });
+    }
   } catch (error) {
     console.error('❌ Erro ao atualizar carrinho:', error);
     res.status(500).json({ erro: 'Erro ao atualizar carrinho' });
@@ -853,8 +1316,9 @@ app.put('/api/carrinho/:id', autenticar, async (req, res) => {
 app.delete('/api/carrinho/limpar', autenticar, async (req, res) => {
   try {
     const userId = req.session.user.idusuarios;
+    
+    console.log(`🧹 Limpando carrinho do usuário ${userId}`);
 
-    // Chama a função que deleta tudo desse usuário
     await clearCarrinho(userId);
 
     res.json({ mensagem: 'Carrinho limpo com sucesso!' });
@@ -864,11 +1328,19 @@ app.delete('/api/carrinho/limpar', autenticar, async (req, res) => {
   }
 });
 
-// 🗑️ REMOVER ITEM INDIVIDUAL
+// 🗑️ REMOVER ITEM INDIVIDUAL - CORRIGIDA
 app.delete('/api/carrinho/:id', autenticar, async (req, res) => {
   try {
-    const removedItem = await removeFromCarrinho(req.params.id);
-    res.json({ mensagem: 'Item removido do carrinho', item: removedItem });
+    const id_carinho = req.params.id; // id_carinho (singular)
+    
+    console.log(`🗑️ Removendo item ${id_carinho} do carrinho`);
+    
+    const removedItem = await removeFromCarrinho(id_carinho);
+    
+    res.json({ 
+      mensagem: 'Item removido do carrinho', 
+      item: removedItem 
+    });
   } catch (error) {
     console.error('❌ Erro ao remover do carrinho:', error);
     res.status(500).json({ erro: 'Erro ao remover do carrinho' });
@@ -877,13 +1349,22 @@ app.delete('/api/carrinho/:id', autenticar, async (req, res) => {
 
 app.get('/api/carrinho/quantidade', autenticar, async (req, res) => {
   try {
-    const result = await pool.query('SELECT COUNT(*) as quantidade FROM carrinho WHERE idusuarios = $1', [req.session.user.idusuarios]);
-    res.json({ quantidade: parseInt(result.rows[0].quantidade) });
+    const client = await pool.connect();
+    const result = await client.query(
+      'SELECT COALESCE(SUM(quantidade), 0) as quantidade FROM carrinho WHERE idusuarios = $1', 
+      [req.session.user.idusuarios]
+    );
+    client.release();
+    
+    const quantidade = parseInt(result.rows[0].quantidade);
+    res.json({ quantidade });
   } catch (error) {
     console.error('❌ Erro ao buscar quantidade do carrinho:', error);
     res.status(500).json({ erro: 'Erro interno do servidor' });
   }
 });
+
+
 
 // ==========================================
 // 👤 ROTAS DO USUÁRIO (PROTEGIDAS - CORRIGIDAS)
@@ -1087,82 +1568,59 @@ app.get('/api/debug/params/:id', (req, res) => {
 // 📦 ROTAS DE PEDIDOS (PROTEGIDAS)
 // ==========================================
 
-// Rota para criar pedido (simples, sem produção)
-app.post('/api/pedidos', autenticar, async (req, res) => {
-  console.log('📦 Criando pedido simples:', req.body);
-
-  try {
-    const { total, metodo_pagamento, endereco_entrega, itens } = req.body;
+// Rota para obter todos os pedidos do usuário (COMPLETA)
+app.get('/api/pedidos', autenticar, async (req, res) => {
+    console.log('📦 Buscando pedidos para usuário:', req.session.user.idusuarios);
     
-    if (!Array.isArray(itens) || itens.length === 0) {
-      return res.status(400).json({ erro: 'Itens do pedido inválidos' });
-    }
-
-    const client = await pool.connect();
-    
-    // Iniciar transação
-    await client.query('BEGIN');
-
     try {
-      // 1. Inserir pedido
-      const pedidoResult = await client.query(
-        `INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega, status_geral) 
-         VALUES ($1, $2, $3, $4, $5) 
-         RETURNING *`,
-        [req.session.user.idusuarios, total, metodo_pagamento, endereco_entrega, 'PENDENTE']
-      );
-
-      const pedido = pedidoResult.rows[0];
-
-      // 2. Inserir itens do pedido
-      for (const item of itens) {
-        await client.query(
-          `INSERT INTO pedido_itens 
-           (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor, configuracao) 
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [
-            pedido.id_pedido,
-            item.id_produto,
-            item.quantidade,
-            item.preco_unitario,
-            item.tamanho || '',
-            item.cor || '',
-            item.configuracao || {}
-          ]
-        );
-      }
-
-      // 3. Limpar carrinho
-      await client.query(
-        'DELETE FROM carrinho WHERE idusuarios = $1',
-        [req.session.user.idusuarios]
-      );
-
-      await client.query('COMMIT');
-      client.release();
-
-      console.log(`✅ Pedido ${pedido.id_pedido} criado com sucesso`);
-
-      res.status(201).json({
-        mensagem: 'Pedido criado com sucesso!',
-        pedido: pedido,
-        total_itens: itens.length
-      });
-
+        const client = await pool.connect();
+        
+        const result = await client.query(`
+            SELECT 
+                p.id_pedido,
+                p.total,
+                p.status_geral,
+                p.metodo_pagamento,
+                p.data_pedido,
+                p.atualizado_em,
+                COUNT(pi.id_item) as total_itens,
+                SUM(pi.quantidade) as quantidade_total
+            FROM pedidos p
+            LEFT JOIN pedido_itens pi ON p.id_pedido = pi.id_pedido
+            WHERE p.idusuarios = $1
+            GROUP BY p.id_pedido
+            ORDER BY p.data_pedido DESC
+        `, [req.session.user.idusuarios]);
+        
+        client.release();
+        
+        console.log(`✅ ${result.rows.length} pedidos encontrados para o usuário`);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                erro: 'Nenhum pedido encontrado',
+                mensagem: 'Você ainda não fez nenhum pedido' 
+            });
+        }
+        
+        res.json(result.rows);
+        
     } catch (error) {
-      await client.query('ROLLBACK');
-      client.release();
-      throw error;
+        console.error('❌ Erro ao buscar pedidos:', error);
+        res.status(500).json({ 
+            erro: 'Erro ao buscar pedidos',
+            detalhes: error.message 
+        });
     }
-
-  } catch (error) {
-    console.error('❌ Erro ao criar pedido:', error);
-    res.status(500).json({
-      erro: 'Erro ao criar pedido',
-      detalhes: error.message
-    });
-  }
 });
+
+
+
+
+
+// Adicione esta rota ANTES da rota app.listen()
+
+
 
 // Rota para receber callbacks da Queue Smart 4.0 (CORRIGIDA)
 app.post('/api/smart4-callback', async (req, res) => {
@@ -1171,33 +1629,48 @@ app.post('/api/smart4-callback', async (req, res) => {
     try {
         const { itemId, status, stage, progress, payload } = req.body;
 
-        // Encontrar o item de produção correspondente (CORRIGIDO - usando producao)
+        // CORREÇÃO: Buscar por item_id_maquina
         const client = await pool.connect();
+        
         const itemProducao = await client.query(
-            'SELECT * FROM producao WHERE item_id_maquina = $1', // CORRIGIDO
-            [itemId]
+            `SELECT pr.*, pi.id_pedido, p.nome_produto 
+             FROM producao_itens pr
+             INNER JOIN pedido_itens pi ON pr.id_item = pi.id_item
+             INNER JOIN produtos p ON pr.id_produto = p.id_produto
+             WHERE pr.item_id_maquina = $1 OR pr.order_id = $2
+             LIMIT 1`,
+            [itemId, itemId]
         );
 
         if (itemProducao.rows.length === 0) {
             console.error('❌ Item de produção não encontrado para itemId:', itemId);
+            client.release();
             return res.status(404).json({ error: 'Item não encontrado' });
         }
 
         const producaoItem = itemProducao.rows[0];
 
-        // Atualizar status do item de produção (CORRIGIDO)
+        // Atualizar status do item de produção com campos corretos
         await atualizarStatusProducao(producaoItem.id_producao, {
-            status_maquina: status,
-            estagio_maquina: stage,
-            progresso_maquina: progress,
+            status_maquina: status || producaoItem.status_maquina,
+            estagio_maquina: stage || producaoItem.estagio_maquina,
+            progresso_maquina: progress || producaoItem.progresso_maquina,
             slot_expedicao: producaoItem.slot_expedicao
         });
 
-        console.log(`✅ Item ${itemId} atualizado: ${status} - ${stage} (${progress}%)`);
+        console.log(`✅ Item ${producaoItem.id_producao} (${producaoItem.nome_produto}) atualizado: ${status} - ${stage} (${progress}%)`);
 
-        // Se o item foi concluído
+        // Se o item foi concluído, verificar pedido completo
         if (status === 'COMPLETED') {
-            console.log(`🎉 Item ${itemId} concluído! Slot: ${producaoItem.slot_expedicao}`);
+            console.log(`🎉 Item ${producaoItem.id_producao} concluído!`);
+            
+            // Atualizar status do item do pedido
+            await client.query(
+                `UPDATE pedido_itens 
+                 SET status = 'PRODUZIDO'
+                 WHERE id_item = $1`,
+                [producaoItem.id_item]
+            );
             
             // Verificar se todos os itens do pedido estão prontos
             const statusPedido = await verificarPedidoCompleto(producaoItem.id_pedido);
@@ -1205,16 +1678,20 @@ app.post('/api/smart4-callback', async (req, res) => {
             if (statusPedido.completo) {
                 console.log(`🎊 PEDIDO ${producaoItem.id_pedido} COMPLETO! Todos os itens prontos.`);
                 
-                // TODO: Enviar email para o cliente
-                // TODO: Notificar usuário
+                // Atualizar status geral do pedido
+                await client.query(
+                    `UPDATE pedidos SET status_geral = 'PRODUZIDO' WHERE id_pedido = $1`,
+                    [producaoItem.id_pedido]
+                );
             }
         }
 
+        client.release();
         res.status(200).json({ received: true, updated: true });
 
     } catch (error) {
         console.error('❌ Erro ao processar callback:', error);
-        res.status(500).json({ error: 'Erro interno' });
+        res.status(500).json({ error: 'Erro interno', details: error.message });
     }
 });
 
@@ -1266,7 +1743,7 @@ app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
             
             const resultado = {
                 pedido: {
-                    id_pedido: pedido.id_pedido,
+                    id_item: pedido.id_item,
                     idusuarios: pedido.idusuarios,
                     status_geral: pedido.status_geral,
                     total: pedido.total,
@@ -1283,8 +1760,7 @@ app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
                     quantidade: item.quantidade,
                     preco_unitario: item.preco_unitario,
                     tamanho: item.tamanho,
-                    cor: item.cor,
-                    configuracao: item.configuracao
+                    cor: item.cor
                 })),
                 producao: producaoItens,
                 resumo: await verificarPedidoCompleto(id_pedido)
@@ -1307,6 +1783,8 @@ app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
 });
 
 // Rota para monitorar produção em tempo real (CORRIGIDA)
+// Rota para monitorar produção em tempo real (CORRIGIDA)
+// Rota para monitorar produção em tempo real (CORRIGIDA)
 app.get('/api/producao/monitoramento', autenticar, async (req, res) => {
     try {
         const client = await pool.connect();
@@ -1314,20 +1792,22 @@ app.get('/api/producao/monitoramento', autenticar, async (req, res) => {
         // Pedidos em produção do usuário (CORRIGIDO)
         const pedidosProducao = await client.query(`
             SELECT DISTINCT p.*,
-                   (SELECT COUNT(*) FROM producao WHERE id_pedido = p.id_pedido) as total_itens,
-                   (SELECT COUNT(*) FROM producao WHERE id_pedido = p.id_pedido AND status_maquina = 'COMPLETED') as itens_prontos
+                   (SELECT COUNT(*) FROM pedido_itens WHERE id_pedido = p.id_pedido) as total_itens,
+                   (SELECT COUNT(*) FROM producao_itens pr 
+                    INNER JOIN pedido_itens pi ON pr.id_item = pi.id_item 
+                    WHERE pi.id_pedido = p.id_pedido AND pr.status_maquina = 'COMPLETED') as itens_prontos
             FROM pedidos p
-            INNER JOIN producao pr ON p.id_pedido = pr.id_pedido
             WHERE p.idusuarios = $1 AND p.status_geral = 'PROCESSANDO'
             ORDER BY p.data_pedido DESC
         `, [req.session.user.idusuarios]);
 
         // Itens em produção (CORRIGIDO)
         const itensProducao = await client.query(`
-            SELECT pr.*, p.nome_produto, p.imagem_url, pd.id_pedido
-            FROM producao pr
+            SELECT pr.*, p.nome_produto, p.imagem_url, pi.id_pedido, pi.quantidade
+            FROM producao_itens pr
+            INNER JOIN pedido_itens pi ON pr.id_item = pi.id_item
             INNER JOIN produtos p ON pr.id_produto = p.id_produto
-            INNER JOIN pedidos pd ON pr.id_pedido = pd.id_pedido
+            INNER JOIN pedidos pd ON pi.id_pedido = pd.id_pedido
             WHERE pd.idusuarios = $1 AND pr.status_maquina != 'COMPLETED'
             ORDER BY pr.criado_em DESC
         `, [req.session.user.idusuarios]);
@@ -1343,6 +1823,198 @@ app.get('/api/producao/monitoramento', autenticar, async (req, res) => {
     } catch (error) {
         console.error('❌ Erro no monitoramento de produção:', error);
         res.status(500).json({ erro: 'Erro no monitoramento' });
+    }
+});
+
+// ==========================================
+// 💳 ROTAS PARA PAGAMENTO (PROTEGIDAS)
+// ==========================================
+
+// Rota para buscar dados completos do usuário para pagamento
+app.get('/api/pagamento/dados-usuario', autenticar, async (req, res) => {
+  try {
+    console.log('💳 Buscando dados do usuário para pagamento:', req.session.user.idusuarios);
+    
+    // Você precisará importar a nova função no topo do arquivo
+    // const { getDadosUsuarioParaPagamento } = require("./db");
+    
+    const dados = await getDadosUsuarioParaPagamento(req.session.user.idusuarios);
+    
+    res.json({
+      sucesso: true,
+      ...dados
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar dados para pagamento:', error);
+    res.status(500).json({
+      sucesso: false,
+      erro: 'Erro ao buscar dados do usuário',
+      detalhes: error.message
+    });
+  }
+});
+
+// Rota para verificar se o usuário pode finalizar compra
+app.get('/api/pagamento/verificar-dados', autenticar, async (req, res) => {
+  try {
+    console.log('🔍 Verificando dados para pagamento do usuário:', req.session.user.idusuarios);
+    
+    const dados = await getDadosUsuarioParaPagamento(req.session.user.idusuarios);
+    
+    // Verificar campos obrigatórios
+    const camposFaltantes = [];
+    
+    // Verificar telefone
+    if (!dados.usuario.numero || dados.usuario.numero.trim() === '') {
+      camposFaltantes.push({
+        campo: 'telefone',
+        mensagem: 'Número de telefone não cadastrado',
+        rota: '/Perfil-usuario'
+      });
+    }
+    
+    // Verificar endereço
+    if (!dados.endereco) {
+      camposFaltantes.push({
+        campo: 'endereco',
+        mensagem: 'Endereço não cadastrado',
+        rota: '/endereco'
+      });
+    } else {
+      // Verificar campos obrigatórios do endereço
+      const camposEnderecoObrigatorios = ['bairro', 'cidade', 'estado', 'numero_endereco'];
+      for (const campo of camposEnderecoObrigatorios) {
+        if (!dados.endereco[campo] || dados.endereco[campo].trim() === '') {
+          camposFaltantes.push({
+            campo: `endereco_${campo}`,
+            mensagem: `Campo ${campo.replace('_endereco', '')} do endereço não preenchido`,
+            rota: '/endereco'
+          });
+        }
+      }
+    }
+    
+    const podeFinalizar = camposFaltantes.length === 0;
+    
+    res.json({
+      sucesso: true,
+      podeFinalizar,
+      dadosCompletos: podeFinalizar,
+      camposFaltantes,
+      mensagem: podeFinalizar 
+        ? 'Todos os dados estão completos!' 
+        : 'Complete os dados faltantes para finalizar a compra',
+      dados: dados
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao verificar dados para pagamento:', error);
+    res.status(500).json({
+      sucesso: false,
+      erro: 'Erro ao verificar dados do usuário',
+      detalhes: error.message
+    });
+  }
+});
+
+// Rota para buscar detalhes completos do pedido (para visualização)
+app.get('/api/pedidos/:id/detalhes', autenticar, async (req, res) => {
+    try {
+        const id_pedido = parseInt(req.params.id);
+        
+        console.log(`📋 Buscando detalhes do pedido ${id_pedido} para visualização`);
+        
+        const client = await pool.connect();
+        
+        // 1. Buscar pedido
+        const pedidoResult = await client.query(
+            `SELECT * FROM pedidos WHERE id_pedido = $1`,
+            [id_pedido]
+        );
+        
+        if (pedidoResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ erro: 'Pedido não encontrado' });
+        }
+        
+        const pedido = pedidoResult.rows[0];
+        
+        // Verificar se o pedido pertence ao usuário
+        if (pedido.idusuarios !== req.session.user.idusuarios) {
+            client.release();
+            return res.status(403).json({ erro: 'Acesso não autorizado' });
+        }
+        
+        // 2. Buscar itens do pedido
+        const itensResult = await client.query(
+            `SELECT pi.*, p.nome_produto, p.descricao, p.imagem_url 
+             FROM pedido_itens pi 
+             INNER JOIN produtos p ON pi.id_produto = p.id_produto 
+             WHERE pi.id_pedido = $1`,
+            [id_pedido]
+        );
+        
+        // 3. Buscar dados do usuário
+        const usuarioResult = await client.query(
+            `SELECT nome_usuario, numero FROM usuarios WHERE idusuarios = $1`,
+            [req.session.user.idusuarios]
+        );
+        
+        // 4. Buscar endereço do usuário
+        const enderecoResult = await client.query(
+            `SELECT * FROM endereco WHERE idusuarios = $1`,
+            [req.session.user.idusuarios]
+        );
+        
+        client.release();
+        
+        // Parsear endereço_entrega se for JSON string
+        let enderecoEntrega = {};
+        try {
+            if (pedido.endereco_entrega && typeof pedido.endereco_entrega === 'string') {
+                enderecoEntrega = JSON.parse(pedido.endereco_entrega);
+            } else if (pedido.endereco_entrega && typeof pedido.endereco_entrega === 'object') {
+                enderecoEntrega = pedido.endereco_entrega;
+            }
+        } catch (e) {
+            console.error('Erro ao parsear endereço:', e);
+        }
+        
+        // Se não tiver endereço no pedido, usar o cadastrado
+        if (!enderecoEntrega || Object.keys(enderecoEntrega).length === 0) {
+            enderecoEntrega = enderecoResult.rows[0] || {};
+        }
+        
+        res.json({
+            pedido: {
+                id_pedido: pedido.id_pedido,
+                total: pedido.total,
+                metodo_pagamento: pedido.metodo_pagamento,
+                status_geral: pedido.status_geral,
+                data_pedido: pedido.data_pedido,
+                endereco_entrega: pedido.endereco_entrega
+            },
+            usuario: usuarioResult.rows[0] || {},
+            endereco_entrega: enderecoEntrega,
+            itens: itensResult.rows.map(item => ({
+                id_produto: item.id_produto,
+                nome_produto: item.nome_produto,
+                descricao: item.descricao,
+                imagem_url: item.imagem_url,
+                quantidade: item.quantidade,
+                preco_unitario: item.preco_unitario,
+                tamanho: item.tamanho,
+                cor: item.cor
+            }))
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar detalhes do pedido:', error);
+        res.status(500).json({ 
+            erro: 'Erro ao buscar detalhes do pedido',
+            detalhes: error.message 
+        });
     }
 });
 
@@ -1601,6 +2273,671 @@ app.get('/api/estatisticas-maquina', async (req, res) => {
         console.error('❌ Erro ao obter estatísticas:', error);
         res.status(500).json({ erro: error.message });
     }
+});
+
+
+// ==========================================
+// 🤖 ROTA DO CHATBOT (CONECTADO AO BANCO DE DADOS)
+// ==========================================
+
+// Rota para o chatbot responder dúvidas sobre o site
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ 
+        erro: 'Mensagem não pode estar vazia',
+        response: 'Por favor, digite sua dúvida para que eu possa ajudar.' 
+      });
+    }
+
+    console.log('🤖 Chatbot recebeu mensagem:', message);
+    
+    // Analisar a mensagem para entender o que o usuário quer
+    const mensagemLower = message.toLowerCase().trim();
+    
+    // Buscar informações do banco de dados com base na mensagem
+    const resposta = await processarMensagemChatbot(mensagemLower);
+    
+    res.json({ 
+      response: resposta,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Erro no chatbot:', error);
+    res.status(500).json({ 
+      response: 'Desculpe, estou com problemas para acessar as informações no momento. Tente novamente mais tarde.' 
+    });
+  }
+});
+
+// Função para processar a mensagem e buscar informações no banco
+async function processarMensagemChatbot(mensagem) {
+  const client = await pool.connect();
+  
+  try {
+    // Categorias de perguntas
+    const categorias = {
+      produtos: ['produto', 'produtos', 'comprar', 'loja', 'item', 'itens', 'mercadoria'],
+      categorias: ['categoria', 'categorias', 'tipo', 'tipos', 'seção', 'seções'],
+      pedidos: ['pedido', 'pedidos', 'compra', 'compras', 'encomenda', 'rastrear'],
+      carrinho: ['carrinho', 'cesto', 'sacola', 'adicionar carrinho'],
+      pagamento: ['pagamento', 'pagar', 'cartão', 'dinheiro', 'pix', 'boleto'],
+      entrega: ['entrega', 'frete', 'envio', 'prazo', 'receber', 'chegar'],
+      conta: ['conta', 'perfil', 'cadastro', 'login', 'senha', 'usuario', 'usuário'],
+      ajuda: ['ajuda', 'suporte', 'duvida', 'dúvida', 'problema', 'contato'],
+      estoque: ['estoque', 'disponível', 'disponibilidade', 'acabou'],
+      preco: ['preço', 'valor', 'custo', 'barato', 'caro', 'promoção']
+    };
+
+    // Identificar categoria da pergunta
+    let categoriaEncontrada = null;
+    for (const [categoria, palavras] of Object.entries(categorias)) {
+      if (palavras.some(palavra => mensagem.includes(palavra))) {
+        categoriaEncontrada = categoria;
+        break;
+      }
+    }
+
+    // Processar de acordo com a categoria
+    switch(categoriaEncontrada) {
+      case 'produtos':
+        return await buscarInformacoesProdutos(mensagem, client);
+      
+      case 'categorias':
+        return await buscarInformacoesCategorias(client);
+      
+      case 'pedidos':
+        return await informacoesPedidos(mensagem);
+      
+      case 'carrinho':
+        return await informacoesCarrinho();
+      
+      case 'pagamento':
+        return await informacoesPagamento();
+      
+      case 'entrega':
+        return await informacoesEntrega();
+      
+      case 'conta':
+        return await informacoesConta();
+      
+      case 'estoque':
+        return await verificarEstoque(mensagem, client);
+      
+      case 'preco':
+        return await buscarPrecos(mensagem, client);
+      
+      default:
+        return await respostaGenerica(mensagem, client);
+    }
+
+  } finally {
+    client.release();
+  }
+}
+
+// Funções auxiliares para cada tipo de consulta
+async function buscarInformacoesProdutos(mensagem, client) {
+  try {
+    // Extrair palavras-chave sobre produtos
+    const palavrasProduto = mensagem.split(' ').filter(word => 
+      word.length > 3 && !['como', 'onde', 'quero', 'gostaria', 'sobre'].includes(word)
+    );
+
+    if (palavrasProduto.length > 0) {
+      // Buscar produtos relacionados
+      const query = palavrasProduto.map((_, i) => 
+        `(LOWER(nome_produto) LIKE $${i + 1} OR LOWER(descricao) LIKE $${i + 1})`
+      ).join(' OR ');
+      
+      const values = palavrasProduto.map(palavra => `%${palavra}%`);
+      
+      const result = await client.query(
+        `SELECT nome_produto, descricao, valor_produto, estoque 
+         FROM produtos 
+         WHERE estoque > 0 AND (${query})
+         LIMIT 5`,
+        values
+      );
+
+      if (result.rows.length > 0) {
+        const produtos = result.rows.map(p => 
+          `- ${p.nome_produto}: R$ ${p.valor_produto} (${p.estoque} em estoque)`
+        ).join('\n');
+        
+        return `Encontrei estes produtos relacionados:\n\n${produtos}\n\nPara ver mais detalhes, visite a página do produto.`;
+      }
+    }
+
+    // Se não encontrou produtos específicos, dar informações gerais
+    const totalProdutos = await client.query(
+      'SELECT COUNT(*) as total FROM produtos WHERE estoque > 0'
+    );
+    
+    return `Temos ${totalProdutos.rows[0].total} produtos disponíveis em nosso catálogo. Você pode:\n\n1. Navegar por categorias\n2. Buscar por nome\n3. Ver produtos em destaque\n\nDiga-me qual tipo de produto você está procurando!`;
+
+  } catch (error) {
+    console.error('Erro ao buscar produtos:', error);
+    return 'Desculpe, não consegui buscar informações sobre produtos no momento.';
+  }
+}
+
+async function buscarInformacoesCategorias(client) {
+  try {
+    const result = await client.query(
+      'SELECT nome_categoria FROM categorias ORDER BY nome_categoria'
+    );
+    
+    const categorias = result.rows.map(c => `- ${c.nome_categoria}`).join('\n');
+    
+    return `Nossas categorias disponíveis são:\n\n${categorias}\n\nClique em uma categoria para ver todos os produtos relacionados.`;
+
+  } catch (error) {
+    console.error('Erro ao buscar categorias:', error);
+    return 'Desculpe, não consegui carregar as categorias no momento.';
+  }
+}
+
+async function verificarEstoque(mensagem, client) {
+  try {
+    // Extrair nome do produto da mensagem
+    const palavras = mensagem.split(' ');
+    const indexEstoque = palavras.findIndex(p => p.includes('estoque'));
+    
+    if (indexEstoque > 0) {
+      const possivelProduto = palavras[indexEstoque - 1];
+      
+      const result = await client.query(
+        `SELECT nome_produto, estoque 
+         FROM produtos 
+         WHERE LOWER(nome_produto) LIKE $1 AND estoque >= 0
+         LIMIT 1`,
+        [`%${possivelProduto}%`]
+      );
+
+      if (result.rows.length > 0) {
+        const produto = result.rows[0];
+        return `O produto "${produto.nome_produto}" tem ${produto.estoque} unidades disponíveis em estoque.`;
+      }
+    }
+
+    return 'Para verificar o estoque de um produto específico, diga-me o nome do produto. Exemplo: "Tem estoque da camiseta?"';
+
+  } catch (error) {
+    console.error('Erro ao verificar estoque:', error);
+    return 'Desculpe, não consegui verificar o estoque no momento.';
+  }
+}
+
+async function buscarPrecos(mensagem, client) {
+  try {
+    const palavras = mensagem.split(' ');
+    const indexPreco = palavras.findIndex(p => 
+      ['preço', 'valor', 'custo', 'quanto'].includes(p.toLowerCase())
+    );
+    
+    if (indexPreco > 0 && palavras[indexPreco + 1]) {
+      const produtoNome = palavras.slice(indexPreco + 1).join(' ');
+      
+      const result = await client.query(
+        `SELECT nome_produto, valor_produto 
+         FROM produtos 
+         WHERE LOWER(nome_produto) LIKE $1
+         LIMIT 3`,
+        [`%${produtoNome.toLowerCase()}%`]
+      );
+
+      if (result.rows.length > 0) {
+        const precos = result.rows.map(p => 
+          `- ${p.nome_produto}: R$ ${p.valor_produto}`
+        ).join('\n');
+        
+        return `Preços encontrados:\n\n${precos}`;
+      }
+    }
+
+    return 'Para saber o preço de um produto, diga-me o nome dele. Exemplo: "Qual o preço da camiseta?"';
+
+  } catch (error) {
+    console.error('Erro ao buscar preços:', error);
+    return 'Desculpe, não consegui buscar preços no momento.';
+  }
+}
+
+async function informacoesPedidos(mensagem) {
+  const respostas = {
+    'como rastrear': 'Para rastrear seu pedido:\n\n1. Faça login na sua conta\n2. Vá em "Meus Pedidos"\n3. Clique no pedido desejado\n4. Você verá o status atual e atualizações',
+    'status': 'Os status possíveis são:\n- Pendente\n- Processando\n- Em produção\n- Enviado\n- Entregue',
+    'tempo': 'O tempo de processamento varia de 1 a 3 dias úteis, mais o prazo de entrega.',
+    'cancelar': 'Para cancelar um pedido, entre em contato com nosso suporte dentro de 24 horas após a compra.',
+    'troca': 'Para solicitar troca, acesse "Meus Pedidos" e clique em "Solicitar Troca" no pedido desejado.'
+  };
+
+  for (const [palavra, resposta] of Object.entries(respostas)) {
+    if (mensagem.includes(palavra)) {
+      return resposta;
+    }
+  }
+
+  return 'Sobre pedidos, posso ajudar com:\n\n- Como rastrear seu pedido\n- Status do pedido\n- Tempo de entrega\n- Cancelamentos\n- Trocas\n\nO que você gostaria de saber?';
+}
+
+async function informacoesCarrinho() {
+  return 'Sobre o carrinho de compras:\n\n✅ **Como adicionar:**\n- Clique em "Adicionar ao Carrinho" em qualquer produto\n\n✅ **Como visualizar:**\n- Clique no ícone do carrinho no menu\n\n✅ **Como remover:**\n- No carrinho, clique no "X" ao lado do produto\n\n✅ **Limite:**\nVocê pode adicionar até 99 unidades de cada produto.';
+}
+
+async function informacoesPagamento() {
+  return 'Formas de pagamento aceitas:\n\n💳 **Cartões de crédito:**\n- Visa, Mastercard, Elo, American Express\n- Até 12x sem juros\n\n📱 **PIX:**\n- Pagamento instantâneo\n- 5% de desconto\n\n📄 **Boleto bancário:**\n- Vencimento em 3 dias\n\n💰 **Carteira digital:**\n- PayPal, Mercado Pago\n\nTodos os pagamentos são processados com segurança.';
+}
+
+async function informacoesEntrega() {
+  return 'Informações de entrega:\n\n🚚 **Opções disponíveis:**\n- Entrega padrão: 5-7 dias úteis\n- Entrega expressa: 2-3 dias úteis\n- Retirada na loja: Disponível em 24h\n\n📍 **Cobertura:**\nEntregamos para todo o Brasil\n\n📦 **Frete grátis:**\nPara compras acima de R$ 150,00\n\n📱 **Acompanhamento:**\nRastreie seu pedido em tempo real.';
+}
+
+async function informacoesConta() {
+  return 'Sua conta no site:\n\n👤 **Criar conta:**\nClique em "Cadastrar" no menu superior\n\n🔑 **Login:**\nUse seu email e senha\n\n📝 **Editar perfil:**\nAcesse "Meu Perfil" após o login\n\n🏠 **Endereço:**\nCadastre seu endereço para entregas\n\n📧 **Recuperar senha:**\nClique em "Esqueci minha senha" na página de login';
+}
+
+async function respostaGenerica(mensagem, client) {
+  // Verificar se é uma saudação
+  const saudacoes = ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hello', 'hi'];
+  if (saudacoes.some(s => mensagem.includes(s))) {
+    return 'Olá! Sou o assistente virtual da loja. Posso ajudar com:\n\n🛍️ Informações sobre produtos\n📦 Status de pedidos\n🚚 Informações de entrega\n💳 Formas de pagamento\n👤 Sua conta\n\nComo posso ajudar você hoje?';
+  }
+
+  // Verificar se é agradecimento
+  if (mensagem.includes('obrigado') || mensagem.includes('obrigada') || mensagem.includes('valeu')) {
+    return 'De nada! Estou aqui para ajudar. 😊\nSe tiver mais alguma dúvida, é só perguntar!';
+  }
+
+  // Buscar produtos genéricos como sugestão
+  const produtosDestaque = await client.query(
+    `SELECT nome_produto, valor_produto 
+     FROM produtos 
+     WHERE estoque > 0 
+     ORDER BY data_criacao DESC 
+     LIMIT 3`
+  );
+
+  if (produtosDestaque.rows.length > 0) {
+    const sugestoes = produtosDestaque.rows.map(p => 
+      `- ${p.nome_produto} (R$ ${p.valor_produto})`
+    ).join('\n');
+
+    return `Não entendi completamente sua pergunta. Mas posso te ajudar com:\n\n${sugestoes}\n\nOu você pode me perguntar sobre:\n- Produtos específicos\n- Como comprar\n- Meus pedidos\n- Formas de pagamento\n- Entrega`;
+  }
+
+  return 'Olá! Sou o assistente virtual. Posso ajudar você com:\n\n1. Informações sobre produtos\n2. Como fazer uma compra\n3. Status do seu pedido\n4. Dúvidas sobre entrega\n5. Problemas com sua conta\n\nComo posso ajudar você hoje?';
+}
+
+
+
+
+// ==========================================
+// 🛒 ROTA PARA CALCULAR TOTAL DO CARRINHO
+// ==========================================
+
+app.get('/api/carrinho/total', autenticar, async (req, res) => {
+  try {
+    const userId = req.session.user.idusuarios;
+    
+    // 1. Calcular total dos produtos
+    const totalCarrinho = await calcularTotalCarrinho(userId);
+    
+    // 2. Definir frete (exemplo: R$ 15 fixo)
+    const frete = 15.00;
+    
+    // 3. Calcular total final
+    const totalFinal = totalCarrinho.total_produtos + frete;
+    
+    res.json({
+      sucesso: true,
+      total_produtos: totalCarrinho.total_produtos,
+      total_itens: totalCarrinho.total_itens,
+      quantidade_total: totalCarrinho.quantidade_total,
+      frete: frete,
+      total_final: totalFinal,
+      resumo: {
+        valor_produtos: `R$ ${totalCarrinho.total_produtos.toFixed(2)}`,
+        frete: `R$ ${frete.toFixed(2)}`,
+        total_a_pagar: `R$ ${totalFinal.toFixed(2)}`
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao calcular total do carrinho:', error);
+    res.status(500).json({ 
+      sucesso: false,
+      erro: 'Erro ao calcular total' 
+    });
+  }
+});
+
+// ==========================================
+// 💳 ROTA PARA FINALIZAR COMPRA
+// ==========================================
+
+app.post('/api/pagamento/finalizar', autenticar, async (req, res) => {
+  console.log('💳 Finalizando compra...');
+  
+  try {
+    const { metodo_pagamento, endereco_entrega } = req.body;
+    const userId = req.session.user.idusuarios;
+    
+    // 1. Verificar se há itens no carrinho
+    const carrinho = await getCarrinhoByUserId(userId);
+    if (carrinho.length === 0) {
+      return res.status(400).json({
+        sucesso: false,
+        erro: 'Carrinho vazio',
+        mensagem: 'Adicione produtos ao carrinho antes de finalizar a compra'
+      });
+    }
+    
+    // 2. Calcular total
+    const totalCarrinho = await calcularTotalCarrinho(userId);
+    const frete = 15.00;
+    const totalFinal = totalCarrinho.total_produtos + frete;
+    
+    console.log('💰 Total calculado:', {
+      produtos: totalCarrinho.total_produtos,
+      frete,
+      total: totalFinal
+    });
+    
+    // 3. Criar objeto de endereço
+    let enderecoFormatado = '';
+    if (endereco_entrega) {
+      if (typeof endereco_entrega === 'object') {
+        const { bairro, cidade, estado, numero, complemento } = endereco_entrega;
+        enderecoFormatado = `${bairro}, ${cidade} - ${estado}, Nº ${numero}${complemento ? `, ${complemento}` : ''}`;
+      } else {
+        enderecoFormatado = endereco_entrega;
+      }
+    }
+    
+    // 4. Criar pedido
+    const pedidoData = {
+      idusuarios: userId,
+      total: totalFinal,
+      metodo_pagamento: metodo_pagamento || 'Cartão de Crédito',
+      endereco_entrega: enderecoFormatado || 'Endereço não informado'
+    };
+    
+    console.log('📦 Dados do pedido:', pedidoData);
+    
+    const resultado = await criarPedidoCompleto(pedidoData);
+    
+    // 5. Retornar sucesso
+    res.status(201).json({
+      sucesso: true,
+      mensagem: 'Compra finalizada com sucesso!',
+      pedido: {
+        id_pedido: resultado.pedido.id_pedido,
+        total: resultado.pedido.total,
+        status: resultado.pedido.status_geral,
+        data_pedido: resultado.pedido.data_pedido
+      },
+      detalhes: {
+        total_itens: resultado.total_itens,
+        total_pago: `R$ ${totalFinal.toFixed(2)}`,
+        metodo_pagamento: pedidoData.metodo_pagamento
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao finalizar compra:', error);
+    res.status(500).json({
+      sucesso: false,
+      erro: 'Erro ao finalizar compra',
+      detalhes: error.message
+    });
+  }
+});
+
+// ==========================================
+// 📋 ROTA PARA RESUMO DA COMPRA
+// ==========================================
+
+app.get('/api/pagamento/resumo', autenticar, async (req, res) => {
+  try {
+    const userId = req.session.user.idusuarios;
+    
+    // 1. Buscar itens do carrinho
+    const carrinhoItens = await getCarrinhoByUserId(userId);
+    
+    if (carrinhoItens.length === 0) {
+      return res.status(400).json({
+        sucesso: false,
+        erro: 'Carrinho vazio',
+        mensagem: 'Nenhum produto no carrinho'
+      });
+    }
+    
+    // 2. Calcular totais
+    const totalCarrinho = await calcularTotalCarrinho(userId);
+    const frete = 15.00;
+    const totalFinal = totalCarrinho.total_produtos + frete;
+    
+    // 3. Buscar dados do usuário
+    const client = await pool.connect();
+    const usuarioResult = await client.query(
+      'SELECT nome_usuario, email_user, numero FROM usuarios WHERE idusuarios = $1',
+      [userId]
+    );
+    
+    // 4. Buscar endereço do usuário
+    const enderecoResult = await client.query(
+      'SELECT * FROM endereco WHERE idusuarios = $1',
+      [userId]
+    );
+    
+    client.release();
+    
+    const usuario = usuarioResult.rows[0] || {};
+    const endereco = enderecoResult.rows[0] || null;
+    
+    // 5. Montar resposta
+    res.json({
+      sucesso: true,
+      usuario: {
+        nome: usuario.nome_usuario || 'Nome não informado',
+        telefone: usuario.numero || 'Telefone não informado',
+        email: usuario.email_user || 'Email não informado'
+      },
+      endereco: endereco ? {
+        cep: endereco.cep,
+        bairro: endereco.bairro,
+        cidade: endereco.cidade,
+        estado: endereco.estado,
+        numero: endereco.numero,
+        complemento: endereco.complemento
+      } : null,
+      produtos: carrinhoItens.map(item => ({
+        id_produto: item.id_produto,
+        nome: item.nome_produto,
+        descricao: item.descricao,
+        valor_unitario: item.valor_produto,
+        quantidade: item.quantidade,
+        subtotal: item.valor_produto * item.quantidade,
+        imagem: item.imagem_url,
+        tamanho: item.tamanho,
+        cor: item.cor
+      })),
+      resumo_pagamento: {
+        quantidade_produtos: totalCarrinho.quantidade_total,
+        valor_produtos: totalCarrinho.total_produtos,
+        frete: frete,
+        total_a_pagar: totalFinal,
+        valores_formatados: {
+          produtos: `R$ ${totalCarrinho.total_produtos.toFixed(2)}`,
+          frete: `R$ ${frete.toFixed(2)}`,
+          total: `R$ ${totalFinal.toFixed(2)}`
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao gerar resumo:', error);
+    res.status(500).json({
+      sucesso: false,
+      erro: 'Erro ao gerar resumo da compra'
+    });
+  }
+});
+
+// ==========================================
+// 📦 ROTA PARA CRIAR PEDIDOS (CORRIGIDA)
+// ==========================================
+
+// Rota POST para criar pedido - ADICIONE ESTA ROTA
+app.post('/api/pedidos', autenticar, async (req, res) => {
+  console.log('📦 Recebendo requisição para criar pedido...');
+  
+  try {
+    const { total, metodo_pagamento, endereco_entrega, itens } = req.body;
+    const userId = req.session.user.idusuarios;
+    
+    console.log('📋 Dados do pedido:', {
+      userId,
+      total,
+      metodo_pagamento,
+      endereco_entrega,
+      quantidade_itens: itens?.length || 0
+    });
+    
+    // Validação básica
+    if (!itens || itens.length === 0) {
+      return res.status(400).json({
+        sucesso: false,
+        erro: 'Nenhum item no pedido',
+        mensagem: 'Adicione produtos ao carrinho antes de finalizar a compra'
+      });
+    }
+    
+    if (!total || total <= 0) {
+      return res.status(400).json({
+        sucesso: false,
+        erro: 'Total inválido',
+        mensagem: 'O total do pedido é inválido'
+      });
+    }
+    
+    if (!metodo_pagamento) {
+      return res.status(400).json({
+        sucesso: false,
+        erro: 'Método de pagamento não informado',
+        mensagem: 'Selecione uma forma de pagamento'
+      });
+    }
+    
+    // Verificar se o usuário tem produtos no carrinho
+    const carrinhoItens = await getCarrinhoByUserId(userId);
+    if (carrinhoItens.length === 0) {
+      return res.status(400).json({
+        sucesso: false,
+        erro: 'Carrinho vazio',
+        mensagem: 'Seu carrinho está vazio'
+      });
+    }
+    
+    // Preparar dados do pedido
+    const pedidoData = {
+      idusuarios: userId,
+      total: parseFloat(total),
+      metodo_pagamento,
+      endereco_entrega: endereco_entrega || 'Endereço não informado',
+      itens: carrinhoItens.map(item => ({
+        id_produto: item.id_produto,
+        quantidade: item.quantidade,
+        preco_unitario: item.valor_produto,
+        tamanho: item.tamanho || '',
+        cor: item.cor || ''
+      }))
+    };
+    
+    console.log('🛒 Criando pedido com dados:', pedidoData);
+    
+    // Criar pedido usando função existente
+    const resultado = await criarPedidoCompleto(pedidoData);
+    
+    console.log('✅ Pedido criado com sucesso:', resultado.pedido.id_pedido);
+      console.log('🤡:', resultado.pedido.total);
+
+    res.status(201).json({
+      sucesso: true,
+      mensagem: 'Pedido criado com sucesso!',
+      pedido: {
+        id_pedido: resultado.pedido.id_pedido,
+        total: resultado.pedido.total,
+        status_geral: resultado.pedido.status_geral,
+        data_pedido: resultado.pedido.data_pedido,
+        metodo_pagamento: resultado.pedido.metodo_pagamento
+      },
+      detalhes: {
+        total_itens: resultado.total_itens,
+        total_pago: `R$ ${resultado.pedido.total}`
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao criar pedido:', error);
+    
+    // Retornar erro específico para o frontend
+    let mensagemErro = 'Erro ao criar pedido';
+    let statusCode = 500;
+    
+    if (error.message.includes('Estoque insuficiente')) {
+      mensagemErro = error.message;
+      statusCode = 400;
+    } else if (error.message.includes('carrinho')) {
+      mensagemErro = 'Erro ao processar carrinho de compras';
+    }
+    
+    res.status(statusCode).json({
+      sucesso: false,
+      erro: mensagemErro,
+      detalhes: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+
+// Rota de teste rápida
+app.get('/api/teste-carrinho', autenticar, async (req, res) => {
+  try {
+    const userId = req.session.user.idusuarios;
+    
+    // Testar se pode adicionar ao carrinho
+    const testeAdicao = await addToCarrinho({
+      idusuarios: userId,
+      id_produto: 1, // ID de um produto existente
+      quantidade: 2,
+      tamanho: 'M',
+      cor: 'Azul'
+    });
+    
+    // Ver carrinho
+    const carrinho = await getCarrinhoByUserId(userId);
+    
+    // Calcular total
+    const total = await calcularTotalCarrinho(userId);
+    
+    res.json({
+      sucesso: true,
+      teste_adicao: testeAdicao,
+      carrinho: carrinho,
+      total: total,
+      status: 'Carrinho funcionando!'
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro no teste:', error);
+    res.status(500).json({ erro: error.message });
+  }
 });
 
 // ==========================================
