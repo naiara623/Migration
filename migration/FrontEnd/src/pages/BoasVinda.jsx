@@ -22,7 +22,7 @@ function BoasVindasContent() {
         <Hero />
         <HelpSection />
         <ProductCategories />
-        <Featured />
+        {/* <Featured /> */}
    
       </main>
       <Footer />

@@ -121,8 +121,8 @@
 
   "modais": {
     "modal": {
-      "cadas": "Cadastro realizado com sucesso!",
-      "logar": "Login realizado com sucesso!"
+      "cadas": "Cadastro realizado!",
+      "logar": "Login realizado!"
 
     }
   },
