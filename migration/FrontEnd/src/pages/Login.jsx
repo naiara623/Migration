@@ -58,7 +58,7 @@ const handleLogin = async e => {
     if (responseAdm.ok && dataAdm.sucesso) {
       // É ADMINISTRADOR - redirecionar para tela de ADM
       setShowModal(true)
-      setTimeout(() => navigate('/perfiladm'), 2000) // Nova rota para ADM
+      setTimeout(() => navigate('/perfiladm '), 3000) // Nova rota para ADM
       return
     }
 

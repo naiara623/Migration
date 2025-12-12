@@ -80,7 +80,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   /* font-weight: bold; */
-  width: 30%;
+  width: 35%;
   height: 10%;
   position: sticky
   
@@ -259,10 +259,11 @@
 
 .NomeProduct{
     /* border: 2px solid red; */
-    width: 71%;
+    width: 100%;
     color: var(--text-mudar);
     position: relative;
-    left: 5%;
+    left: 1%;
+    top: -13%;
     display: flex;
     align-items: center;
 }

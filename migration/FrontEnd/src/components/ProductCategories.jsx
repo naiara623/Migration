@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import "../i18n"
 
 const categories = [
-  { id: 1, name: 'Malas e Mochilas', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
-  { id: 2, name: 'Roupas', image: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
-  { id: 3, name: 'Acessórios', image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
-  { id: 4, name: 'Calçados', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
+  { id: 1, name: 'Moda de Viagem', image: 'https://media.istockphoto.com/id/1499540657/pt/foto/blue-suitcase.jpg?s=612x612&w=0&k=20&c=QCz1q6bJwu1MgPsRwDiHpD40gnt7gYW5mNjEoNkXlXQ=' },
+  { id: 2, name: 'Lembrancas', image: 'https://i.pinimg.com/474x/89/6a/b6/896ab6aafcf72358c83feffa375d7481.jpg' },
+  { id: 3, name: 'Trilhas', image: 'https://trilhaserumos.com.br/wp-content/uploads/2014/11/Commuter-35-frente-1200x1200-768x768.jpg' },
+  { id: 4, name: 'Tecnologia de viagem', image: 'https://zyrontech.com.au/cdn/shop/files/powaflex-20000mah-power-bank-941913.jpg?v=1726767719' },
 ];
 
 const ProductCategories = () => {

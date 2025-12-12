@@ -27,22 +27,22 @@ Acesse o protótipo completo no Figma:
 
 # 🤖 IA no Migration
 
-Como adicionariamos a IA (Inteligencia artificial) em nosso projeto? 
+    Como adicionariamos a IA (Inteligencia artificial) em nosso projeto? 
 
-- Atendimento ao cliente: 
- Chatbot para tirar dúvidas, ajudar na navegação e recomendar produtos.
+    - Atendimento ao cliente: 
+    Chatbot para tirar dúvidas, ajudar na navegação e recomendar produtos.
 
-- Análise de feedback:
- Sugerir itens com base no perfil e histórico do usuário.
+    - Análise de feedback:
+    Sugerir itens com base no perfil e histórico do usuário.
 
-- Guia Interativo:
-Explicar como usar a loja, mostrar novidades ou promoções.
+    - Guia Interativo:
+    Explicar como usar a loja, mostrar novidades ou promoções.
 
-- Recomendações de produtos:
-Facilitar o acesso de pessoas de outros países.
+    - Recomendações de produtos:
+    Facilitar o acesso de pessoas de outros países.
 
-- Detecção de fraudes:
-Proteger transações e dados dos usuários.
+    - Detecção de fraudes:
+    Proteger transações e dados dos usuários.
 
-- Entregas:
-Avisar quando o produto estiver em rota para o endereço
+    - Entregas:
+    Avisar quando o produto estiver em rota para o endereço

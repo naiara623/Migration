@@ -151,7 +151,6 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
     setLoading(true);
 
     try {
-      // Preparar dados do pedido
       const pedidoData = {
         total: parseFloat(resumoPedido.totalAPagar),
         metodo_pagamento: resumoPedido.metodoPagamento,

@@ -1080,7 +1080,7 @@ app.get('/api/meus-produtos', autenticar, verificarAdmin, async (req, res) => {
       detalhes: error.message
     });
   }
-});
+}); 
 
 // Rota protegida para cadastrar produto (SOMENTE ADMIN)
 app.post('/api/produtos', autenticar, verificarAdmin, upload.single('imagem_url'), async (req, res) => {

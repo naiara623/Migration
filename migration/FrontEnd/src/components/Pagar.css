@@ -8,7 +8,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: #324973a3;
+  background-color: #324973b1; /* Nova cor de fundo */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,16 +21,18 @@
    ============================================ */
 
 .modal-content-pagar {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: var(--modal-primary);
-  border-radius: 8px;
+  background-color: #F7F7F7; /* Fundo branco dentro do contêiner */
+  /* border: 2px solid black; Borda preta do contêiner */
+  border-radius: 12px;
   width: 50%;
   height: 94%;
-  /* border: 3px solid rgb(0, 217, 255); */
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  color: #324973; /* Cor das fontes */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* ============================================
@@ -38,7 +40,6 @@
    ============================================ */
 
 .pagar-content-wrapper {
-    
   width: 100%;
   height: 100%;
   padding: 24px;
@@ -53,10 +54,10 @@
    ============================================ */
 
 .pagar-header-section {
-  background-color: #ffffff;
+  background-color: rgba(234, 202, 179, 0.05); /* Versão clara da cor de destaque */
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #324973; /* Borda com cor das fontes */
   padding: 24px;
   flex-shrink: 0;
 }
@@ -64,14 +65,28 @@
 .pagar-header-title {
   font-size: 24px;
   font-weight: 700;
-  color: #0f172a;
+  color: #324973; /* Cor das fontes */
   margin: 0 0 8px 0;
+  border-bottom: 2px solid #09090993; /* Cor de destaque */
+  padding-bottom: 10px;
 }
 
 .pagar-header-subtitle {
   font-size: 14px;
-  color: #475569;
+  color: #324973; /* Cor das fontes */
   margin: 0;
+  opacity: 0.8;
+}
+
+.pagar-loading-message {
+  color: #324973; /* Cor das fontes */
+  font-size: 14px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: rgba(234, 202, 179, 0.1); /* Versão clara da cor de destaque */
+  border-radius: 6px;
+  border: 1px solid #eacab393; /* Cor de destaque */
+  display: inline-block;
 }
 
 /* ============================================
@@ -81,8 +96,10 @@
 .pagar-section-title {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #324973; /* Cor das fontes */
   margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eacab393; /* Cor de destaque */
 }
 
 /* ============================================
@@ -90,10 +107,10 @@
    ============================================ */
 
 .pagar-address-section {
-  background-color: #ffffff;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #324973; /* Borda com cor das fontes */
   padding: 24px;
   flex-shrink: 0;
 }
@@ -104,15 +121,15 @@
   gap: 12px;
   margin-bottom: 20px;
   padding: 12px;
-  background-color: #f8fafc;
+  background-color: rgba(234, 202, 179, 0.05); /* Versão clara da cor de destaque */
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #324973; /* Borda com cor das fontes */
 }
 
 .pagar-user-icon {
   width: 24px;
   height: 24px;
-  color: #2563eb;
+  color: #324973; /* Cor das fontes */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,11 +139,11 @@
 .pagar-user-name {
   flex: 1;
   padding: 8px 12px;
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
+  background-color: white;
+  border: 1px solid #324973; /* Borda com cor das fontes */
   border-radius: 6px;
   font-size: 14px;
-  color: #0f172a;
+  color: #324973; /* Cor das fontes */
   font-weight: 600;
   font-family: inherit;
   outline: none;
@@ -157,16 +174,16 @@
 .pagar-form-label {
   font-size: 14px;
   font-weight: 600;
-  color: #475569;
+  color: #324973; /* Cor das fontes */
 }
 
 .pagar-form-input {
   padding: 10px 12px;
-  background-color: #f8fafc;
-  border: 1px solid #cbd5e1;
+  background-color: white;
+  border: 1px solid #324973; /* Borda com cor das fontes */
   border-radius: 8px;
   font-size: 14px;
-  color: #0f172a;
+  color: #324973; /* Cor das fontes */
   font-family: inherit;
   outline: none;
   transition: all 0.3s ease;
@@ -174,22 +191,22 @@
 
 .pagar-form-input:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-  background-color: #ffffff;
+  border-color: #eacab393; /* Cor de destaque no foco */
+  box-shadow: 0 0 0 2px rgba(234, 202, 179, 0.3); /* Sombra com cor de destaque */
+  background-color: white;
 }
 
 .pagar-form-input::placeholder {
-  color: #94a3b8;
+  color: #a0aec0;
 }
 
 .pagar-form-select {
   padding: 10px 12px;
-  background-color: #f8fafc;
-  border: 1px solid #cbd5e1;
+  background-color: white;
+  border: 1px solid #324973; /* Borda com cor das fontes */
   border-radius: 8px;
   font-size: 14px;
-  color: #0f172a;
+  color: #324973; /* Cor das fontes */
   font-family: inherit;
   outline: none;
   transition: all 0.3s ease;
@@ -198,9 +215,38 @@
 
 .pagar-form-select:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-  background-color: #ffffff;
+  border-color: #eacab393; /* Cor de destaque no foco */
+  box-shadow: 0 0 0 2px rgba(234, 202, 179, 0.3); /* Sombra com cor de destaque */
+  background-color: white;
+}
+
+/* ============================================
+   AVISO E LINKS
+   ============================================ */
+
+.pagar-aviso-link,
+.pagar-aviso-endereco {
+  margin-top: 5px;
+}
+
+.pagar-aviso-link a,
+.pagar-aviso-endereco a {
+  color: #324973; /* Cor das fontes */
+  text-decoration: none;
+  font-weight: 600;
+  padding: 4px 8px;
+  background-color: rgba(234, 202, 179, 0.2); /* Versão clara da cor de destaque */
+  border-radius: 4px;
+  border: 1px solid #eacab393; /* Cor de destaque */
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.pagar-aviso-link a:hover,
+.pagar-aviso-endereco a:hover {
+  background-color: #eacab393; /* Cor de destaque no hover */
+  color: #324973; /* Cor das fontes */
+  transform: translateY(-2px);
 }
 
 /* ============================================
@@ -208,10 +254,10 @@
    ============================================ */
 
 .pagar-products-section {
-  background-color: #ffffff;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #324973; /* Borda com cor das fontes */
   padding: 24px;
   flex-shrink: 0;
 }
@@ -227,21 +273,22 @@
   align-items: center;
   gap: 16px;
   padding: 12px;
-  background-color: #f8fafc;
+  background-color: rgba(234, 202, 179, 0.05); /* Versão clara da cor de destaque */
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #324973; /* Borda com cor das fontes */
 }
 
 .pagar-product-image {
   width: 60px;
   height: 60px;
-  background-color: #e2e8f0;
+  background-color: rgba(234, 202, 179, 0.2); /* Versão clara da cor de destaque */
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
+  border: 1px solid #324973; /* Borda com cor das fontes */
 }
 
 .pagar-product-image img {
@@ -257,14 +304,15 @@
 .pagar-product-name {
   font-size: 14px;
   font-weight: 600;
-  color: #0f172a;
+  color: #324973; /* Cor das fontes */
   margin: 0;
 }
 
 .pagar-product-specs {
   font-size: 12px;
-  color: #64748b;
+  color: #324973; /* Cor das fontes */
   margin: 4px 0 0 0;
+  opacity: 0.8;
 }
 
 .pagar-product-price {
@@ -276,22 +324,31 @@
 
 .pagar-product-quantity {
   font-size: 12px;
-  color: #64748b;
+  color: #324973; /* Cor das fontes */
   margin: 0;
+  opacity: 0.8;
 }
 
 .pagar-product-total {
   font-size: 14px;
   font-weight: 700;
-  color: #2563eb;
+  color: #324973; /* Cor das fontes */
   margin: 0;
+  background-color: rgba(234, 202, 179, 0.3); /* Cor de destaque como fundo */
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #eacab393; /* Cor de destaque */
 }
 
 .pagar-empty-cart {
   text-align: center;
   padding: 24px;
-  color: #64748b;
+  color: #324973; /* Cor das fontes */
   font-size: 14px;
+  opacity: 0.7;
+  border: 1px dashed #324973; /* Borda com cor das fontes */
+  border-radius: 8px;
+  background-color: rgba(234, 202, 179, 0.05); /* Versão clara da cor de destaque */
 }
 
 /* ============================================
@@ -299,10 +356,10 @@
    ============================================ */
 
 .pagar-payment-section {
-  background-color: #ffffff;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #324973; /* Borda com cor das fontes */
   padding: 24px;
   flex-shrink: 0;
 }
@@ -325,7 +382,7 @@
   flex-direction: column;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #eacab393; /* Cor de destaque */
 }
 
 .pagar-summary-item {
@@ -337,14 +394,18 @@
 
 .pagar-summary-label {
   font-size: 14px;
-  color: #475569;
+  color: #324973; /* Cor das fontes */
   font-weight: 500;
 }
 
 .pagar-summary-value {
   font-size: 14px;
-  color: #0f172a;
+  color: #324973; /* Cor das fontes */
   font-weight: 600;
+  background-color: rgba(234, 202, 179, 0.2); /* Versão clara da cor de destaque */
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #eacab393; /* Cor de destaque */
 }
 
 .pagar-summary-total {
@@ -352,22 +413,26 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background-color: #eff6ff;
+  background-color: rgba(234, 202, 179, 0.1); /* Versão clara da cor de destaque */
   border-radius: 8px;
-  border: 1px solid #bfdbfe;
+  border: 2px solid #eacab393; /* Cor de destaque */
   margin-top: 12px;
 }
 
 .pagar-summary-total-label {
   font-size: 16px;
-  color: #0f172a;
+  color: #324973; /* Cor das fontes */
   font-weight: 700;
 }
 
 .pagar-summary-total-value {
   font-size: 18px;
-  color: #2563eb;
+  color: #324973; /* Cor das fontes */
   font-weight: 700;
+  background-color: #eacab393; /* Cor de destaque */
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #324973; /* Borda com cor das fontes */
 }
 
 /* ============================================
@@ -383,20 +448,22 @@
 .pagar-btn-cancel {
   flex: 1;
   padding: 12px 24px;
-  background-color: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  background-color: white;
+  border: 2px solid #324973; /* Borda com cor das fontes */
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #475569;
+  color: #324973; /* Cor das fontes */
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: inherit;
 }
 
 .pagar-btn-cancel:hover:not(:disabled) {
-  background-color: #e2e8f0;
-  border-color: #94a3b8;
+  background-color: #324973; /* Cor das fontes no hover */
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(50, 73, 115, 0.3);
 }
 
 .pagar-btn-cancel:disabled {
@@ -407,20 +474,22 @@
 .pagar-btn-confirm {
   flex: 1;
   padding: 12px 24px;
-  background-color: #2563eb;
-  border: none;
+  background-color: #eacab393; /* Cor de destaque */
+  border: 2px solid #324973; /* Borda com cor das fontes */
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
+  color: #324973; /* Cor das fontes */
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: inherit;
 }
 
 .pagar-btn-confirm:hover:not(:disabled) {
-  background-color: #1d4ed8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  background-color: #324973; /* Cor das fontes no hover */
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(234, 202, 179, 0.4);
 }
 
 .pagar-btn-confirm:active:not(:disabled) {
@@ -441,16 +510,16 @@
 }
 
 .pagar-content-wrapper::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(234, 202, 179, 0.1); /* Versão clara da cor de destaque */
 }
 
 .pagar-content-wrapper::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #324973b1; /* Cor de destaque */
   border-radius: 4px;
 }
 
 .pagar-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(234, 202, 179, 0.8); /* Cor de destaque mais opaca */
 }
 
 /* ============================================
