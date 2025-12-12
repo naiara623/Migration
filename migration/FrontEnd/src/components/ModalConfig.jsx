@@ -124,73 +124,65 @@ export default function ModalConfig({ onClose, isOpen, product, onAddCarrinho })
     }));
   };
 
-  // ✅ CORRIGIDO: Função para adicionar ao carrinho
-  const handleAddToCart = async () => {
-    try {
-      console.log('🛒 Tentando adicionar produto ao carrinho:', product);
-      
-      // Verificar se usuário está logado
-      const userCheck = await fetch('http://localhost:3001/api/check-session', {
-        credentials: 'include'
-      });
-      
-      const sessionData = await userCheck.json();
-      
-      if (!sessionData.autenticado) {
-        alert("Você precisa estar logado para adicionar ao carrinho.");
-        return;
-      }
-
-      console.log('✅ Usuário autenticado, enviando dados...');
-      
-      // Combinar todas as seleções em uma string para o campo 'cor'
-      const corCompleta = [
-        selections.corDentro && `Dentro: ${selections.corDentro}`,
-        selections.corFora && `Fora: ${selections.corFora}`,
-        selections.material && `Material: ${selections.material}`,
-        selections.estampa && `Estampa: ${selections.estampa}`
-      ].filter(Boolean).join(' | ');
-
-            const configuracaoProduto = {
-            tamanho: selections.tamanho,
-            corDentro: selections.corDentro,
-            corFora: selections.corFora,
-            material: selections.material,
-            estampa: selections.estampa}
-
-      const carrinhoData = {
-            id_produto: product.id_produto,
-            quantidade: 1,
-            tamanho: selections.tamanho,
-            cor: `Dentro: ${selections.corDentro} | Fora: ${selections.corFora} | Material: ${selections.material} | Estampa: ${selections.estampa}`
-            
-        };
-
-       console.log('📦 Dados do carrinho com configuração:', carrinhoData);
-
-        const response = await fetch('http://localhost:3001/api/carrinho', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(carrinhoData),
-        });
-
-
-      const responseData = await response.json();
-      
-      if (response.ok) {
-        console.log('✅ Produto adicionado com sucesso:', responseData);
-        alert('✅ Produto adicionado ao carrinho!');
-        if (onClose) onClose();
-      } else {
-        console.error('❌ Erro na resposta:', responseData);
-        alert('❌ ' + (responseData.erro || 'Erro ao adicionar ao carrinho'));
-      }
-     } catch (error) {
-        console.error('❌ Erro ao adicionar ao carrinho:', error);
-        alert('❌ Erro de conexão. Tente novamente.');
+ // ✅ ATUALIZADO: Função para adicionar ao carrinho com a nova estrutura
+const handleAddToCart = async () => {
+  try {
+    console.log('🛒 Tentando adicionar produto ao carrinho:', product);
+    
+    // Verificar se usuário está logado
+    const userCheck = await fetch('http://localhost:3001/api/check-session', {
+      credentials: 'include'
+    });
+    
+    const sessionData = await userCheck.json();
+    
+    if (!sessionData.autenticado) {
+      alert("Você precisa estar logado para adicionar ao carrinho.");
+      return;
     }
-  };
+
+    console.log('✅ Usuário autenticado, enviando dados...');
+    
+    // Preparar dados para a nova estrutura do carrinho
+    const carrinhoData = {
+      id_produto: product.id_produto,
+      quantidade: 1,
+      tamanho: selections.tamanho,
+      cor1: selections.corDentro, // AGORA cor1 e cor2 separados
+      cor2: selections.corFora,
+      material: selections.material,
+      estampas: selections.estampa
+    };
+
+    console.log('📦 Dados do carrinho (nova estrutura):', carrinhoData);
+
+    // Enviar para a API atualizada
+    const response = await fetch('http://localhost:3001/api/carrinho', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(carrinhoData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('❌ Erro na resposta:', errorData);
+      throw new Error(errorData.erro || 'Erro ao adicionar ao carrinho');
+    }
+
+    const responseData = await response.json();
+    
+    console.log('✅ Produto adicionado com sucesso:', responseData);
+    alert('✅ Produto adicionado ao carrinho!');
+    
+    // Fechar modal
+    if (onClose) onClose();
+    
+  } catch (error) {
+    console.error('❌ Erro ao adicionar ao carrinho:', error);
+    alert('❌ ' + (error.message || 'Erro de conexão. Tente novamente.'));
+  }
+};
 
   return (
     <div className="modal-mudar" onClick={onClose}>

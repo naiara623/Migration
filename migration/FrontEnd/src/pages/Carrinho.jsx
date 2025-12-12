@@ -87,41 +87,87 @@ const desconto = appliedCoupon
 const total = subtotal - desconto;
 
 
-  // ✅ ATUALIZADO: Buscar produtos do carrinho
-  const fetchCarrinho = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('http://localhost:3001/api/carrinho', { 
-        credentials: 'include' 
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Erro HTTP: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('📦 Itens do carrinho:', data);
-      
-      const formatted = data.map(item => ({
-        id: item.id_carrinho,
-        id_produto: item.id_produto,
-        name: item.nome_produto,
-        price: parseFloat(item.valor_produto),
-        quantity: item.quantidade,
-        tamanho: item.tamanho || '',
-        cor: item.cor || '',
-        image: item.imagem_url,
-        checked: false
-      }));
-      
-      setProducts(formatted);
-    } catch (err) {
-      console.error('❌ Erro ao buscar carrinho:', err);
-      setProducts([]);
-    } finally {
-      setLoading(false);
+
+
+// No componente Carrinho.js, atualize a função fetchCarrinho:
+const fetchCarrinho = async () => {
+  try {
+    setLoading(true);
+    const response = await fetch('http://localhost:3001/api/carrinho', { 
+      credentials: 'include' 
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Erro HTTP: ${response.status}`);
     }
-  };
+    
+    const data = await response.json();
+    console.log('📦 Itens do carrinho (nova estrutura):', data);
+    
+    const formatted = data.map(item => ({
+      id: item.id_carrinho, // AGORA é id_camrho
+      id_produto: item.id_produto,
+      name: item.nome_produto,
+      price: parseFloat(item.valor_produto),
+      quantity: item.quantidade,
+      tamanho: item.tamanho || '',
+      cor1: item.cor1 || '',
+      cor2: item.cor2 || '',
+      material: item.material || '',
+      estampas: item.estampas || '',
+      image: item.imagem_url,
+      checked: false
+    }));
+    
+    setProducts(formatted);
+  } catch (err) {
+    console.error('❌ Erro ao buscar carrinho:', err);
+    setProducts([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ✅ ATUALIZADO: Atualizar quantidade no carrinho com os campos extras
+const updateQuantity = async (id, newQuantity) => {
+  if (newQuantity < 1) return;
+  
+  try {
+    const productToUpdate = products.find(p => p.id === id);
+    
+    const response = await fetch(`http://localhost:3001/api/carrinho/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        quantidade: newQuantity,
+        tamanho: productToUpdate.tamanho,
+        cor1: productToUpdate.cor1,
+        cor2: productToUpdate.cor2,
+        material: productToUpdate.material,
+        estampas: productToUpdate.estampas
+      }),
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      setProducts(products.map(p => 
+        p.id === id ? { ...p, quantity: newQuantity } : p
+      ));
+    } else {
+      const errorData = await response.json();
+      console.error('❌ Erro ao atualizar quantidade:', errorData);
+      alert('❌ Erro ao atualizar quantidade: ' + (errorData.erro || 'Erro desconhecido'));
+    }
+  } catch (error) {
+    console.error('❌ Erro ao atualizar quantidade:', error);
+    alert('❌ Erro de conexão ao atualizar quantidade');
+  }
+};
+
+
+  
 
   useEffect(() => {
     const checkAuthAndFetchCart = async () => {
@@ -147,33 +193,6 @@ const total = subtotal - desconto;
     checkAuthAndFetchCart();
   }, []);
 
-  // ✅ ATUALIZADO: Atualizar quantidade no carrinho
-  const updateQuantity = async (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    
-    try {
-      const response = await fetch(`http://localhost:3001/api/carrinho/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ quantidade: newQuantity }),
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        // Atualizar localmente para resposta mais rápida
-        setProducts(products.map(p => 
-          p.id === id ? { ...p, quantity: newQuantity } : p
-        ));
-      } else {
-        const errorData = await response.json();
-        console.error('❌ Erro ao atualizar quantidade:', errorData);
-      }
-    } catch (error) {
-      console.error('❌ Erro ao atualizar quantidade:', error);
-    }
-  };
 
   // ✅ ATUALIZADO: Remover produto do carrinho
   const handleRemoveProduct = async (id) => {
@@ -392,11 +411,14 @@ const response = await fetch('http://localhost:3001/api/pedidos', {
                     <div className="tamanh-cor">
                       {p.tamanho && <span className="detail-tag">Tamanho: {p.tamanho}</span>}
                       <div className="espacovazio"></div>
-                      {p.cor && <span className="detail-tagC">Cor: {p.cor}</span>}
+                         {p.cor1 && <span className="detail-tagC">Cor1: {p.cor1}</span>}
+    {p.cor2 && <span className="detail-tagC">Cor2: {p.cor2}</span>}
+    {p.material && <span className="detail-tagC">Material: {p.material}</span>}
+    {p.estampas && <span className="detail-tagC">Estampa: {p.estampas}</span>}
                       </div>
 
                       <div className="preco-carinho">
-                        <span className="item-price">R$ {p.price.toFixed(2)}</span>
+                           <span className="item-price">R$ {p.price.toFixed(2)}</span>
                       </div>
 
                       <div className="buttons-carrinho">

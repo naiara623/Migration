@@ -48,10 +48,15 @@ criarPedidoCompleto,
   updateEndereco
 } = require("./db");
 
-// server.js - adicione no topo com os outros imports
-const QueueSmartIntegration = require('./queue-smart-integration');
-const queueSmart = new QueueSmartIntegration('http://52.72.137.244:3000');
 
+
+// server.js - Importe ambas as versões
+const QueueSmartIntegration = require('./queue-smart-integration');
+const QueueSmartIntegrationAvancado = require('./queue-smart-integration-avancado');
+
+// Crie instâncias com a mesma URL
+const queueSmart = new QueueSmartIntegration('http://52.72.137.244:3000');
+const queueSmartAvancado = new QueueSmartIntegrationAvancado('http://52.72.137.244:3000');
 // ==========================================
 // 🛠️ CONFIGURAÇÕES DO SERVIDOR
 // ==========================================
@@ -101,6 +106,8 @@ app.use((req, res, next) => {
   console.log(`🌐 ${req.method} ${req.url}`);
   next();
 });
+
+
 
 
 // Servir arquivos estáticos da pasta uploads
@@ -1199,33 +1206,31 @@ app.get('/api/produtos/:id', autenticar, async (req, res) => {
     res.status(500).json({ erro: 'Erro ao buscar produto' });
   }
 });
-
-// ==========================================
-// 🛒 ROTAS DO CARRINHO (PROTEGIDAS)
-// ==========================================
-
-app.get('/api/carrinho', autenticar, async (req, res) => {
-  try {
-    const carrinhoItens = await getCarrinhoByUserId(req.session.user.idusuarios);
-    res.json(carrinhoItens);
-  } catch (error) {
-    console.error('❌ Erro ao buscar carrinho:', error);
-    res.status(500).json({ erro: 'Erro ao buscar carrinho' });
-  }
-});
+//-------------------------------------------------------------
 
 
 
-// ROTA POST CORRIGIDA - adicione no server.js
+// Rota POST para adicionar ao carrinho - ATUALIZADA PARA NOVA ESTRUTURA
 app.post('/api/carrinho', autenticar, async (req, res) => {
-    const { id_produto, quantidade = 1, tamanho = '', cor = '' } = req.body;
+    const { 
+        id_produto, 
+        quantidade = 1, 
+        tamanho = '', 
+        cor1 = '', 
+        cor2 = '', 
+        material = '', 
+        estampas = '' 
+    } = req.body;
     
-    console.log('🛒 Recebendo requisição para adicionar ao carrinho:', {
+    console.log('🛒 Recebendo requisição para adicionar ao carrinho (nova estrutura):', {
         usuario: req.session.user.idusuarios,
         id_produto,
         quantidade,
         tamanho,
-        cor
+        cor1,
+        cor2,
+        material,
+        estampas
     });
 
     try {
@@ -1234,17 +1239,29 @@ app.post('/api/carrinho', autenticar, async (req, res) => {
         // Verificar se item já existe
         const existingItem = await client.query(
             `SELECT * FROM carrinho 
-             WHERE idusuarios = $1 AND id_produto = $2 AND tamanho = $3 AND cor = $4`,
-            [req.session.user.idusuarios, id_produto, tamanho, cor]
+             WHERE idusuarios = $1 
+             AND id_produto = $2 
+             AND tamanho = $3 
+             AND cor1 = $4
+             AND cor2 = $5
+             AND material = $6
+             AND estampas = $7`,
+            [req.session.user.idusuarios, id_produto, tamanho, cor1, cor2, material, estampas]
         );
 
         if (existingItem.rows.length > 0) {
             // Atualizar quantidade
             const result = await client.query(
                 `UPDATE carrinho SET quantidade = quantidade + $1
-                 WHERE idusuarios = $2 AND id_produto = $3 AND tamanho = $4 AND cor = $5
+                 WHERE idusuarios = $2 
+                 AND id_produto = $3 
+                 AND tamanho = $4 
+                 AND cor1 = $5
+                 AND cor2 = $6
+                 AND material = $7
+                 AND estampas = $8
                  RETURNING *`,
-                [quantidade, req.session.user.idusuarios, id_produto, tamanho, cor]
+                [quantidade, req.session.user.idusuarios, id_produto, tamanho, cor1, cor2, material, estampas]
             );
             client.release();
             return res.json({ 
@@ -1254,10 +1271,11 @@ app.post('/api/carrinho', autenticar, async (req, res) => {
         } else {
             // Inserir novo item
             const result = await client.query(
-                `INSERT INTO carrinho (idusuarios, id_produto, quantidade, tamanho, cor, data_adicionado) 
-                 VALUES ($1, $2, $3, $4, $5, NOW()) 
+                `INSERT INTO carrinho 
+                 (idusuarios, id_produto, quantidade, tamanho, cor1, cor2, material, estampas, data_adicionado) 
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW()) 
                  RETURNING *`,
-                [req.session.user.idusuarios, id_produto, quantidade, tamanho, cor]
+                [req.session.user.idusuarios, id_produto, quantidade, tamanho, cor1, cor2, material, estampas]
             );
             client.release();
             return res.status(201).json({ 
@@ -1274,29 +1292,22 @@ app.post('/api/carrinho', autenticar, async (req, res) => {
     }
 });
 
-// ==========================================
-// 🛒 ROTAS DO CARRINHO (PROTEGIDAS) - CORRIGIDAS
-// ==========================================
-
-app.get('/api/carrinho', autenticar, async (req, res) => {
-  try {
-    const carrinhoItens = await getCarrinhoByUserId(req.session.user.idusuarios);
-    res.json(carrinhoItens);
-  } catch (error) {
-    console.error('❌ Erro ao buscar carrinho:', error);
-    res.status(500).json({ erro: 'Erro ao buscar carrinho' });
-  }
-});
-
-// Rota PUT para atualizar quantidade - CORRIGIDA
+// Rota PUT para atualizar item do carrinho - ATUALIZADA
 app.put('/api/carrinho/:id', autenticar, async (req, res) => {
   try {
-    const id_carinho = req.params.id; // id_carinho (singular)
-    const { quantidade } = req.body;
+    const id_carrinho = req.params.id; // AGORA é id_carrinho
+    const { quantidade, tamanho, cor1, cor2, material, estampas } = req.body;
     
-    console.log(`📝 Atualizando carrinho item ${id_carinho} para quantidade ${quantidade}`);
+    console.log(`📝 Atualizando carrinho item ${id_carrinho}:`, req.body);
     
-    const updatedItem = await updateCarrinhoItem(id_carinho, quantidade);
+    const updatedItem = await updateCarrinhoItem(id_carrinho, {
+      quantidade,
+      tamanho,
+      cor1,
+      cor2,
+      material,
+      estampas
+    });
     
     if (updatedItem.mensagem) {
       res.json({ mensagem: updatedItem.mensagem });
@@ -1311,6 +1322,76 @@ app.put('/api/carrinho/:id', autenticar, async (req, res) => {
     res.status(500).json({ erro: 'Erro ao atualizar carrinho' });
   }
 });
+
+// Rota DELETE para remover item - ATUALIZADA
+app.delete('/api/carrinho/:id', autenticar, async (req, res) => {
+  try {
+    const id_carrinho = req.params.id; // AGORA é id_carrinho
+    
+    console.log(`🗑️ Removendo item ${id_carrinho} do carrinho`);
+    
+    const removedItem = await removeFromCarrinho(id_carrinho);
+    
+    res.json({ 
+      mensagem: 'Item removido do carrinho', 
+      item: removedItem 
+    });
+  } catch (error) {
+    console.error('❌ Erro ao remover do carrinho:', error);
+    res.status(500).json({ erro: 'Erro ao remover do carrinho' });
+  }
+});
+
+// Rota GET para quantidade do carrinho - ATUALIZADA
+app.get('/api/carrinho/quantidade', autenticar, async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'SELECT COALESCE(SUM(quantidade), 0) as quantidade FROM carrinho WHERE idusuarios = $1', 
+      [req.session.user.idusuarios]
+    );
+    client.release();
+    
+    const quantidade = parseInt(result.rows[0].quantidade);
+    res.json({ quantidade });
+  } catch (error) {
+    console.error('❌ Erro ao buscar quantidade do carrinho:', error);
+    res.status(500).json({ erro: 'Erro interno do servidor' });
+  }
+});
+
+
+
+// ==========================================
+// 🛒 ROTAS DO CARRINHO (PROTEGIDAS)
+// ==========================================
+
+app.get('/api/carrinho', autenticar, async (req, res) => {
+  try {
+    const carrinhoItens = await getCarrinhoByUserId(req.session.user.idusuarios);
+    res.json(carrinhoItens);
+  } catch (error) {
+    console.error('❌ Erro ao buscar carrinho:', error);
+    res.status(500).json({ erro: 'Erro ao buscar carrinho' });
+  }
+});
+
+
+// ==========================================
+// 🛒 ROTAS DO CARRINHO (PROTEGIDAS) - CORRIGIDAS
+// ==========================================
+
+app.get('/api/carrinho', autenticar, async (req, res) => {
+  try {
+    const carrinhoItens = await getCarrinhoByUserId(req.session.user.idusuarios);
+    res.json(carrinhoItens);
+  } catch (error) {
+    console.error('❌ Erro ao buscar carrinho:', error);
+    res.status(500).json({ erro: 'Erro ao buscar carrinho' });
+  }
+});
+
+
 
 // 🧹 LIMPAR TODO O CARRINHO
 app.delete('/api/carrinho/limpar', autenticar, async (req, res) => {
@@ -1328,41 +1409,7 @@ app.delete('/api/carrinho/limpar', autenticar, async (req, res) => {
   }
 });
 
-// 🗑️ REMOVER ITEM INDIVIDUAL - CORRIGIDA
-app.delete('/api/carrinho/:id', autenticar, async (req, res) => {
-  try {
-    const id_carinho = req.params.id; // id_carinho (singular)
-    
-    console.log(`🗑️ Removendo item ${id_carinho} do carrinho`);
-    
-    const removedItem = await removeFromCarrinho(id_carinho);
-    
-    res.json({ 
-      mensagem: 'Item removido do carrinho', 
-      item: removedItem 
-    });
-  } catch (error) {
-    console.error('❌ Erro ao remover do carrinho:', error);
-    res.status(500).json({ erro: 'Erro ao remover do carrinho' });
-  }
-});
 
-app.get('/api/carrinho/quantidade', autenticar, async (req, res) => {
-  try {
-    const client = await pool.connect();
-    const result = await client.query(
-      'SELECT COALESCE(SUM(quantidade), 0) as quantidade FROM carrinho WHERE idusuarios = $1', 
-      [req.session.user.idusuarios]
-    );
-    client.release();
-    
-    const quantidade = parseInt(result.rows[0].quantidade);
-    res.json({ quantidade });
-  } catch (error) {
-    console.error('❌ Erro ao buscar quantidade do carrinho:', error);
-    res.status(500).json({ erro: 'Erro interno do servidor' });
-  }
-});
 
 
 
@@ -1620,80 +1667,17 @@ app.get('/api/pedidos', autenticar, async (req, res) => {
 
 // Adicione esta rota ANTES da rota app.listen()
 
+app.post("/api/smart4-callback", (req, res) => {
+    const data = QueueSmartIntegration.processarCallback(req.body);
 
+    console.log("📩 Atualização da máquina:", data);
 
-// Rota para receber callbacks da Queue Smart 4.0 (CORRIGIDA)
-app.post('/api/smart4-callback', async (req, res) => {
-    console.log('🔄 Callback recebido da Queue Smart 4.0:', req.body);
-
-    try {
-        const { itemId, status, stage, progress, payload } = req.body;
-
-        // CORREÇÃO: Buscar por item_id_maquina
-        const client = await pool.connect();
-        
-        const itemProducao = await client.query(
-            `SELECT pr.*, pi.id_pedido, p.nome_produto 
-             FROM producao_itens pr
-             INNER JOIN pedido_itens pi ON pr.id_item = pi.id_item
-             INNER JOIN produtos p ON pr.id_produto = p.id_produto
-             WHERE pr.item_id_maquina = $1 OR pr.order_id = $2
-             LIMIT 1`,
-            [itemId, itemId]
-        );
-
-        if (itemProducao.rows.length === 0) {
-            console.error('❌ Item de produção não encontrado para itemId:', itemId);
-            client.release();
-            return res.status(404).json({ error: 'Item não encontrado' });
-        }
-
-        const producaoItem = itemProducao.rows[0];
-
-        // Atualizar status do item de produção com campos corretos
-        await atualizarStatusProducao(producaoItem.id_producao, {
-            status_maquina: status || producaoItem.status_maquina,
-            estagio_maquina: stage || producaoItem.estagio_maquina,
-            progresso_maquina: progress || producaoItem.progresso_maquina,
-            slot_expedicao: producaoItem.slot_expedicao
-        });
-
-        console.log(`✅ Item ${producaoItem.id_producao} (${producaoItem.nome_produto}) atualizado: ${status} - ${stage} (${progress}%)`);
-
-        // Se o item foi concluído, verificar pedido completo
-        if (status === 'COMPLETED') {
-            console.log(`🎉 Item ${producaoItem.id_producao} concluído!`);
-            
-            // Atualizar status do item do pedido
-            await client.query(
-                `UPDATE pedido_itens 
-                 SET status = 'PRODUZIDO'
-                 WHERE id_item = $1`,
-                [producaoItem.id_item]
-            );
-            
-            // Verificar se todos os itens do pedido estão prontos
-            const statusPedido = await verificarPedidoCompleto(producaoItem.id_pedido);
-            
-            if (statusPedido.completo) {
-                console.log(`🎊 PEDIDO ${producaoItem.id_pedido} COMPLETO! Todos os itens prontos.`);
-                
-                // Atualizar status geral do pedido
-                await client.query(
-                    `UPDATE pedidos SET status_geral = 'PRODUZIDO' WHERE id_pedido = $1`,
-                    [producaoItem.id_pedido]
-                );
-            }
-        }
-
-        client.release();
-        res.status(200).json({ received: true, updated: true });
-
-    } catch (error) {
-        console.error('❌ Erro ao processar callback:', error);
-        res.status(500).json({ error: 'Erro interno', details: error.message });
-    }
+    // Salve isso no banco se quiser
+    res.status(200).send("OK");
 });
+
+
+
 
 // Rota para obter status detalhado do pedido (CORRIGIDA)
 app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
@@ -2938,6 +2922,101 @@ app.get('/api/teste-carrinho', autenticar, async (req, res) => {
     console.error('❌ Erro no teste:', error);
     res.status(500).json({ erro: error.message });
   }
+});
+
+
+// Adicione uma rota de teste para ambas
+app.get('/api/teste-ambas-integrations', async (req, res) => {
+    try {
+        const resultados = [];
+        
+        // Testar versão simples
+        console.log('🧪 Testando QueueSmartIntegration (simples)...');
+        try {
+            const statusSimples = await queueSmart.statusMaquina();
+            resultados.push({
+                versao: 'Simples',
+                status: 'OK',
+                dados: statusSimples
+            });
+        } catch (error) {
+            resultados.push({
+                versao: 'Simples',
+                status: 'ERRO',
+                erro: error.message
+            });
+        }
+        
+        // Testar versão avançada
+        console.log('🧪 Testando QueueSmartIntegrationAvancado...');
+        try {
+            const statusAvancado = await queueSmartAvancado.statusMaquina();
+            resultados.push({
+                versao: 'Avançada',
+                status: 'OK',
+                dados: statusAvancado
+            });
+        } catch (error) {
+            resultados.push({
+                versao: 'Avançada',
+                status: 'ERRO',
+                erro: error.message
+            });
+        }
+        
+        res.json({
+            sucesso: true,
+            timestamp: new Date().toISOString(),
+            resultados
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro no teste das integrações:', error);
+        res.status(500).json({
+            sucesso: false,
+            erro: error.message
+        });
+    }
+});
+
+// server.js - Rotas para versão simples
+app.get('/api/queue-simples/status', async (req, res) => {
+    try {
+        const status = await queueSmart.statusMaquina();
+        res.json({ versao: 'simples', ...status });
+    } catch (error) {
+        res.status(500).json({ erro: error.message });
+    }
+});
+
+// Rotas para versão avançada
+app.get('/api/queue-avancado/status', async (req, res) => {
+    try {
+        const status = await queueSmartAvancado.statusMaquina();
+        res.json({ versao: 'avançada', ...status });
+    } catch (error) {
+        res.status(500).json({ erro: error.message });
+    }
+});
+
+// Rota para testar callback
+app.post("/api/smart4-callback", (req, res) => {
+    try {
+        const data = QueueSmartIntegration.processarCallback(req.body);
+        console.log("📩 Callback recebido:", data);
+        
+        // Aqui você pode salvar no banco se necessário
+        // await salvarCallbackNoBanco(data);
+        
+        res.status(200).json({ 
+            sucesso: true, 
+            mensagem: "Callback processado",
+            dados: data 
+        });
+    } catch (error) {
+        console.error("❌ Erro ao processar callback:", error);
+        res.status(500).json({ erro: error.message });
+    }
 });
 
 // ==========================================
