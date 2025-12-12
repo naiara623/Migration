@@ -57,8 +57,9 @@ function NovoProduct({ products, isSelectionMode, selectedProducts, toggleProduc
               />
             </div>
           )}
-          
-          <div className="product-image">
+
+          <div className="bobesponja-mundo">
+            <div className="product-image">
             {product.imagem_url ? (
               <img 
                 src={`http://localhost:3001${product.imagem_url}`} 
@@ -75,8 +76,8 @@ function NovoProduct({ products, isSelectionMode, selectedProducts, toggleProduc
               📷
             </div>
           </div>
-          
-          <div className="product-info">
+
+ <div className="product-info">
             <h3 className="product-name">{product.nome_produto}</h3>
             
             {renderRating(product)}
@@ -107,6 +108,11 @@ function NovoProduct({ products, isSelectionMode, selectedProducts, toggleProduc
               <FaShoppingCart /> {product.estoque > 0 ? 'Carrinho' : 'Indisponível'}
             </button>
           </div>
+          </div>
+          
+          
+          
+         
         </div>
       ))}
     </div>
