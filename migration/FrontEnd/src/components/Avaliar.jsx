@@ -1,9 +1,8 @@
-
-import React, { useState } from 'react';
+// Componente React atualizado
+import React, { useState, useEffect } from 'react';
 import './Avaliar.css'
 
 function Avaliar({isOpen, onClose}) {
-
     if (!isOpen) return null;
 
     const [rating, setRating] = useState(0);
@@ -12,6 +11,8 @@ function Avaliar({isOpen, onClose}) {
     const [comentario, setComentario] = useState('');
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
+    const [mensagem, setMensagem] = useState('');
+    const [mostrarSucesso, setMostrarSucesso] = useState(false);
     
     const [avaliacoes, setAvaliacoes] = useState([
       {
@@ -23,29 +24,63 @@ function Avaliar({isOpen, onClose}) {
         titulo: 'Produto excelente!',
         comentario: 'Superou minhas expectativas. Qualidade impressionante.',
         util: 12
+      },
+      {
+        id: 2,
+        nome: 'Maria Santos',
+        verificado: false,
+        data: '10/03/2024',
+        rating: 4,
+        titulo: 'Muito bom',
+        comentario: 'Produto de qualidade, entrega rápida. Recomendo!',
+        util: 8
       }
     ]);
+
+    useEffect(() => {
+      if (mostrarSucesso) {
+        const timer = setTimeout(() => {
+          setMostrarSucesso(false);
+        }, 5000);
+        return () => clearTimeout(timer);
+      }
+    }, [mostrarSucesso]);
 
     const handleSubmit = (e) => {
       e.preventDefault();
       
       if (rating === 0) {
-        alert('Por favor, selecione uma nota');
+        setMensagem('Por favor, selecione uma nota');
+        return;
+      }
+      
+      if (!titulo.trim() || !comentario.trim() || !nome.trim() || !email.trim()) {
+        setMensagem('Por favor, preencha todos os campos obrigatórios');
+        return;
+      }
+
+      if (!email.includes('@') || !email.includes('.')) {
+        setMensagem('Por favor, insira um email válido');
         return;
       }
       
       const novaAvaliacao = {
         id: avaliacoes.length + 1,
-        nome: nome || 'Anônimo',
+        nome: nome.trim(),
         verificado: false,
         data: new Date().toLocaleDateString('pt-BR'),
         rating: rating,
-        titulo: titulo,
-        comentario: comentario,
+        titulo: titulo.trim(),
+        comentario: comentario.trim(),
         util: 0
       };
       
+      // Adiciona a nova avaliação no TOPO da lista
       setAvaliacoes([novaAvaliacao, ...avaliacoes]);
+      
+      // Feedback visual
+      setMensagem('');
+      setMostrarSucesso(true);
       
       // Limpar formulário
       setRating(0);
@@ -53,6 +88,7 @@ function Avaliar({isOpen, onClose}) {
       setComentario('');
       setNome('');
       setEmail('');
+      setHoverRating(0);
     };
 
     const handleUtilClick = (id) => {
@@ -81,9 +117,15 @@ function Avaliar({isOpen, onClose}) {
         </div>
       );
     };
+
+    const calcularMediaAvaliacoes = () => {
+      if (avaliacoes.length === 0) return 0;
+      const soma = avaliacoes.reduce((acc, curr) => acc + curr.rating, 0);
+      return (soma / avaliacoes.length).toFixed(1);
+    };
     
-  return (
-     <div className='englobaTudo-Modal' onClick={onClose}>
+    return (
+     <div className='englobaTudo-modal2' onClick={onClose}>
       
          <div className='grande-modal1' onClick={(e) => e.stopPropagation()}>
       
@@ -91,12 +133,30 @@ function Avaliar({isOpen, onClose}) {
              <div className="formulario-secao">
                <h2 className="titulo-principal">Deixe sua avaliação</h2>
                
+               {mostrarSucesso && (
+                 <div className="mensagem-sucesso">
+                   Avaliação enviada com sucesso! Sua avaliação já está visível abaixo.
+                 </div>
+               )}
+               
+               {mensagem && (
+                 <div className="mensagem-erro">
+                   {mensagem}
+                 </div>
+               )}
+               
                <form onSubmit={handleSubmit}>
                  <div className="campo-grupo">
                    <label className="label">Sua nota:</label>
                    <div className="rating-input">
                      {renderStars(rating, true)}
-                     <span className="rating-text">Selecione uma nota</span>
+                     <span className="rating-text">
+                       {rating === 0 ? 'Selecione uma nota' : 
+                        rating === 5 ? 'Excelente!' :
+                        rating === 4 ? 'Muito bom!' :
+                        rating === 3 ? 'Bom' :
+                        rating === 2 ? 'Regular' : 'Ruim'}
+                     </span>
                    </div>
                  </div>
 
@@ -163,46 +223,56 @@ function Avaliar({isOpen, onClose}) {
              </div>
 
              <div className="avaliacoes-secao">
-               <h2 className="titulo-avaliacoes">Avaliações dos clientes</h2>
-               
-               {avaliacoes.map((avaliacao) => (
-                 <div key={avaliacao.id} className="avaliacao-card">
-                   <div className="avaliacao-header">
-                     <div className="usuario-info">
-                       <span className="usuario-nome">{avaliacao.nome}</span>
-                       {avaliacao.verificado && (
-                         <span className="badge-verificado">✓ Verificado</span>
-                       )}
-                     </div>
-                     <span className="avaliacao-data">{avaliacao.data}</span>
-                   </div>
-                   
-                   <div className="avaliacao-rating">
-                     {renderStars(avaliacao.rating)}
-                   </div>
-                   
-                   <h3 className="avaliacao-titulo">{avaliacao.titulo}</h3>
-                   <p className="avaliacao-comentario">{avaliacao.comentario}</p>
-                   
-                   <div className="avaliacao-acoes">
-                     <button 
-                       className="botao-util"
-                       onClick={() => handleUtilClick(avaliacao.id)}
-                     >
-                       👍 Útil ({avaliacao.util})
-                     </button>
-                     <button className="botao-denunciar">Denunciar</button>
-                   </div>
+               <div className="estatisticas-avaliacoes">
+                 <h2 className="titulo-avaliacoes">Avaliações dos clientes</h2>
+                 <div className="media-avaliacoes">
+                   <span className="media-numero">{calcularMediaAvaliacoes()}</span>
+                   <span className="media-texto">de 5 estrelas</span>
+                   <span className="total-avaliacoes">({avaliacoes.length} avaliações)</span>
                  </div>
-               ))}
+               </div>
+               
+               {avaliacoes.length === 0 ? (
+                 <p className="sem-avaliacoes">Seja o primeiro a avaliar este produto!</p>
+               ) : (
+                 avaliacoes.map((avaliacao) => (
+                   <div key={avaliacao.id} className="avaliacao-card">
+                     <div className="avaliacao-header">
+                       <div className="usuario-info">
+                         <span className="usuario-nome">{avaliacao.nome}</span>
+                         {avaliacao.verificado && (
+                           <span className="badge-verificado">✓ Verificado</span>
+                         )}
+                       </div>
+                       <span className="avaliacao-data">{avaliacao.data}</span>
+                     </div>
+                     
+                     <div className="avaliacao-rating">
+                       {renderStars(avaliacao.rating)}
+                     </div>
+                     
+                     <h3 className="avaliacao-titulo">{avaliacao.titulo}</h3>
+                     <p className="avaliacao-comentario">{avaliacao.comentario}</p>
+                     
+                     <div className="avaliacao-acoes">
+                       <button 
+                         className="botao-util"
+                         onClick={() => handleUtilClick(avaliacao.id)}
+                       >
+                         👍 Útil ({avaliacao.util})
+                       </button>
+                       <button className="botao-denunciar">Denunciar</button>
+                     </div>
+                   </div>
+                 ))
+               )}
              </div>
            </div>
       
          </div>
 
       </div>
-
-  );
+    );
 };
 
 export default Avaliar;

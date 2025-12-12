@@ -3,7 +3,7 @@ import './ProdutosAlta.css'
 import Header from '../components/Header';
 import ModalConfig from '../components/ModalConfig';
 import Categorias from '../components/Categorias';
-import { ThemeProvider } from '../ThemeContext';
+// import { ThemeProvider } from '../ThemeContext';
 import { ThemeEffect } from '../ThemeEffect';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';

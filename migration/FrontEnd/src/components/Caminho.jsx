@@ -6,7 +6,7 @@ function Caminho({ isOpen, onClose}) {
      if (!isOpen) return null;
 
   return (
-    <div className='englobaTudo-Modal' onClick={onClose}>
+    <div className='englobaTudo-Modal1' onClick={onClose}>
        <div className='grande-modal2' onClick={(e) => e.stopPropagation()}>
 
         <div className="conteine-1titulo">
@@ -20,10 +20,10 @@ function Caminho({ isOpen, onClose}) {
 
         <div className="conteine-animacao">
 
-                            <div class="loader">
-                  <div class="truckWrapper">
-                    <div class="truckBody">
-                      <svg
+        <div class="loader">
+              <div class="truckWrapper">
+                <div class="truckBody">
+                  <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 198 93"

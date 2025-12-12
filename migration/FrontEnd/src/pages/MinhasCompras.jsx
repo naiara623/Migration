@@ -30,28 +30,49 @@ function MinhasComprasContex() {
         buscarPedidos();
     }, []);
 
-    const buscarPedidos = async () => {
-        try {
-            setCarregando(true);
-            const response = await fetch('http://localhost:3001/api/pedidos', {
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                const dados = await response.json();
-                setPedidos(dados);
-                if (dados.length > 0) {
-                    // Seleciona o pedido mais recente por padrão
-                    setPedidoSelecionado(dados[0]);
-                    buscarStatusDetalhado(dados[0].id_pedido);
-                }
+   const buscarPedidos = async () => {
+    try {
+        setCarregando(true);
+        console.log('🔄 Iniciando busca de pedidos...');
+        
+        const response = await fetch('http://localhost:3001/api/pedidos', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
             }
-        } catch (error) {
-            console.error('Erro ao buscar pedidos:', error);
-        } finally {
-            setCarregando(false);
+        });
+        
+        console.log('📊 Status da resposta:', response.status);
+        console.log('📊 Headers:', response.headers);
+        
+        if (response.status === 401) {
+            console.log('⚠️ Usuário não autenticado - redirecionar para login');
+            // Redirecionar para login
+            window.location.href = '/login';
+            return;
         }
-    };
+        
+        if (response.ok) {
+            const dados = await response.json();
+            console.log('✅ Pedidos recebidos:', dados);
+            setPedidos(dados);
+            if (dados.length > 0) {
+                setPedidoSelecionado(dados[0]);
+                buscarStatusDetalhado(dados[0].id_pedido);
+            }
+        } else {
+            const erro = await response.text();
+            console.error('❌ Erro na resposta:', erro);
+        }
+    } catch (error) {
+        console.error('❌ Erro na requisição:', error);
+        console.error('❌ Tipo de erro:', error.name);
+        console.error('❌ Mensagem:', error.message);
+    } finally {
+        setCarregando(false);
+    }
+};
 
 const buscarStatusDetalhado = async (id_pedido) => {
   try {
@@ -95,38 +116,44 @@ const buscarStatusDetalhado = async (id_pedido) => {
 
     // Função para determinar a etapa atual baseada no status real
     const getEtapaAtual = () => {
-        if (!statusDetalhado) return 0;
+    if (!statusDetalhado) return 0;
 
-        const { pedido, resumo, itens } = statusDetalhado;
+    const { pedido, resumo, itens } = statusDetalhado;
 
-        // Etapa 0: A Pagar (pedido criado mas nenhum item em produção)
-        if (resumo.itens_prontos === 0 && !itens.some(item => 
-            item.unidades.some(unit => unit.status_maquina === 'PROCESSING'))) {
-            return 0;
-        }
+    if (!resumo || !Array.isArray(itens)) return 0;
 
-        // Etapa 1: Preparando (alguns itens em produção)
-        if (resumo.itens_prontos < resumo.total_itens) {
-            return 1;
-        }
+    // Etapa 0: A Pagar
+    const temItemProcessando = itens.some(item =>
+        Array.isArray(item.unidades) &&
+        item.unidades.some(unit => unit.status_maquina === 'PROCESSING')
+    );
 
-        // Etapa 2: A Caminho (todos os itens prontos, mas não entregue)
-        if (resumo.completo && pedido.status_geral === 'COMPLETO') {
-            return 2;
-        }
+    if (resumo.itens_prontos === 0 && !temItemProcessando) {
+        return 0;
+    }
 
-        // Etapa 3: Avaliar (entregue - você pode adicionar lógica de entrega depois)
-        return 3;
-    };
+    // Etapa 1: Preparando
+    if (resumo.itens_prontos < resumo.total_itens) {
+        return 1;
+    }
+
+    // Etapa 2: A caminho
+    if (resumo.completo && pedido?.status_geral === 'COMPLETO') {
+        return 2;
+    }
+
+    // Etapa 3: Avaliar
+    return 3;
+};
+
 
     const etapaAtual = getEtapaAtual();
 
     // Função para calcular progresso por etapa
     const getProgressoEtapa = () => {
-        if (!statusDetalhado || !statusDetalhado.resumo) return 0;
-
-        const { resumo, itens } = statusDetalhado;
-        
+       if (!statusDetalhado || !statusDetalhado.resumo || !statusDetalhado.itens) {
+    return 0;
+}
         switch (etapaAtual) {
             case 0: // A Pagar
                 return 100; // Sempre 100% se está nessa etapa
@@ -209,7 +236,7 @@ const buscarStatusDetalhado = async (id_pedido) => {
                         <div className='conteine-LINHA2-MC' ></div>
                     </div>
 
-                    {/* Status do Pedido */}
+                    {/* Status do Pedido
                     {pedidoSelecionado && statusDetalhado && (
                         <div className="status-pedido-info">
                             <h3>Status do Pedido #{pedidoSelecionado.id_pedido}</h3>
@@ -222,7 +249,7 @@ const buscarStatusDetalhado = async (id_pedido) => {
                             </div>
                             <span>{progresso}% concluído</span>
                         </div>
-                    )}
+                    )} */}
 
                     <div className='conteine-4-icones-MC'>
                         <div className='div-vazia1-MC' > </div>
@@ -237,6 +264,8 @@ const buscarStatusDetalhado = async (id_pedido) => {
                                 pedido={pedidoSelecionado}
                                 status={statusDetalhado}
                             />         
+
+                            
 
                             <h3 className='text-icone-carteira-MC' >A pagar</h3>
                         </div>
@@ -290,7 +319,7 @@ const buscarStatusDetalhado = async (id_pedido) => {
                         <div className='conteine-LINHA3-MC' ></div>
                     </div>
 
-                    {/* Detalhes da Produção */}
+                    {/* Detalhes da Produção
                     {statusDetalhado && statusDetalhado.itens && (
                         <div className="detalhes-producao">
                             <h4>Detalhes da Produção</h4>
@@ -318,7 +347,7 @@ const buscarStatusDetalhado = async (id_pedido) => {
                                 </div>
                             ))}
                         </div>
-                    )}
+                    )} */}
 
                     {/* Botão para atualizar status */}
                     <button 
