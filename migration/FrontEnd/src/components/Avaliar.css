@@ -16,7 +16,7 @@
 
 .grande-modal1 {
     background: white;
-    border: 2px solid black; /* Borda preta no contêiner */
+    /* border: 2px solid black; Borda preta no contêiner */
     border-radius: 12px;
     width: 90%;
     max-width: 1200px;
@@ -55,7 +55,7 @@
     font-size: 28px;
     margin-bottom: 30px;
     font-weight: 600;
-    border-bottom: 2px solid #eacab393; /* Cor de destaque */
+    border-bottom: 2px solid #11101093; /* Cor de destaque */
     padding-bottom: 10px;
 }
 
@@ -359,7 +359,7 @@
 }
 
 .grande-modal1::-webkit-scrollbar-thumb {
-    background: #eacab393; /* Cor de destaque */
+    background: #324973; /* Cor de destaque */
     border-radius: 4px;
 }
 
