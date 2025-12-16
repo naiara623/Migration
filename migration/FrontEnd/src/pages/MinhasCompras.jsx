@@ -24,6 +24,7 @@ function MinhasComprasContex() {
     const [statusDetalhado, setStatusDetalhado] = useState(null);
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState(null);
+    
 
     // Buscar pedidos do usuário
     useEffect(() => {
@@ -114,86 +115,139 @@ const buscarStatusDetalhado = async (id_pedido) => {
 };
 
 
-    // Função para determinar a etapa atual baseada no status real
-    const getEtapaAtual = () => {
+// Função para determinar a etapa atual baseada no status real
+const getEtapaAtual = () => {
     if (!statusDetalhado) return 0;
 
     const { pedido, resumo, itens } = statusDetalhado;
 
     if (!resumo || !Array.isArray(itens)) return 0;
 
-    // Etapa 0: A Pagar
-    const temItemProcessando = itens.some(item =>
-        Array.isArray(item.unidades) &&
-        item.unidades.some(unit => unit.status_maquina === 'PROCESSING')
-    );
+    // Verificar se há algum item em produção
+    const temItemEmProducao = itens.some(item => {
+        if (!item.unidades) return false;
+        return item.unidades.some(unit => 
+            unit.status_maquina === 'PROCESSING' || 
+            unit.status_maquina === 'PROCESSANDO'
+        );
+    });
 
-    if (resumo.itens_prontos === 0 && !temItemProcessando) {
+    // Verificar se todos os itens estão completos
+    const todosItensCompletos = itens.every(item => {
+        if (!item.unidades) return false;
+        return item.unidades.every(unit => unit.status_maquina === 'COMPLETED');
+    });
+
+    // Etapa 0: A Pagar (pedido pendente)
+    if (pedido.status_geral === 'PENDENTE') {
         return 0;
     }
 
-    // Etapa 1: Preparando
-    if (resumo.itens_prontos < resumo.total_itens) {
+    // Etapa 1: Preparando (algum item em produção)
+    if (pedido.status_geral === 'PROCESSANDO' || temItemEmProducao) {
         return 1;
     }
 
-    // Etapa 2: A caminho
-    if (resumo.completo && pedido?.status_geral === 'COMPLETO') {
+    // Etapa 2: A caminho (todos itens prontos, mas não entregue)
+    if (todosItensCompletos && pedido.status_geral !== 'ENTREGUE') {
         return 2;
     }
 
-    // Etapa 3: Avaliar
-    return 3;
+    // Etapa 3: Avaliar (pedido entregue)
+    if (pedido.status_geral === 'ENTREGUE') {
+        return 3;
+    }
+
+    return 0;
 };
 
+// Função para calcular progresso por etapa
+const getProgressoEtapa = () => {
+    if (!statusDetalhado || !statusDetalhado.resumo || !statusDetalhado.itens) {
+        return 0;
+    }
 
+    const { resumo, itens } = statusDetalhado;
     const etapaAtual = getEtapaAtual();
 
-    // Função para calcular progresso por etapa
-    const getProgressoEtapa = () => {
-       if (!statusDetalhado || !statusDetalhado.resumo || !statusDetalhado.itens) {
-    return 0;
-}
-        switch (etapaAtual) {
-            case 0: // A Pagar
-                return 100; // Sempre 100% se está nessa etapa
+    switch (etapaAtual) {
+        case 0: // A Pagar
+            return 0;
+            
+        case 1: // Preparando
+            // Calcular progresso baseado nos itens produzidos
+            let totalUnidades = 0;
+            let unidadesProntas = 0;
+            
+            itens.forEach(item => {
+                if (item.unidades) {
+                    totalUnidades += item.unidades.length;
+                    unidadesProntas += item.unidades.filter(u => 
+                        u.status_maquina === 'COMPLETED'
+                    ).length;
+                }
+            });
+            
+            return totalUnidades > 0 
+                ? Math.round((unidadesProntas / totalUnidades) * 100)
+                : 0;
                 
-            case 1: // Preparando
-                if (resumo.total_itens === 0) return 0;
-                return Math.round((resumo.itens_prontos / resumo.total_itens) * 100);
+        case 2: // A Caminho
+            return 100;
+            
+        case 3: // Avaliar
+            return 100;
+            
+        default:
+            return 0;
+    }
+};
+
+const etapaAtual = getEtapaAtual();
+const progresso = getProgressoEtapa();
+// Função para obter texto descritivo do status
+const getTextoStatus = () => {
+    if (!statusDetalhado || !statusDetalhado.pedido) return "Carregando status...";
+
+    const { pedido, resumo, itens } = statusDetalhado;
+    const etapa = getEtapaAtual();
+
+    switch (etapa) {
+        case 0: // A Pagar
+            return "Aguardando confirmação do pagamento. O pedido será processado assim que o pagamento for confirmado.";
+            
+        case 1: // Preparando
+            // Verificar se há unidades em produção
+            if (itens && Array.isArray(itens)) {
+                const totalUnidades = itens.reduce((total, item) => 
+                    total + (item.unidades ? item.unidades.length : 0), 0);
+                const unidadesProntas = itens.reduce((prontas, item) => 
+                    prontas + (item.unidades ? item.unidades.filter(u => u.status_maquina === 'COMPLETED').length : 0), 0);
                 
-            case 2: // A Caminho
-                return 100; // Pronto para envio
-                
-            case 3: // Avaliar
-                return 100; // Entregue
-                
-            default:
-                return 0;
-        }
-    };
+                if (unidadesProntas === totalUnidades && totalUnidades > 0) {
+                    return "✅ Todos os itens estão prontos! Seu pedido está sendo preparado para envio.";
+                } else if (unidadesProntas > 0) {
+                    return `🔄 Produção em andamento: ${unidadesProntas} de ${totalUnidades} unidades prontas.`;
+                } else {
+                    return "⏳ Preparando seu pedido. As máquinas estão sendo configuradas para produção.";
+                }
+            }
+            return "Seu pedido está sendo preparado para produção.";
+            
+        case 2: // A Caminho
+            if (pedido.status_geral === 'PRONTO') {
+                return "✅ Pedido pronto! Aguardando coleta pela transportadora.";
+            }
+            return "🚚 Seu pedido está a caminho! Em breve chegará até você.";
+            
+        case 3: // Avaliar
+            return "✅ Pedido entregue! Esperamos que tenha gostado dos produtos.";
+            
+        default:
+            return "Status desconhecido";
+    }
+};
 
-    const progresso = getProgressoEtapa();
-
-    // Função para obter texto de status detalhado
-    const getTextoStatus = () => {
-        if (!statusDetalhado) return 'Carregando...';
-
-        const { resumo, itens } = statusDetalhado;
-
-        switch (etapaAtual) {
-            case 0:
-                return 'Aguardando processamento do pagamento';
-            case 1:
-                return `${resumo.itens_prontos} de ${resumo.total_itens} itens produzidos`;
-            case 2:
-                return 'Produtos prontos! Preparando para envio';
-            case 3:
-                return 'Pedido entregue! Avalie sua experiência';
-            default:
-                return 'Status desconhecido';
-        }
-    };
 
     return (
         <div className='div-inclobaTudo-MC'>
@@ -236,7 +290,7 @@ const buscarStatusDetalhado = async (id_pedido) => {
                         <div className='conteine-LINHA2-MC' ></div>
                     </div>
 
-                    {/* Status do Pedido
+                    Status do Pedido
                     {pedidoSelecionado && statusDetalhado && (
                         <div className="status-pedido-info">
                             <h3>Status do Pedido #{pedidoSelecionado.id_pedido}</h3>
@@ -249,7 +303,7 @@ const buscarStatusDetalhado = async (id_pedido) => {
                             </div>
                             <span>{progresso}% concluído</span>
                         </div>
-                    )} */}
+                    )}
 
                     <div className='conteine-4-icones-MC'>
                         <div className='div-vazia1-MC' > </div>

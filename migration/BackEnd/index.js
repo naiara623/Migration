@@ -12,6 +12,8 @@ const {
   pool,
     getFavoritosByUserId,
     getDadosUsuarioParaPagamento,
+     registrarItemParaMaquina,
+  atualizarStatusMaquina,
   addToFavoritos,
   removeFromFavoritos,
   isFavorito,
@@ -51,11 +53,11 @@ criarPedidoCompleto,
 
 
 // server.js - Importe ambas as versões
-const QueueSmartIntegration = require('./queue-smart-integration');
-const QueueSmartIntegrationAvancado = require('./queue-smart-integration-avancado');
+// const QueueSmartIntegration = require('./queue-smart-integration');
+const QueueSmartIntegrationAvancado = require('./queue-smart-integration2');
 
-// Crie instâncias com a mesma URL
-const queueSmart = new QueueSmartIntegration('http://52.72.137.244:3000');
+// // Crie instâncias com a mesma URL
+// const queueSmart = new QueueSmartIntegration('http://52.72.137.244:3000');
 const queueSmartAvancado = new QueueSmartIntegrationAvancado('http://52.72.137.244:3000');
 // ==========================================
 // 🛠️ CONFIGURAÇÕES DO SERVIDOR
@@ -1615,156 +1617,10 @@ app.get('/api/debug/params/:id', (req, res) => {
 // 📦 ROTAS DE PEDIDOS (PROTEGIDAS)
 // ==========================================
 
-// Rota para obter todos os pedidos do usuário (COMPLETA)
-app.get('/api/pedidos', autenticar, async (req, res) => {
-    console.log('📦 Buscando pedidos para usuário:', req.session.user.idusuarios);
-    
-    try {
-        const client = await pool.connect();
-        
-        const result = await client.query(`
-            SELECT 
-                p.id_pedido,
-                p.total,
-                p.status_geral,
-                p.metodo_pagamento,
-                p.data_pedido,
-                p.atualizado_em,
-                COUNT(pi.id_item) as total_itens,
-                SUM(pi.quantidade) as quantidade_total
-            FROM pedidos p
-            LEFT JOIN pedido_itens pi ON p.id_pedido = pi.id_pedido
-            WHERE p.idusuarios = $1
-            GROUP BY p.id_pedido
-            ORDER BY p.data_pedido DESC
-        `, [req.session.user.idusuarios]);
-        
-        client.release();
-        
-        console.log(`✅ ${result.rows.length} pedidos encontrados para o usuário`);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ 
-                erro: 'Nenhum pedido encontrado',
-                mensagem: 'Você ainda não fez nenhum pedido' 
-            });
-        }
-        
-        res.json(result.rows);
-        
-    } catch (error) {
-        console.error('❌ Erro ao buscar pedidos:', error);
-        res.status(500).json({ 
-            erro: 'Erro ao buscar pedidos',
-            detalhes: error.message 
-        });
-    }
-});
 
 
 
 
-
-// Adicione esta rota ANTES da rota app.listen()
-
-app.post("/api/smart4-callback", (req, res) => {
-    const data = QueueSmartIntegration.processarCallback(req.body);
-
-    console.log("📩 Atualização da máquina:", data);
-
-    // Salve isso no banco se quiser
-    res.status(200).send("OK");
-});
-
-
-
-
-// Rota para obter status detalhado do pedido (CORRIGIDA)
-app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
-    console.log(`🔍 [DEBUG] Iniciando busca de status para pedido: ${req.params.id}`);
-    console.log(`🔍 [DEBUG] Usuário autenticado:`, req.session.user);
-    
-    try {
-        const id_pedido = parseInt(req.params.id);
-        
-        if (isNaN(id_pedido)) {
-            console.log(`❌ [DEBUG] ID do pedido inválido: ${req.params.id}`);
-            return res.status(400).json({ erro: 'ID do pedido inválido' });
-        }
-
-        console.log(`🔍 [DEBUG] Buscando status detalhado para pedido: ${id_pedido}`);
-        
-        const statusDetalhado = await getStatusDetalhadoPedido(id_pedido);
-        console.log(`✅ [DEBUG] Dados retornados:`, statusDetalhado);
-        
-        // Se for um objeto (nova estrutura)
-        if (statusDetalhado.pedido) {
-            // Verificar se o pedido pertence ao usuário
-            if (statusDetalhado.pedido.idusuarios !== req.session.user.idusuarios) {
-                console.log(`❌ [DEBUG] Acesso não autorizado - Pedido pertence a outro usuário`);
-                return res.status(403).json({ erro: 'Acesso não autorizado a este pedido' });
-            }
-
-            console.log(`✅ [DEBUG] Status final retornado para pedido ${id_pedido}`);
-            res.json(statusDetalhado);
-        } else {
-            // Estrutura antiga (array) - manter compatibilidade
-            const pedido = statusDetalhado[0];
-            if (!pedido) {
-                console.log(`❌ [DEBUG] Pedido ${id_pedido} não encontrado`);
-                return res.status(404).json({ erro: 'Pedido não encontrado' });
-            }
-
-            console.log(`🔍 [DEBUG] Pedido encontrado - ID Usuário: ${pedido.idusuarios}, Sessão Usuário: ${req.session.user.idusuarios}`);
-            
-            if (pedido.idusuarios !== req.session.user.idusuarios) {
-                console.log(`❌ [DEBUG] Acesso não autorizado - Pedido pertence a outro usuário`);
-                return res.status(403).json({ erro: 'Acesso não autorizado a este pedido' });
-            }
-
-            // Buscar dados de produção separadamente
-            const producaoItens = await getStatusProducaoByPedido(id_pedido);
-            
-            const resultado = {
-                pedido: {
-                    id_item: pedido.id_item,
-                    idusuarios: pedido.idusuarios,
-                    status_geral: pedido.status_geral,
-                    total: pedido.total,
-                    metodo_pagamento: pedido.metodo_pagamento,
-                    data_pedido: pedido.data_pedido,
-                    atualizado_em: pedido.atualizado_em
-                },
-                itens: statusDetalhado.map(item => ({
-                    id_pedido_item: item.id_item,
-                    id_produto: item.id_produto,
-                    nome_produto: item.nome_produto,
-                    descricao: item.descricao,
-                    imagem_url: item.imagem_url,
-                    quantidade: item.quantidade,
-                    preco_unitario: item.preco_unitario,
-                    tamanho: item.tamanho,
-                    cor: item.cor
-                })),
-                producao: producaoItens,
-                resumo: await verificarPedidoCompleto(id_pedido)
-            };
-
-            console.log(`✅ [DEBUG] Status final retornado para pedido ${id_pedido}`);
-            res.json(resultado);
-        }
-
-    } catch (error) {
-        console.error(`❌ [DEBUG] ERRO CRÍTICO ao buscar status do pedido ${req.params.id}:`, error);
-        console.error(`❌ [DEBUG] Stack trace:`, error.stack);
-        
-        res.status(500).json({ 
-            erro: 'Erro ao buscar status do pedido',
-            detalhes: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        });
-    }
-});
 
 // Rota para monitorar produção em tempo real (CORRIGIDA)
 // Rota para monitorar produção em tempo real (CORRIGIDA)
@@ -1778,7 +1634,7 @@ app.get('/api/producao/monitoramento', autenticar, async (req, res) => {
             SELECT DISTINCT p.*,
                    (SELECT COUNT(*) FROM pedido_itens WHERE id_pedido = p.id_pedido) as total_itens,
                    (SELECT COUNT(*) FROM producao_itens pr 
-                    INNER JOIN pedido_itens pi ON pr.id_item = pi.id_item 
+                    INNER JOIN pedido_itens pi ON pi.id_item = pi.id_item 
                     WHERE pi.id_pedido = p.id_pedido AND pr.status_maquina = 'COMPLETED') as itens_prontos
             FROM pedidos p
             WHERE p.idusuarios = $1 AND p.status_geral = 'PROCESSANDO'
@@ -1789,7 +1645,7 @@ app.get('/api/producao/monitoramento', autenticar, async (req, res) => {
         const itensProducao = await client.query(`
             SELECT pr.*, p.nome_produto, p.imagem_url, pi.id_pedido, pi.quantidade
             FROM producao_itens pr
-            INNER JOIN pedido_itens pi ON pr.id_item = pi.id_item
+            INNER JOIN pedido_itens pi ON pi.id_item = pi.id_item
             INNER JOIN produtos p ON pr.id_produto = p.id_produto
             INNER JOIN pedidos pd ON pi.id_pedido = pd.id_pedido
             WHERE pd.idusuarios = $1 AND pr.status_maquina != 'COMPLETED'
@@ -1901,6 +1757,9 @@ app.get('/api/pagamento/verificar-dados', autenticar, async (req, res) => {
     });
   }
 });
+
+
+
 
 // Rota para buscar detalhes completos do pedido (para visualização)
 app.get('/api/pedidos/:id/detalhes', autenticar, async (req, res) => {
@@ -2563,30 +2422,25 @@ async function respostaGenerica(mensagem, client) {
 // ==========================================
 // 🛒 ROTA PARA CALCULAR TOTAL DO CARRINHO
 // ==========================================
-
+// Rota para calcular total do carrinho (SEM FRETE)
 app.get('/api/carrinho/total', autenticar, async (req, res) => {
   try {
     const userId = req.session.user.idusuarios;
     
-    // 1. Calcular total dos produtos
+    // Calcular total dos produtos (sem frete)
     const totalCarrinho = await calcularTotalCarrinho(userId);
     
-    // 2. Definir frete (exemplo: R$ 15 fixo)
-    const frete = 15.00;
-    
-    // 3. Calcular total final
-    const totalFinal = totalCarrinho.total_produtos + frete;
+    // Total final é apenas o valor dos produtos
+    const totalFinal = totalCarrinho.total_produtos;
     
     res.json({
       sucesso: true,
       total_produtos: totalCarrinho.total_produtos,
       total_itens: totalCarrinho.total_itens,
       quantidade_total: totalCarrinho.quantidade_total,
-      frete: frete,
       total_final: totalFinal,
       resumo: {
         valor_produtos: `R$ ${totalCarrinho.total_produtos.toFixed(2)}`,
-        frete: `R$ ${frete.toFixed(2)}`,
         total_a_pagar: `R$ ${totalFinal.toFixed(2)}`
       }
     });
@@ -2604,6 +2458,7 @@ app.get('/api/carrinho/total', autenticar, async (req, res) => {
 // 💳 ROTA PARA FINALIZAR COMPRA
 // ==========================================
 
+// Rota para finalizar compra (SEM FRETE)
 app.post('/api/pagamento/finalizar', autenticar, async (req, res) => {
   console.log('💳 Finalizando compra...');
   
@@ -2621,14 +2476,12 @@ app.post('/api/pagamento/finalizar', autenticar, async (req, res) => {
       });
     }
     
-    // 2. Calcular total
+    // 2. Calcular total (sem frete)
     const totalCarrinho = await calcularTotalCarrinho(userId);
-    const frete = 15.00;
-    const totalFinal = totalCarrinho.total_produtos + frete;
+    const totalFinal = totalCarrinho.total_produtos; // Sem frete
     
     console.log('💰 Total calculado:', {
       produtos: totalCarrinho.total_produtos,
-      frete,
       total: totalFinal
     });
     
@@ -2686,6 +2539,7 @@ app.post('/api/pagamento/finalizar', autenticar, async (req, res) => {
 // 📋 ROTA PARA RESUMO DA COMPRA
 // ==========================================
 
+// Rota para resumo da compra (SEM FRETE)
 app.get('/api/pagamento/resumo', autenticar, async (req, res) => {
   try {
     const userId = req.session.user.idusuarios;
@@ -2701,10 +2555,9 @@ app.get('/api/pagamento/resumo', autenticar, async (req, res) => {
       });
     }
     
-    // 2. Calcular totais
+    // 2. Calcular totais (sem frete)
     const totalCarrinho = await calcularTotalCarrinho(userId);
-    const frete = 15.00;
-    const totalFinal = totalCarrinho.total_produtos + frete;
+    const totalFinal = totalCarrinho.total_produtos; // Sem frete
     
     // 3. Buscar dados do usuário
     const client = await pool.connect();
@@ -2754,11 +2607,9 @@ app.get('/api/pagamento/resumo', autenticar, async (req, res) => {
       resumo_pagamento: {
         quantidade_produtos: totalCarrinho.quantidade_total,
         valor_produtos: totalCarrinho.total_produtos,
-        frete: frete,
-        total_a_pagar: totalFinal,
+        total_a_pagar: totalFinal, // Sem frete
         valores_formatados: {
           produtos: `R$ ${totalCarrinho.total_produtos.toFixed(2)}`,
-          frete: `R$ ${frete.toFixed(2)}`,
           total: `R$ ${totalFinal.toFixed(2)}`
         }
       }
@@ -3000,23 +2851,575 @@ app.get('/api/queue-avancado/status', async (req, res) => {
 });
 
 // Rota para testar callback
-app.post("/api/smart4-callback", (req, res) => {
-    try {
-        const data = QueueSmartIntegration.processarCallback(req.body);
-        console.log("📩 Callback recebido:", data);
-        
-        // Aqui você pode salvar no banco se necessário
-        // await salvarCallbackNoBanco(data);
-        
-        res.status(200).json({ 
-            sucesso: true, 
-            mensagem: "Callback processado",
-            dados: data 
-        });
-    } catch (error) {
-        console.error("❌ Erro ao processar callback:", error);
-        res.status(500).json({ erro: error.message });
+app.post("/api/smart4-callback", async (req, res) => {
+  try {
+    console.log("📩 Callback recebido da Queue Smart:", req.body);
+    
+    // Processar callback
+    const data = QueueSmartIntegrationAvancado.processarCallback(req.body);
+    
+    // Buscar item pelo order_id ou item_id_maquina
+    const client = await pool.connect();
+    
+    let itemProducao = null;
+    
+    // Tentar encontrar pelo order_id
+    if (data.orderId) {
+      const result = await client.query(
+        'SELECT * FROM producao_itens WHERE order_id = $1',
+        [data.orderId]
+      );
+      
+      if (result.rows.length > 0) {
+        itemProducao = result.rows[0];
+      }
     }
+    
+    // Se não encontrou, tentar pelo item_id_maquina
+    if (!itemProducao && data.itemId) {
+      const result = await client.query(
+        'SELECT * FROM producao_itens WHERE item_id_maquina = $1',
+        [data.itemId]
+      );
+      
+      if (result.rows.length > 0) {
+        itemProducao = result.rows[0];
+      }
+    }
+    
+    if (itemProducao) {
+      // Atualizar status
+      await client.query(
+        `UPDATE producao_itens 
+         SET status_maquina = $1,
+             estagio_maquina = $2,
+             progresso_maquina = $3,
+             dados_maquina = COALESCE($4, dados_maquina),
+             atualizado_em = NOW()
+         WHERE id_producao = $5`,
+        [
+          data.status,
+          data.etapa,
+          data.porcentagem,
+          JSON.stringify(data),
+          itemProducao.id_producao
+        ]
+      );
+      
+      console.log(`✅ Status atualizado para item ${itemProducao.id_producao}: ${data.status} - ${data.etapa} (${data.porcentagem}%)`);
+      
+      // Verificar se o pedido está completo
+      if (data.status === 'COMPLETED') {
+        await verificarPedidoCompleto(itemProducao.id_pedido);
+      }
+    } else {
+      console.warn('⚠️ Item não encontrado para callback:', data);
+    }
+    
+    client.release();
+    
+    res.status(200).json({ 
+      sucesso: true, 
+      mensagem: "Callback processado" 
+    });
+    
+  } catch (error) {
+    console.error("❌ Erro ao processar callback:", error);
+    res.status(500).json({ 
+      sucesso: false,
+      erro: error.message 
+    });
+  }
+});
+
+
+
+// Rota para obter todos os pedidos do usuário COM DETALHES
+app.get('/api/pedidos', autenticar, async (req, res) => {
+    console.log('📦 Buscando pedidos com detalhes para usuário:', req.session.user.idusuarios);
+    
+    try {
+        const client = await pool.connect();
+        
+        // Buscar pedidos do usuário
+        const pedidosResult = await client.query(`
+            SELECT 
+                p.*,
+                (SELECT COUNT(*) FROM pedido_itens WHERE id_pedido = p.id_pedido) as total_itens,
+                (SELECT SUM(quantidade) FROM pedido_itens WHERE id_pedido = p.id_pedido) as quantidade_total
+            FROM pedidos p
+            WHERE p.idusuarios = $1
+            ORDER BY p.data_pedido DESC
+        `, [req.session.user.idusuarios]);
+        
+        if (pedidosResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ 
+                erro: 'Nenhum pedido encontrado',
+                mensagem: 'Você ainda não fez nenhum pedido' 
+            });
+        }
+        
+        // Para cada pedido, buscar seus itens
+        const pedidosComDetalhes = [];
+        
+        for (const pedido of pedidosResult.rows) {
+            // Buscar itens do pedido
+            const itensResult = await client.query(`
+                SELECT 
+                    pi.*,
+                    pr.nome_produto,
+                    pr.imagem_url,
+                    pr.descricao
+                FROM pedido_itens pi
+                INNER JOIN produtos pr ON pi.id_produto = pr.id_produto
+                WHERE pi.id_pedido = $1
+                ORDER BY pi.id_item
+            `, [pedido.id_pedido]);
+            
+            pedidosComDetalhes.push({
+                ...pedido,
+                itens: itensResult.rows.map(item => ({
+                    id_item: item.id_item,
+                    id_produto: item.id_produto,
+                    nome_produto: item.nome_produto,
+                    imagem_url: item.imagem_url,
+                    descricao: item.descricao,
+                    quantidade: item.quantidade,
+                    preco_unitario: item.preco_unitario,
+                    tamanho: item.tamanho,
+                    cor1: item.cor1,
+                    cor2: item.cor2,
+                    material: item.material,
+                    estampas: item.estampas,
+                    status: item.status,
+                    subtotal: item.quantidade * item.preco_unitario
+                }))
+            });
+        }
+        
+        client.release();
+        
+        console.log(`✅ ${pedidosComDetalhes.length} pedidos encontrados com detalhes`);
+        res.json(pedidosComDetalhes);
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar pedidos:', error);
+        res.status(500).json({ 
+            erro: 'Erro ao buscar pedidos',
+            detalhes: error.message 
+        });
+    }
+});
+
+// Rota para obter status detalhado do pedido (ATUALIZADA)
+app.get('/api/pedidos/:id/status', autenticar, async (req, res) => {
+    console.log(`🔍 Buscando status detalhado para pedido: ${req.params.id}`);
+    
+    try {
+        const id_pedido = parseInt(req.params.id);
+        
+        if (isNaN(id_pedido)) {
+            return res.status(400).json({ erro: 'ID do pedido inválido' });
+        }
+
+        // Buscar detalhes usando a função atualizada
+        const statusDetalhado = await getStatusDetalhadoPedido(id_pedido);
+        
+        // Verificar se o pedido pertence ao usuário
+        if (statusDetalhado.pedido.idusuarios !== req.session.user.idusuarios) {
+            return res.status(403).json({ erro: 'Acesso não autorizado a este pedido' });
+        }
+
+        // Buscar dados de produção
+        const producaoItens = await getStatusProducaoByPedido(id_pedido);
+        
+        // Verificar se o pedido está completo
+        const resumoCompleto = await verificarPedidoCompleto(id_pedido);
+        
+        // Buscar endereço do usuário
+        const endereco = await getEnderecoByUserId(req.session.user.idusuarios);
+        
+        // Buscar dados do usuário
+        const client = await pool.connect();
+        const usuarioResult = await client.query(
+            'SELECT nome_usuario, email_user, numero FROM usuarios WHERE idusuarios = $1',
+            [req.session.user.idusuarios]
+        );
+        client.release();
+        
+        const resposta = {
+            pedido: statusDetalhado.pedido,
+            usuario: usuarioResult.rows[0] || {},
+            endereco: endereco || {},
+            itens: statusDetalhado.itens || [],
+            producao: producaoItens,
+            resumo: resumoCompleto,
+            estatisticas: {
+                total_itens: statusDetalhado.itens?.length || 0,
+                quantidade_total: statusDetalhado.itens?.reduce((sum, item) => sum + item.quantidade, 0) || 0,
+                valor_total: statusDetalhado.itens?.reduce((sum, item) => sum + (item.quantidade * item.preco_unitario), 0) || 0
+            }
+        };
+        
+        console.log(`✅ Status retornado para pedido ${id_pedido} com ${resposta.itens.length} itens`);
+        res.json(resposta);
+        
+    } catch (error) {
+        console.error(`❌ Erro ao buscar status do pedido ${req.params.id}:`, error);
+        res.status(500).json({ 
+            erro: 'Erro ao buscar status do pedido',
+            detalhes: error.message
+        });
+    }
+});
+
+// Rota para obter resumo de um pedido específico
+// Rota para obter resumo de um pedido específico (SEM FRETE)
+app.get('/api/pedidos/:id/resumo', autenticar, async (req, res) => {
+  try {
+    const id_pedido = parseInt(req.params.id);
+    
+    console.log(`📋 Buscando resumo do pedido ${id_pedido}`);
+    
+    const client = await pool.connect();
+    
+    // Buscar pedido
+    const pedidoResult = await client.query(
+      `SELECT * FROM pedidos WHERE id_pedido = $1`,
+      [id_pedido]
+    );
+    
+    if (pedidoResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ erro: 'Pedido não encontrado' });
+    }
+    
+    const pedido = pedidoResult.rows[0];
+    
+    // Verificar se o pedido pertence ao usuário
+    if (pedido.idusuarios !== req.session.user.idusuarios) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    // Buscar itens do pedido
+    const itensResult = await client.query(`
+      SELECT 
+        pi.*,
+        p.nome_produto,
+        p.imagem_url,
+        p.descricao
+      FROM pedido_itens pi
+      INNER JOIN produtos p ON pi.id_produto = p.id_produto
+      WHERE pi.id_pedido = $1
+      ORDER BY pi.id_item
+    `, [id_pedido]);
+    
+    client.release();
+    
+    // Calcular estatísticas
+    const estatisticas = {
+      total_itens: itensResult.rows.length,
+      quantidade_total: itensResult.rows.reduce((sum, item) => sum + item.quantidade, 0),
+      valor_total: itensResult.rows.reduce((sum, item) => sum + (item.quantidade * item.preco_unitario), 0)
+    };
+    
+    // Formatar itens
+    const itensFormatados = itensResult.rows.map(item => ({
+      id_item: item.id_item,
+      id_produto: item.id_produto,
+      nome: item.nome_produto,
+      descricao: item.descricao,
+      imagem: item.imagem_url,
+      quantidade: item.quantidade,
+      preco_unitario: item.preco_unitario,
+      subtotal: item.quantidade * item.preco_unitario,
+      tamanho: item.tamanho,
+      cor1: item.cor1,
+      cor2: item.cor2,
+      material: item.material,
+      estampas: item.estampas,
+      status: item.status
+    }));
+    
+    res.json({
+      pedido: {
+        id_pedido: pedido.id_pedido,
+        total: pedido.total,
+        status_geral: pedido.status_geral,
+        metodo_pagamento: pedido.metodo_pagamento,
+        data_pedido: pedido.data_pedido,
+        endereco_entrega: pedido.endereco_entrega
+      },
+      itens: itensFormatados,
+      estatisticas,
+      resumo: {
+        total_itens: estatisticas.total_itens,
+        quantidade_total: estatisticas.quantidade_total,
+        valor_total: estatisticas.valor_total,
+        // REMOVI O FRETE AQUI
+        total_final: estatisticas.valor_total // Sem frete
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar resumo do pedido:', error);
+    res.status(500).json({ 
+      erro: 'Erro ao buscar resumo do pedido',
+      detalhes: error.message 
+    });
+  }
+});
+
+// Função para enviar itens para Queue Smart
+async function enviarParaQueueSmart(pedido, itensProducao) {
+  try {
+    console.log(`🚀 Iniciando envio para Queue Smart do pedido ${pedido.id_pedido}`);
+    
+    // Verificar conexão com Queue Smart
+    const status = await queueSmartAvancado.verificarConexao();
+    if (!status.conectado) {
+      console.error('❌ Queue Smart não está disponível:', status.erro);
+      
+      // Atualizar status dos itens para falha de envio
+      for (const item of itensProducao) {
+        try {
+          await atualizarStatusProducao(item.id_producao, {
+            status_maquina: 'ERRO_ENVIO',
+            estagio_maquina: 'FALHA_CONEXAO',
+            progresso_maquina: 0
+          });
+        } catch (err) {
+          console.error('❌ Erro ao atualizar status de falha:', err);
+        }
+      }
+      
+      return;
+    }
+    
+    console.log('✅ Conexão com Queue Smart estabelecida');
+    
+    // Enviar cada item para a máquina
+    for (const item of itensProducao) {
+      try {
+        console.log(`📤 Enviando item ${item.id_producao} para Queue Smart`);
+        
+        // Buscar informações completas do produto
+        const client = await pool.connect();
+        const produtoResult = await client.query(
+          'SELECT * FROM produtos WHERE id_produto = $1',
+          [item.id_produto]
+        );
+        client.release();
+        
+        if (produtoResult.rows.length === 0) {
+          throw new Error(`Produto ${item.id_produto} não encontrado`);
+        }
+        
+        const produto = produtoResult.rows[0];
+        
+        // Preparar configurações
+        let configuracoes = {};
+        try {
+          if (item.configuracoes) {
+            configuracoes = typeof item.configuracoes === 'string' 
+              ? JSON.parse(item.configuracoes) 
+              : item.configuracoes;
+          }
+        } catch (e) {
+          console.error('❌ Erro ao parsear configurações:', e);
+        }
+        
+        // Enviar para Queue Smart
+        const resultado = await queueSmartAvancado.enviarItemParaMaquina(
+          {
+            id_pedido: pedido.id_pedido,
+            idusuarios: pedido.idusuarios,
+            total: pedido.total
+          },
+          produto,
+          configuracoes,
+          item.item_unit,
+          1  // quantidade = 1 (cada unidade é um item separado)
+        );
+        
+        if (resultado && resultado.length > 0) {
+          const respostaMaquina = resultado[0];
+          
+          // Atualizar item com ID da máquina
+          await atualizarStatusProducao(item.id_producao, {
+            status_maquina: 'ENVIADO',
+            estagio_maquina: 'NA_FILA',
+            progresso_maquina: 0,
+            item_id_maquina: respostaMaquina.item_id_maquina,
+            order_id: respostaMaquina.order_id,
+            dados_maquina: respostaMaquina.resposta_maquina
+          });
+          
+          console.log(`✅ Item ${item.id_producao} enviado com sucesso para máquina`);
+        }
+        
+      } catch (error) {
+        console.error(`❌ Erro ao enviar item ${item.id_producao}:`, error);
+        
+        // Atualizar status para erro
+        await atualizarStatusProducao(item.id_producao, {
+          status_maquina: 'ERRO_ENVIO',
+          estagio_maquina: 'FALHA_ENVIO',
+          progresso_maquina: 0
+        });
+      }
+      
+      // Pequena pausa entre envios para não sobrecarregar
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    console.log(`✅ Todos os itens do pedido ${pedido.id_pedido} processados`);
+    
+  } catch (error) {
+    console.error('❌ Erro geral no envio para Queue Smart:', error);
+  }
+}
+
+// Rota para forçar envio para Queue Smart
+app.post('/api/pedidos/:id/enviar-maquina', autenticar, async (req, res) => {
+  try {
+    const id_pedido = parseInt(req.params.id);
+    
+    // Verificar se pedido existe e pertence ao usuário
+    const client = await pool.connect();
+    const pedidoResult = await client.query(
+      'SELECT * FROM pedidos WHERE id_pedido = $1 AND idusuarios = $2',
+      [id_pedido, req.session.user.idusuarios]
+    );
+    
+    if (pedidoResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ erro: 'Pedido não encontrado' });
+    }
+    
+    const pedido = pedidoResult.rows[0];
+    
+    // Buscar itens de produção pendentes
+    const producaoResult = await client.query(
+      `SELECT * FROM producao_itens 
+       WHERE id_pedido = $1 AND status_maquina IN ('PENDENTE', 'ERRO_ENVIO')
+       ORDER BY id_producao`,
+      [id_pedido]
+    );
+    
+    client.release();
+    
+    if (producaoResult.rows.length === 0) {
+      return res.json({ 
+        mensagem: 'Não há itens pendentes para envio à máquina',
+        total_itens: 0
+      });
+    }
+    
+    // Enviar para Queue Smart
+    await enviarParaQueueSmart(pedido, producaoResult.rows);
+    
+    res.json({
+      sucesso: true,
+      mensagem: `Processamento de envio para máquina iniciado para ${producaoResult.rows.length} itens`,
+      total_itens: producaoResult.rows.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao forçar envio para máquina:', error);
+    res.status(500).json({ erro: 'Erro ao enviar para máquina' });
+  }
+});
+
+// Rota para simular callback da Queue Smart
+app.post('/api/teste-callback-manual/:id_producao', autenticar, async (req, res) => {
+  try {
+    const id_producao = parseInt(req.params.id_producao);
+    const { status, estagio, progresso } = req.body;
+    
+    // Atualizar status manualmente
+    const atualizado = await atualizarStatusMaquina(
+      id_producao,
+      status || 'PROCESSANDO',
+      estagio || 'CORTE',
+      progresso || 25,
+      { teste: 'Callback manual' }
+    );
+    
+    res.json({
+      sucesso: true,
+      mensagem: 'Status atualizado manualmente',
+      item: atualizado
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro no callback manual:', error);
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+
+// Rota para ver status de produção
+app.get('/api/producao/status/:pedido_id', autenticar, async (req, res) => {
+  try {
+    const pedidoId = parseInt(req.params.pedido_id);
+    
+    const client = await pool.connect();
+    
+    // Verificar se pedido pertence ao usuário
+    const pedidoCheck = await client.query(
+      'SELECT * FROM pedidos WHERE id_pedido = $1 AND idusuarios = $2',
+      [pedidoId, req.session.user.idusuarios]
+    );
+    
+    if (pedidoCheck.rows.length === 0) {
+      client.release();
+      return res.status(403).json({ erro: 'Acesso não autorizado' });
+    }
+    
+    // Buscar itens de produção
+    const producaoResult = await client.query(
+      `SELECT * FROM producao_itens 
+       WHERE id_pedido = $1 
+       ORDER BY id_producao`,
+      [pedidoId]
+    );
+    
+    // Estatísticas
+    const statsResult = await client.query(
+      `SELECT 
+         COUNT(*) as total,
+         SUM(CASE WHEN status_maquina = 'COMPLETED' THEN 1 ELSE 0 END) as completos,
+         SUM(CASE WHEN status_maquina = 'PROCESSING' THEN 1 ELSE 0 END) as processando,
+         SUM(CASE WHEN status_maquina = 'PENDENTE' THEN 1 ELSE 0 END) as pendentes
+       FROM producao_itens 
+       WHERE id_pedido = $1`,
+      [pedidoId]
+    );
+    
+    client.release();
+    
+    const stats = statsResult.rows[0];
+    const progresso = stats.total > 0 ? Math.round((stats.completos / stats.total) * 100) : 0;
+    
+    res.json({
+      pedido_id: pedidoId,
+      itens: producaoResult.rows,
+      estatisticas: {
+        total: parseInt(stats.total),
+        completos: parseInt(stats.completos),
+        processando: parseInt(stats.processando),
+        pendentes: parseInt(stats.pendentes),
+        progresso: progresso
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar status de produção:', error);
+    res.status(500).json({ erro: error.message });
+  }
 });
 
 // ==========================================

@@ -1,4 +1,3 @@
-// backend/queue-smart-integration-avancado.js
 const fetch = require("node-fetch");
 
 class QueueSmartIntegrationAvancado {
@@ -86,55 +85,78 @@ class QueueSmartIntegrationAvancado {
         }
     }
 
-    // MAPEAR PRODUTO PARA CONFIGURAÇÃO DA MÁQUINA (VERSÃO AVANÇADA)
-    mapProductToMachineConfig(selections, product, itemIndex = null) {
-        const tamanhoParaAndares = {
-            'P': 1, 'M': 2, 'G': 3, 'PP': 1, 'GG': 3
-        };
-
-        const corParaMaterial = {
-            'Azul': 'PLASTICO_AZUL', 
-            'Vermelho': 'PLASTICO_VERMELHO',
-            'Verde': 'PLASTICO_VERDE', 
-            'Amarelo': 'PLASTICO_AMARELO',
-            'Preto': 'PLASTICO_PRETO', 
-            'Branco': 'PLASTICO_BRANCO',
-            'Rosa': 'PLASTICO_ROSA',
-            'Roxo': 'PLASTICO_ROXO'
-        };
-
-        const estampaParaPadrao = {
-            'Nuvem': 'PADRAO_NUVENS', 
-            'Estrelas': 'PADRAO_ESTRELAS',
-            'Lua': 'PADRAO_LUA', 
-            'Sol': 'PADRAO_SOL',
-            'SemEstampa': 'PADRAO_LISO',
-            'Listras': 'PADRAO_LISTRAS',
-            'Bolinhas': 'PADRAO_BOLINHAS'
-        };
-
-        const materialParaTipo = {
-            'Poliester': 'POLIESTER', 
-            'Nylon': 'NYLON',
-            'Algodão': 'ALGODAO',
-            'Seda': 'SEDA'
-        };
-
-        return {
-            andares: tamanhoParaAndares[selections.tamanho] || 1,
-            materialExterno: corParaMaterial[selections.corFora] || 'PLASTICO_BRANCO',
-            materialInterno: corParaMaterial[selections.corDentro] || 'PLASTICO_BRANCO',
-            tipoMaterial: materialParaTipo[selections.material] || 'NYLON',
-            padrao: estampaParaPadrao[selections.estampa] || 'PADRAO_LISO',
-            produtoId: product.id_produto,
-            produtoNome: product.nome_produto,
-            itemIndex: itemIndex
-        };
+    // MAPEAR SELEÇÕES PARA CONFIGURAÇÃO DE BLOCO
+    mapSelectionsToBlocoConfig(selections, blocoNumero) {
+        console.log(`🔄 Mapeando configurações para bloco ${blocoNumero}:`, selections);
+        
+        // Verifica diferentes formatos de entrada
+        let blocoConfig = {};
+        
+        // Formato 1: Objeto direto (ex: selections.bloco1, selections.bloco2)
+        const blocoKey = `bloco${blocoNumero}`;
+        if (selections[blocoKey]) {
+            blocoConfig = {
+                cor: selections[blocoKey].cor || '',
+                lamina1: selections[blocoKey].lamina1 || '',
+                lamina2: selections[blocoKey].lamina2 || '',
+                lamina3: selections[blocoKey].lamina3 || '',
+                padrao1: selections[blocoKey].padrao1 || '',
+                padrao2: selections[blocoKey].padrao2 || '',
+                padrao3: selections[blocoKey].padrao3 || ''
+            };
+        } 
+        // Formato 2: Nomes de colunas individuais (ex: cor1, l1_1, p1_1)
+        else {
+            const prefix = blocoNumero.toString();
+            blocoConfig = {
+                cor: selections[`cor${prefix}`] || selections[`cor${blocoNumero}`] || '',
+                lamina1: selections[`l${prefix}_1`] || selections[`l${blocoNumero}_1`] || '',
+                lamina2: selections[`l${prefix}_2`] || selections[`l${blocoNumero}_2`] || '',
+                lamina3: selections[`l${prefix}_3`] || selections[`l${blocoNumero}_3`] || '',
+                padrao1: selections[`p${prefix}_1`] || selections[`p${blocoNumero}_1`] || '',
+                padrao2: selections[`p${prefix}_2`] || selections[`p${blocoNumero}_2`] || '',
+                padrao3: selections[`p${prefix}_3`] || selections[`p${blocoNumero}_3`] || ''
+            };
+        }
+        
+        console.log(`✅ Configuração do bloco ${blocoNumero}:`, blocoConfig);
+        return blocoConfig;
     }
 
-    // ENVIAR ITEM PARA MÁQUINA (VERSÃO AVANÇADA)
+    // MAPEAR PRODUTO PARA CONFIGURAÇÃO DA MÁQUINA (ATUALIZADO)
+    mapProductToMachineConfig(selections, product, itemIndex = null) {
+        console.log('🔄 Mapeando produto para configuração da máquina:', { selections, product });
+        
+        const caixaConfig = {
+            codigoProduto: product.id_produto,
+            bloco1: this.mapSelectionsToBlocoConfig(selections, 1),
+            bloco2: this.mapSelectionsToBlocoConfig(selections, 2),
+            bloco3: this.mapSelectionsToBlocoConfig(selections, 3)
+        };
+        
+        const config = {
+            caixa: caixaConfig,
+            produtoId: product.id_produto,
+            produtoNome: product.nome_produto,
+            sku: product.sku || product.id_produto.toString(),
+            itemIndex: itemIndex,
+            timestamp: new Date().toISOString()
+        };
+        
+        console.log('✅ Configuração final para máquina:', config);
+        return config;
+    }
+
+    // ENVIAR ITEM PARA MÁQUINA (VERSÃO AVANÇADA - ATUALIZADA)
     async enviarItemParaMaquina(pedidoData, product, selections, itemIndex, quantidade) {
         try {
+            console.log(`🚀 Enviando item para máquina:`, {
+                pedido: pedidoData.id_pedido,
+                produto: product.nome_produto,
+                itemIndex,
+                quantidade
+            });
+
             const conexao = await this.verificarConexao();
             if (!conexao.conectado) {
                 throw new Error(`Máquina não está respondendo: ${conexao.erro}`);
@@ -158,9 +180,12 @@ class QueueSmartIntegrationAvancado {
                         item_index: itemIndex,
                         item_unit: unitNumber,
                         produto_nome: product.nome_produto,
-                        configuracoes: selections
+                        configuracoes: selections,
+                        caixaConfig: machineConfig.caixa
                     }
                 };
+
+                console.log(`📤 Enviando payload para máquina:`, payload);
 
                 const result = await this.request('/fila/itens', {
                     method: 'POST',
@@ -179,6 +204,8 @@ class QueueSmartIntegrationAvancado {
                     resposta_maquina: result
                 });
 
+                console.log(`✅ Item ${unitNumber}/${quantidade} enviado com sucesso`);
+
                 if (i < quantidade - 1) {
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
@@ -192,19 +219,46 @@ class QueueSmartIntegrationAvancado {
         }
     }
 
-    // ENVIAR ITEM DE TESTE
+    // ENVIAR ITEM DE TESTE (ATUALIZADO)
     async enviarItemTeste(pedidoId = 999, userId = 1) {
         try {
+            console.log('🧪 Enviando item de teste...');
+            
             const payload = {
                 orderId: `TEST-${Date.now()}`,
                 sku: "123",
                 configuracao: {
-                    andares: 2,
-                    materialExterno: "PLASTICO_AZUL",
-                    materialInterno: "PLASTICO_BRANCO",
-                    tipoMaterial: "NYLON",
-                    padrao: "PADRAO_ESTRELAS",
-                    produtoId: 1,
+                    caixa: {
+                        codigoProduto: 999,
+                        bloco1: {
+                            cor: "Azul",
+                            lamina1: "Lamina-A1",
+                            lamina2: "Lamina-A2",
+                            lamina3: "Lamina-A3",
+                            padrao1: "Padrao-A1",
+                            padrao2: "Padrao-A2",
+                            padrao3: "Padrao-A3"
+                        },
+                        bloco2: {
+                            cor: "Vermelho",
+                            lamina1: "Lamina-B1",
+                            lamina2: "Lamina-B2",
+                            lamina3: "Lamina-B3",
+                            padrao1: "Padrao-B1",
+                            padrao2: "Padrao-B2",
+                            padrao3: "Padrao-B3"
+                        },
+                        bloco3: {
+                            cor: "Verde",
+                            lamina1: "Lamina-C1",
+                            lamina2: "Lamina-C2",
+                            lamina3: "Lamina-C3",
+                            padrao1: "Padrao-C1",
+                            padrao2: "Padrao-C2",
+                            padrao3: "Padrao-C3"
+                        }
+                    },
+                    produtoId: 999,
                     produtoNome: "Produto Teste"
                 },
                 pedidoInfo: {
@@ -217,6 +271,8 @@ class QueueSmartIntegrationAvancado {
                 }
             };
 
+            console.log('📤 Payload de teste:', payload);
+
             const result = await this.request('/fila/itens', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -225,12 +281,49 @@ class QueueSmartIntegrationAvancado {
                 })
             });
 
+            console.log('✅ Item de teste enviado com sucesso:', result);
             return result;
 
         } catch (error) {
             console.error('❌ [QueueSmartAvancado] Erro no envio de teste:', error);
             throw error;
         }
+    }
+
+    // CONSULTAR STATUS DE UM ITEM
+    async statusItem(idItem) {
+        return await this.request(`/fila/itens/${idItem}`);
+    }
+
+    // STATUS DA MÁQUINA
+    async statusMaquina() {
+        return await this.request('/fila/status');
+    }
+
+    // LISTAR FILA
+    async listarFila(limit = 20) {
+        return await this.request(`/fila/itens?limit=${limit}`);
+    }
+
+    // LIMPAR FILA
+    async limparFila() {
+        return await this.request('/fila/limpar', {
+            method: 'POST'
+        });
+    }
+
+    // PROCESSAR CALLBACK
+    static processarCallback(body) {
+        return {
+            orderId: body.orderId,
+            itemId: body.idItem,
+            status: body.status,
+            etapa: body.etapa,
+            slot: body.slot,
+            porcentagem: body.progresso,
+            dadosCaixa: body.dadosCaixa || null,
+            timestamp: new Date().toISOString()
+        };
     }
 }
 

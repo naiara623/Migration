@@ -25,7 +25,6 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
     cupom: '',
     quantidadeProdutos: 0,
     valorTotalProdutos: 0,
-    totalFrete: 15.00,
     desconto: 0,
     totalAPagar: 0
   });
@@ -44,22 +43,49 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
       setLoading(true);
       setVerificandoDados(true);
       
-      // Usar a nova API para buscar dados completos
-      const response = await fetch('http://localhost:3001/api/pagamento/dados-usuario', {
+      // 1. Buscar dados do usuário
+      const userResponse = await fetch('http://localhost:3001/api/pagamento/dados-usuario', {
         credentials: 'include'
       });
       
-      if (!response.ok) {
+      if (!userResponse.ok) {
         throw new Error('Erro ao carregar dados do usuário');
       }
       
-      const resultado = await response.json();
+      const userResult = await userResponse.json();
       
-      if (resultado.sucesso) {
-        setDadosUsuario(resultado);
-        calcularResumo();
+      // 2. Buscar resumo do pedido (com produtos e totais)
+      const resumoResponse = await fetch('http://localhost:3001/api/pagamento/resumo', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (!resumoResponse.ok) {
+        throw new Error('Erro ao carregar resumo do pedido');
+      }
+      
+      const resumoResult = await resumoResponse.json();
+      
+      if (userResult.sucesso && resumoResult.sucesso) {
+        // Combinar os dados
+        setDadosUsuario({
+          usuario: userResult.usuario,
+          endereco: userResult.endereco || {},
+          produtos: resumoResult.produtos || [],
+          resumoPagamento: resumoResult.resumo_pagamento || {}
+        });
+        
+        // Atualizar resumo (sem frete)
+        setResumoPedido({
+          metodoPagamento: 'Cartão de Crédito',
+          cupom: '',
+          quantidadeProdutos: resumoResult.resumo_pagamento?.quantidade_produtos || 0,
+          valorTotalProdutos: resumoResult.resumo_pagamento?.valor_produtos || 0,
+          desconto: 0,
+          totalAPagar: resumoResult.resumo_pagamento?.total_a_pagar || 0
+        });
       } else {
-        throw new Error(resultado.erro || 'Erro desconhecido');
+        throw new Error('Erro ao carregar informações completas');
       }
       
     } catch (error) {
@@ -123,15 +149,12 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
       return total + (parseFloat(item.valor_produto || item.preco_unitario || 0) * item.quantidade);
     }, 0);
     
-    const totalFrete = 15.00;
-    const desconto = 0;
-    const totalAPagar = valorTotalProdutos + totalFrete - desconto;
+    const totalAPagar = valorTotalProdutos; // Sem frete
 
     setResumoPedido(prev => ({
       ...prev,
       quantidadeProdutos,
       valorTotalProdutos: valorTotalProdutos.toFixed(2),
-      totalFrete: totalFrete.toFixed(2),
       totalAPagar: totalAPagar.toFixed(2)
     }));
   };
@@ -151,24 +174,29 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
     setLoading(true);
 
     try {
+      // Formatar endereço para envio
+      const enderecoFormatado = `${dadosUsuario.endereco.bairro}, ${dadosUsuario.endereco.cidade} - ${dadosUsuario.endereco.estado}, Nº ${dadosUsuario.endereco.numero_endereco}${dadosUsuario.endereco.complemento ? `, ${dadosUsuario.endereco.complemento}` : ''}`;
+      
+      // Preparar dados do pedido conforme esperado pelo backend
       const pedidoData = {
         total: parseFloat(resumoPedido.totalAPagar),
         metodo_pagamento: resumoPedido.metodoPagamento,
-        endereco_entrega: {
-          ...dadosUsuario.endereco,
-          nomeUsuario: dadosUsuario.usuario.nome_usuario,
-          numeroContato: dadosUsuario.usuario.numero
-        },
+        endereco_entrega: enderecoFormatado,
         itens: carrinhoItens.map(item => ({
           id_produto: item.id_produto,
           quantidade: item.quantidade,
           preco_unitario: parseFloat(item.valor_produto || item.preco_unitario || 0),
           tamanho: item.tamanho || '',
-          cor: item.cor || ''
+          cor: item.cor || '',
+          // Incluir campos adicionais se existirem
+          ...(item.cor1 && { cor1: item.cor1 }),
+          ...(item.cor2 && { cor2: item.cor2 }),
+          ...(item.material && { material: item.material }),
+          ...(item.estampas && { estampas: item.estampas })
         }))
       };
 
-      console.log('Enviando pedido:', pedidoData);
+      console.log('Enviando pedido completo:', pedidoData);
 
       const response = await fetch('http://localhost:3001/api/pedidos', {
         method: 'POST',
@@ -181,10 +209,10 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
 
       const resultado = await response.json();
 
-      if (response.ok) {
-        alert('Pedido realizado com sucesso! Número do pedido: ' + resultado.pedido.id_pedido);
+      if (response.ok && resultado.sucesso) {
+        alert(`Pedido realizado com sucesso! Número do pedido: ${resultado.pedido.id_pedido}`);
         onClose();
-        // Redirecionar para página de pedidos ou home
+        // Redirecionar para página de pedidos
         navigate('/pedidos');
       } else {
         alert('Erro ao fazer pedido: ' + (resultado.detalhes || resultado.erro || 'Erro desconhecido'));
@@ -335,7 +363,6 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
               )}
             </div>
           </div>
-
           
           {/* Payment Details Section */}
           <div className='pagar-payment-section'>
@@ -368,6 +395,20 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
               </div>
             </div>
 
+            {/* Carrinho Items Preview */}
+            <div className='pagar-carrinho-preview'>
+              <h4 className='pagar-subtitle'>Produtos no Carrinho ({carrinhoItens?.length || 0})</h4>
+              <div className='pagar-items-list'>
+                {carrinhoItens && carrinhoItens.map((item, index) => (
+                  <div key={index} className='pagar-item'>
+                    <span className='pagar-item-name'>{item.nome_produto}</span>
+                    <span className='pagar-item-quantity'>x{item.quantidade}</span>
+                    <span className='pagar-item-price'>R$ {(parseFloat(item.valor_produto || item.preco_unitario || 0) * item.quantidade).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className='pagar-summary'>
               <div className='pagar-summary-item'>
                 <span className='pagar-summary-label'>Quantidade de Produtos:</span>
@@ -379,11 +420,6 @@ function Pagar({ isOpen, onClose, carrinhoItens, usuario }) {
                 <span className='pagar-summary-value'>R$ {resumoPedido.valorTotalProdutos}</span>
               </div>
               
-              <div className='pagar-summary-item'>
-                <span className='pagar-summary-label'>Total do Frete:</span>
-                <span className='pagar-summary-value'>R$ {resumoPedido.totalFrete}</span>
-              </div>
-
               <div className='pagar-summary-item'>
                 <span className='pagar-summary-label'>Desconto:</span>
                 <span className='pagar-summary-value'>R$ {resumoPedido.desconto.toFixed(2)}</span>

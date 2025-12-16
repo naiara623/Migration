@@ -338,56 +338,84 @@ async function createPedidoComRastreamento(pedidoData) {
   try {
     await client.query('BEGIN');
 
+    // 1. Criar pedido
     const pedidoResult = await client.query(
       `INSERT INTO pedidos (idusuarios, total, metodo_pagamento, endereco_entrega, status_geral) 
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [pedidoData.idusuarios, pedidoData.total, pedidoData.metodo_pagamento, pedidoData.endereco_entrega, 'PROCESSANDO']
+      [
+        pedidoData.idusuarios, 
+        pedidoData.total, 
+        pedidoData.metodo_pagamento || 'Cartão de Crédito', 
+        pedidoData.endereco_entrega || 'Endereço não informado', 
+        'PROCESSANDO'
+      ]
     );
 
     const pedido = pedidoResult.rows[0];
+    console.log('✅ [DB] Pedido criado para rastreamento:', pedido.id_pedido);
 
-    // Para cada item, criar registro de produção
-    for (let index = 0; index < pedidoData.itens.length; index++) {
-      const item = pedidoData.itens[index];
+    // 2. Buscar itens do carrinho
+    const carrinhoItens = await client.query(`
+      SELECT c.*, p.valor_produto, p.nome_produto, p.estoque, p.sku
+      FROM carrinho c
+      INNER JOIN produtos p ON c.id_produto = p.id_produto
+      WHERE c.idusuarios = $1
+    `, [pedidoData.idusuarios]);
+
+    let itemIndex = 0;
+    const todosItensProducao = [];
+
+    // 3. Para cada item do carrinho
+    for (const item of carrinhoItens.rows) {
+      itemIndex++;
       
-      // CORREÇÃO: Inserir item do pedido e obter id_pedidos
+      // Verificar estoque
+      if (item.estoque < item.quantidade) {
+        throw new Error(`Estoque insuficiente para ${item.nome_produto}`);
+      }
+
+      // Inserir item do pedido
       const pedidoItemResult = await client.query(
         `INSERT INTO pedido_itens 
-         (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor, status) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING id_pedido`,
+         (id_pedido, id_produto, quantidade, preco_unitario, 
+          tamanho, cor1, cor2, material, estampas, status) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING id_item`,
         [
           pedido.id_pedido,
           item.id_produto,
           item.quantidade,
-          item.preco_unitario,
+          item.valor_produto,
           item.tamanho || '',
-          item.cor || '',
+          item.cor1 || '',
+          item.cor2 || '',
+          item.material || '',
+          item.estampas || '',
           'PENDENTE'
         ]
       );
 
-      const id_pedido = pedidoItemResult.rows[0].id_pedido;
+      const id_item = pedidoItemResult.rows[0].id_item;
 
-      // CORREÇÃO: Criar registros de produção para cada unidade do item
-      for (let unit = 1; unit <= item.quantidade; unit++) {
-        await client.query(
-          `INSERT INTO producao_itens 
-           (id_pedido, id_produto, item_index, item_unit, 
-            status_maquina, estagio_maquina, progresso_maquina, slot_expedicao) 
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [
-            id_pedido,
-            item.id_produto,
-            index + 1, // item_index começa em 1
-            unit, // item_unit para cada unidade
-            'PENDENTE',
-            'AGUARDANDO',
-            0,
-            `SLOT-${Math.floor(Math.random() * 20) + 1}`
-          ]
-        );
-      }
+      // Preparar configurações para máquina
+      const configuracoes = {
+        tamanho: item.tamanho || '',
+        cor1: item.cor1 || '',
+        cor2: item.cor2 || '',
+        material: item.material || '',
+        estampas: item.estampas || '',
+        sku: item.sku || item.id_produto.toString()
+      };
+
+      // Registrar itens para produção
+      const itensProducao = await registrarItemParaMaquina(
+        pedido.id_pedido,
+        item.id_produto,
+        item.quantidade,
+        configuracoes
+      );
+      
+      todosItensProducao.push(...itensProducao);
 
       // Atualizar estoque
       await client.query(
@@ -396,15 +424,27 @@ async function createPedidoComRastreamento(pedidoData) {
       );
     }
 
-    // Limpar carrinho
+    // 4. Limpar carrinho
     await clearCarrinho(pedidoData.idusuarios);
 
     await client.query('COMMIT');
+    
+    console.log(`✅ [DB] Pedido ${pedido.id_pedido} criado com ${itemIndex} itens e ${todosItensProducao.length} unidades para produção`);
+    
+    // 5. Enviar para máquina (assíncrono - não bloqueia resposta)
+    setTimeout(async () => {
+      try {
+        await enviarParaQueueSmart(pedido, todosItensProducao);
+      } catch (error) {
+        console.error('❌ Erro ao enviar para Queue Smart (assíncrono):', error);
+      }
+    }, 1000);
+
     return pedido;
 
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('❌ Erro ao criar pedido com rastreamento:', error);
+    console.error('❌ [DB] Erro ao criar pedido com rastreamento:', error);
     throw error;
   } finally {
     client.release();
@@ -437,6 +477,77 @@ async function registrarItemProducao(dadosItem) {
     return result.rows[0];
   } catch (error) {
     console.error('❌ Erro ao registrar item de produção:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// ==========================================
+// 🏭 FUNÇÕES PARA INTEGRAÇÃO COM MÁQUINA
+// ==========================================
+
+async function registrarItemParaMaquina(pedidoId, produtoId, quantidade, configuracoes) {
+  const client = await pool.connect();
+  
+  try {
+    console.log(`🏭 Registrando ${quantidade} unidades do produto ${produtoId} para máquina no pedido ${pedidoId}`);
+    
+    const itensRegistrados = [];
+    
+    for (let unit = 1; unit <= quantidade; unit++) {
+      const result = await client.query(
+        `INSERT INTO producao_itens 
+         (id_pedido, id_produto, item_unit, status_maquina, estagio_maquina, progresso_maquina, slot_expedicao, configuracoes, criado_em) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW()) 
+         RETURNING *`,
+        [
+          pedidoId,
+          produtoId,
+          unit,
+          'PENDENTE',  // status inicial
+          'AGUARDANDO_ENVIO', // estágio inicial
+          0,  // progresso inicial
+          `SLOT-${Math.floor(Math.random() * 20) + 1}`,
+          JSON.stringify(configuracoes || {})
+        ]
+      );
+      
+      itensRegistrados.push(result.rows[0]);
+    }
+    
+    return itensRegistrados;
+    
+  } catch (error) {
+    console.error('❌ Erro ao registrar item para máquina:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function atualizarStatusMaquina(id_producao, status, estagio, progresso, dados) {
+  const client = await pool.connect();
+  
+  try {
+    console.log(`🔄 Atualizando status da máquina para item ${id_producao}:`, { status, estagio, progresso });
+    
+    const result = await client.query(
+      `UPDATE producao_itens 
+       SET status_maquina = $1,
+           estagio_maquina = $2,
+           progresso_maquina = $3,
+           dados_maquina = COALESCE($4, dados_maquina),
+           atualizado_em = NOW()
+       WHERE id_producao = $5 
+       RETURNING *`,
+      [status, estagio, progresso, dados ? JSON.stringify(dados) : null, id_producao]
+    );
+    
+    return result.rows[0];
+    
+  } catch (error) {
+    console.error('❌ Erro ao atualizar status da máquina:', error);
     throw error;
   } finally {
     client.release();
@@ -579,7 +690,7 @@ async function criarPedidoCompleto(pedidoData) {
   try {
     await client.query('BEGIN');
 
-    console.log('📦 [DB] Criando pedido completo (nova estrutura):', pedidoData);
+    console.log('📦 [DB] Criando pedido completo (sem frete):', pedidoData);
 
     // 1. Criar pedido
     const pedidoResult = await client.query(
@@ -589,7 +700,7 @@ async function criarPedidoCompleto(pedidoData) {
        RETURNING *`,
       [
         pedidoData.idusuarios,
-        pedidoData.total,
+        pedidoData.total, // Este total já vem calculado sem frete
         pedidoData.metodo_pagamento,
         pedidoData.endereco_entrega || 'Endereço não informado',
         'PENDENTE'
@@ -763,13 +874,12 @@ async function verificarPedidoCompleto(id_pedido) {
   try {
     console.log(`🔍 [DB] Verificando se pedido ${id_pedido} está completo`);
     
-    // CORREÇÃO: Usar campos corretos da tabela producao_itens
     const result = await client.query(`
       SELECT 
-        COUNT(DISTINCT pi.id_pedido) as total_itens,
+        COUNT(DISTINCT pi.id_item) as total_itens,
         SUM(CASE WHEN pr.status_maquina = 'COMPLETED' THEN 1 ELSE 0 END) as itens_prontos
       FROM pedido_itens pi
-      LEFT JOIN producao_itens pr ON pi.id_pedido = pr.id_pedido
+      LEFT JOIN producao_itens pr ON pi.id_item = pi.id_item
       WHERE pi.id_pedido = $1
     `, [id_pedido]);
     
@@ -782,14 +892,16 @@ async function verificarPedidoCompleto(id_pedido) {
     return { 
       completo, 
       total_itens, 
-      itens_prontos 
+      itens_prontos,
+      progresso: total_itens > 0 ? Math.round((itens_prontos / total_itens) * 100) : 0
     };
   } catch (error) {
     console.error('❌ [DB] Erro ao verificar pedido completo:', error);
     return { 
       completo: false, 
       total_itens: 0, 
-      itens_prontos: 0 
+      itens_prontos: 0,
+      progresso: 0
     };
   } finally {
     client.release();
@@ -1298,93 +1410,7 @@ async function calcularTotalCarrinho(idusuarios) {
 // 💳 FUNÇÕES DE PAGAMENTO (NOVAS)
 // ==========================================
 
-async function criarPedidoCompleto(pedidoData) {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
 
-    console.log('📦 [DB] Criando pedido completo:', pedidoData);
-
-    // 1. Criar pedido
-    const pedidoResult = await client.query(
-      `INSERT INTO pedidos 
-       (idusuarios, total, metodo_pagamento, endereco_entrega, status_geral) 
-       VALUES ($1, $2, $3, $4, $5) 
-       RETURNING *`,
-      [
-        pedidoData.idusuarios,
-        pedidoData.total,
-        pedidoData.metodo_pagamento,
-        pedidoData.endereco_entrega,
-        'PENDENTE'
-      ]
-    );
-
-    const pedido = pedidoResult.rows[0];
-    console.log('✅ [DB] Pedido criado:', pedido.id_pedido);
-
-    // 2. Obter itens do carrinho COM OS NOVOS CAMPOS
-    const carrinhoItens = await client.query(`
-      SELECT c.*, p.valor_produto, p.nome_produto, p.estoque
-      FROM carrinho c
-      INNER JOIN produtos p ON c.id_produto = p.id_produto
-      WHERE c.idusuarios = $1
-    `, [pedidoData.idusuarios]);
-
-    console.log(`📦 [DB] ${carrinhoItens.rows.length} itens no carrinho`);
-
-    // 3. Inserir itens do pedido com os novos campos
-    for (const item of carrinhoItens.rows) {
-      // Verificar estoque
-      if (item.estoque < item.quantidade) {
-        throw new Error(`Estoque insuficiente para ${item.nome_produto}`);
-      }
-
-      await client.query(
-        `INSERT INTO pedido_itens 
-         (id_pedido, id_produto, quantidade, preco_unitario, tamanho, cor, material, estampas, status) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [
-          pedido.id_pedido,
-          item.id_produto,
-          item.quantidade,
-          item.valor_produto,
-          item.tamanho || '',
-          item.cor1 || '', // Usar cor1 como cor principal
-          item.material || '',
-          item.estampas || '',
-          'PENDENTE'
-        ]
-      );
-
-      // Atualizar estoque
-      await client.query(
-        'UPDATE produtos SET estoque = estoque - $1 WHERE id_produto = $2',
-        [item.quantidade, item.id_produto]
-      );
-    }
-
-    // 4. Limpar carrinho
-    await client.query(
-      'DELETE FROM carrinho WHERE idusuarios = $1',
-      [pedidoData.idusuarios]
-    );
-
-    await client.query('COMMIT');
-
-    return {
-      pedido,
-      total_itens: carrinhoItens.rows.length
-    };
-
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('❌ [DB] Erro ao criar pedido:', error);
-    throw error;
-  } finally {
-    client.release();
-  }
-}
 
 // ==========================================
 // 📦 EXPORTAÇÕES (APENAS AS FUNÇÕES REALMENTE USADAS)
@@ -1407,13 +1433,11 @@ module.exports = {
   updateCarrinhoItem,
   removeFromCarrinho,
   clearCarrinho,
-  // Nota: createPedido não é usada (usa-se createPedidoComRastreamento)
   selectProductById,
   // Nota: as funções abaixo não são usadas:
 getDadosUsuarioParaPagamento,
 addToCarrinho,
 calcularTotalCarrinho,
-criarPedidoCompleto,
   // addOrUpdateCarrinhoItem,
   // updateCarrinhoItemQuantity,
   // removeCarrinhoItem,
@@ -1425,12 +1449,16 @@ criarPedidoCompleto,
   removeFromFavoritos,
   isFavorito,
   getTotalFavoritos,
+   criarPedidoCompleto,
   createPedidoComRastreamento,
+  getStatusDetalhadoPedido,
+  getPedidosComDetalhes, // NOVA FUNÇÃO
+  verificarPedidoCompleto,
   registrarItemProducao,
   atualizarStatusProducao,
-  getStatusDetalhadoPedido,
-  verificarPedidoCompleto,
   getStatusProducaoByPedido,
+  registrarItemParaMaquina,
+  atualizarStatusMaquina,
   // Endereços
   insertEndereco,
   deleteEndereco,

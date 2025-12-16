@@ -381,3 +381,387 @@ color: var(--accent-primary);
     width: 100%;
   }
 }
+
+
+/* Estilos existentes... */
+
+/* Seção de Rastreamento */
+.tracking-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tracking-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tracking-timeline {
+  position: relative;
+  padding-left: 40px;
+}
+
+.tracking-step {
+  position: relative;
+  padding-bottom: 30px;
+}
+
+.tracking-step:last-child {
+  padding-bottom: 0;
+}
+
+.step-icon-container {
+  position: absolute;
+  left: -40px;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-icon {
+  background: #e2e8f0;
+  border-radius: 50%;
+  padding: 8px;
+  z-index: 2;
+}
+
+.step-icon.completed {
+  background: #48bb78;
+  color: white;
+}
+
+.step-icon.current {
+  background: #4299e1;
+  color: white;
+}
+
+.step-connector {
+  position: absolute;
+  top: 36px;
+  width: 2px;
+  height: calc(100% - 16px);
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.tracking-step.completed .step-connector {
+  background: #48bb78;
+}
+
+.step-content {
+  padding-left: 8px;
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.step-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+.step-status {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.step-status.completed {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.step-status.current {
+  background: #bee3f8;
+  color: #2c5282;
+}
+
+.step-status.pending {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.step-description {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 8px;
+}
+
+.step-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4299e1;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4299e1;
+  min-width: 40px;
+}
+
+.step-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+/* Detalhes de Produção */
+.production-details-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.production-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 16px;
+}
+
+.production-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.production-item {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 4px solid #4299e1;
+}
+
+.production-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.production-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.production-item-status {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.production-item-status.PENDENTE {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.production-item-status.ENVIADO,
+.production-item-status.PROCESSING {
+  background: #bee3f8;
+  color: #2c5282;
+}
+
+.production-item-status.COMPLETED {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.production-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.production-stage,
+.production-progress,
+.production-slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-label,
+.progress-label,
+.slot-label {
+  font-size: 12px;
+  color: #718096;
+  min-width: 70px;
+}
+
+.stage-value,
+.slot-value {
+  font-size: 12px;
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.progress-bar-small {
+  flex: 1;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4299e1;
+  min-width: 30px;
+}
+
+/* Botões de Ação */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.primary-button,
+.secondary-button {
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.primary-button {
+  background: #4299e1;
+  color: white;
+}
+
+.primary-button:hover {
+  background: #3182ce;
+}
+
+.secondary-button {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.secondary-button:hover {
+  background: #cbd5e0;
+}
+
+.refresh-button {
+  background: #48bb78;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.refresh-button:hover {
+  background: #38a169;
+}
+
+/* Loading e Error States */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #4299e1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-container {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.error-text {
+  color: #e53e3e;
+  margin-bottom: 16px;
+}
+
+.retry-button {
+  background: #4299e1;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.retry-button:hover {
+  background: #3182ce;
+}
+
+/* Imagem do Produto */
+.product-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #718096;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}

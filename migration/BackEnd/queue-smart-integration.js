@@ -1,4 +1,3 @@
-// backend/queue-smart-integration.js - VERSÃO CORRETA
 const fetch = require("node-fetch");
 
 class QueueSmartIntegration {
@@ -43,48 +42,62 @@ class QueueSmartIntegration {
         }
     }
 
-    // MAPEAR CONFIG -> CAIXA (PARA PRODUTOS PERSONALIZADOS)
-    mapToCaixa(product, selections) {
+    // NOVA FUNÇÃO: MAPEAR CONFIGURAÇÕES DA TABELA PARA BLOCO DE CONFIGURAÇÃO
+    mapSelectionsToBlocoConfig(selections, blocoNumero) {
+        // Verifica se existe um bloco específico ou usa valores padrão
+        const blocoKey = `bloco${blocoNumero}`;
+        
+        // Verifica se temos configurações específicas para este bloco
+        if (selections[blocoKey]) {
+            const bloco = selections[blocoKey];
+            return {
+                cor: bloco.cor || '',
+                lamina1: bloco.lamina1 || '',
+                lamina2: bloco.lamina2 || '',
+                lamina3: bloco.lamina3 || '',
+                padrao1: bloco.padrao1 || '',
+                padrao2: bloco.padrao2 || '',
+                padrao3: bloco.padrao3 || ''
+            };
+        }
+        
+        // Se não houver bloco específico, verifica se temos configurações gerais
+        // que correspondam ao padrão de nomes de colunas da tabela
+        const prefix = blocoNumero.toString();
         return {
-            codigoProduto: product.id_produto,
-            bloco1: {
-                cor: selections.cor1,
-                lamina1: selections.l1_1,
-                lamina2: selections.l1_2,
-                lamina3: selections.l1_3,
-                padrao1: selections.p1_1,
-                padrao2: selections.p1_2,
-                padrao3: selections.p1_3
-            },
-            bloco2: {
-                cor: selections.cor2,
-                lamina1: selections.l2_1,
-                lamina2: selections.l2_2,
-                lamina3: selections.l2_3,
-                padrao1: selections.p2_1,
-                padrao2: selections.p2_2,
-                padrao3: selections.p2_3
-            },
-            bloco3: {
-                cor: selections.cor3,
-                lamina1: selections.l3_1,
-                lamina2: selections.l3_2,
-                lamina3: selections.l3_3,
-                padrao1: selections.p3_1,
-                padrao2: selections.p3_2,
-                padrao3: selections.p3_3
-            }
+            cor: selections[`cor${prefix}`] || selections.cor || '',
+            lamina1: selections[`l${prefix}_1`] || selections.lamina1 || '',
+            lamina2: selections[`l${prefix}_2`] || selections.lamina2 || '',
+            lamina3: selections[`l${prefix}_3`] || selections.lamina3 || '',
+            padrao1: selections[`p${prefix}_1`] || selections.padrao1 || '',
+            padrao2: selections[`p${prefix}_2`] || selections.padrao2 || '',
+            padrao3: selections[`p${prefix}_3`] || selections.padrao3 || ''
         };
     }
 
-    // ENVIAR ITEM (VERSÃO SIMPLES)
+    // MAPEAR CONFIG -> CAIXA (ATUALIZADO PARA NOVA ESTRUTURA)
+    mapToCaixa(product, selections) {
+        return {
+            codigoProduto: product.id_produto,
+            bloco1: this.mapSelectionsToBlocoConfig(selections, 1),
+            bloco2: this.mapSelectionsToBlocoConfig(selections, 2),
+            bloco3: this.mapSelectionsToBlocoConfig(selections, 3)
+        };
+    }
+
+    // ENVIAR ITEM (VERSÃO SIMPLES - ATUALIZADA)
     async enviarItem(orderId, product, selections) {
         const caixa = this.mapToCaixa(product, selections);
 
         const payload = {
             orderId,
             sku: product.sku || "KIT",
-            caixa
+            caixa,
+            // Incluir metadados adicionais se necessário
+            produtoInfo: {
+                nome: product.nome_produto,
+                descricao: product.descricao
+            }
         };
 
         return await this.request('/fila/itens', {
@@ -118,6 +131,49 @@ class QueueSmartIntegration {
         });
     }
 
+    // ENVIAR ITEM DE TESTE
+    async enviarItemTeste() {
+        const produtoTeste = {
+            id_produto: 999,
+            nome_produto: "Produto Teste",
+            sku: "TEST-001"
+        };
+
+        const configuracaoTeste = {
+            bloco1: {
+                cor: "Azul",
+                lamina1: "L1",
+                lamina2: "L2",
+                lamina3: "L3",
+                padrao1: "P1",
+                padrao2: "P2",
+                padrao3: "P3"
+            },
+            bloco2: {
+                cor: "Vermelho",
+                lamina1: "L1",
+                lamina2: "L2",
+                lamina3: "L3",
+                padrao1: "P1",
+                padrao2: "P2",
+                padrao3: "P3"
+            },
+            bloco3: {
+                cor: "Verde",
+                lamina1: "L1",
+                lamina2: "L2",
+                lamina3: "L3",
+                padrao1: "P1",
+                padrao2: "P2",
+                padrao3: "P3"
+            }
+        };
+
+        const orderId = `TEST-${Date.now()}`;
+
+        return await this.enviarItem(orderId, produtoTeste, configuracaoTeste);
+    }
+
     // CALLBACK RECEBIDO DA MÁQUINA
     static processarCallback(body) {
         return {
@@ -126,7 +182,8 @@ class QueueSmartIntegration {
             status: body.status,
             etapa: body.etapa,
             slot: body.slot,
-            porcentagem: body.progresso
+            porcentagem: body.progresso,
+            dadosCaixa: body.dadosCaixa || null
         };
     }
 }
